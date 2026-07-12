@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f4845f">
+  <title>엄마의 플래너</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>🌸 엄마의 플래너</h1>
+    <p id="today-date" class="today-date"></p>
+  </header>
+
+  <nav class="tab-bar">
+    <button class="tab-btn active" data-tab="today">☀️ 오늘</button>
+    <button class="tab-btn" data-tab="calendar">📅 달력</button>
+    <button class="tab-btn" data-tab="memo">📝 메모</button>
+  </nav>
+
+  <main>
+    <!-- 오늘 탭 -->
+    <section id="tab-today" class="tab-panel active">
+      <h2 class="section-title">오늘 할 일</h2>
+      <div class="add-row">
+        <input type="text" id="todo-input" placeholder="할 일을 적어주세요" maxlength="100">
+        <button id="todo-add-btn" class="add-btn">추가</button>
+      </div>
+      <ul id="todo-list" class="todo-list"></ul>
+      <p id="todo-empty" class="empty-msg">아직 할 일이 없어요.<br>위에 적고 <b>추가</b>를 눌러보세요!</p>
+
+      <div id="today-events-box" class="today-events-box hidden">
+        <h2 class="section-title">오늘의 일정</h2>
+        <ul id="today-events" class="event-list"></ul>
+      </div>
+    </section>
+
+    <!-- 달력 탭 -->
+    <section id="tab-calendar" class="tab-panel">
+      <div class="cal-header">
+        <button id="cal-prev" class="cal-nav" aria-label="이전 달">◀</button>
+        <h2 id="cal-title" class="cal-title"></h2>
+        <button id="cal-next" class="cal-nav" aria-label="다음 달">▶</button>
+      </div>
+      <div class="cal-weekdays">
+        <div class="sun">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div class="sat">토</div>
+      </div>
+      <div id="cal-grid" class="cal-grid"></div>
+
+      <div class="day-detail">
+        <h3 id="day-detail-title" class="day-detail-title"></h3>
+        <div class="add-row">
+          <input type="text" id="event-input" placeholder="일정을 적어주세요" maxlength="100">
+          <button id="event-add-btn" class="add-btn">추가</button>
+        </div>
+        <ul id="event-list" class="event-list"></ul>
+        <p id="event-empty" class="empty-msg">이 날은 일정이 없어요.</p>
+      </div>
+    </section>
+
+    <!-- 메모 탭 -->
+    <section id="tab-memo" class="tab-panel">
+      <h2 class="section-title">메모장</h2>
+      <textarea id="memo-area" placeholder="장 볼 것, 전화할 곳, 기억할 것…&#10;무엇이든 편하게 적어두세요."></textarea>
+      <p class="memo-hint">✓ 적으면 자동으로 저장돼요</p>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
