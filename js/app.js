@@ -164,7 +164,7 @@ function render(){
   if(segIdx!==state.segIdx){
     pn.style.display='block';
     pn.textContent = segIdx < state.segIdx
-      ? `👀 지나온 구간을 보고 있어요 — 내 구간으로 돌아가려면 "${SEGMENTS[state.segIdx].name}" 탭`
+      ? `👀 지나온 구간을 보고 있어요 — 내 구간으로 돌아가려면 "${SEGMENTS[state.segIdx].name}" 구간을 눌러요`
       : `👀 다음 구간 미리보기 — 지금은 "${SEGMENTS[state.segIdx].name}"에 집중해도 충분해요`;
   }else{ pn.style.display='none'; }
 
@@ -226,9 +226,11 @@ function render(){
     area.appendChild(nc);
   }
 
+  let shownGroups = 0;
   content.groups.forEach(g=>{
     const gItems = g.items.filter(visibleTL);
     if(!gItems.length) return;
+    shownGroups++;
     const gEl = document.createElement('div'); gEl.className='group';
     const done = gItems.filter(i=>checked.has(i.id)).length;
     gEl.innerHTML = `
@@ -240,6 +242,12 @@ function render(){
     gItems.forEach(it=> holder.appendChild(renderItem(it)));
     area.appendChild(gEl);
   });
+  if(!shownGroups){
+    const empty = document.createElement('div');
+    empty.className='collect-box';
+    empty.innerHTML='<b>이 구간은 검사·행정 위주예요</b>사야 할 아이템이 없어서 국민템 목록이 비어 있어요.';
+    area.appendChild(empty);
+  }
   updateProgress();
 }
 
@@ -257,6 +265,7 @@ function collectTimelineChecked(){
   SEGMENTS.forEach(s=>{
     const c = CONTENT[s.id]; if(!c) return;
     c.groups.forEach(g=> g.items.forEach(it=>{
+      if(it.type!=='buy' && !TL_SHEET_LINK[it.id]) return; // 화면에 없는 항목은 제외
       if(checked.has(it.id) && !seen.has(it.id)){ seen.add(it.id); out.push({id:it.id, nm:it.nm}); }
     }));
   });
@@ -439,8 +448,8 @@ function updateProgress(){
     if(gp) gp.textContent = gd+'/'+gItems.length;
   });
   document.getElementById('prog-text').textContent = done+' / '+total+' 완료';
-  document.getElementById('prog-fill').style.width = (done/total*100)+'%';
-  if(done===total && !celebratedSegs.has(seg.id)){
+  document.getElementById('prog-fill').style.width = (total ? done/total*100 : 0)+'%';
+  if(total>0 && done===total && !celebratedSegs.has(seg.id)){
     celebratedSegs.add(seg.id);
     document.getElementById('cel-title').textContent = `${seg.name} 준비, 전부 끝!`;
     document.getElementById('cel-desc').textContent = `${total}개 항목을 빠짐없이 준비하셨어요.`;

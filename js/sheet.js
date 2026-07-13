@@ -357,11 +357,13 @@ function sheetConclusion(it){
 }
 
 // ---- 브랜드 후보 추출 — 항목이 이미 아는 유명 브랜드를 칩으로 ----
+const BRAND_STOPWORDS = ['순면','선물','당근','새것','새거','물려받음','보건소','제공','기타'];
 function sheetBrandCandidates(it){
   const out = [];
   const push = v => {
     v = (v||'').replace(/\(.*?\)/g,'').trim();
-    if(v && !out.includes(v) && out.length<8) out.push(v);
+    if(!v || /^\d/.test(v) || BRAND_STOPWORDS.includes(v)) return; // 수량·일반명사는 브랜드가 아님
+    if(!out.includes(v) && out.length<8) out.push(v);
   };
   if(it.brands) it.brands.split('·').forEach(push);         // 참고 브랜드 필드
   (it.ops||[]).forEach(o=>{ if(o.buy) push(o.buy.split('·')[0].split(' ')[0]); }); // 선배맘이 산 브랜드
