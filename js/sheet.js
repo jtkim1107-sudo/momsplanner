@@ -325,7 +325,7 @@ function toggleSheetFilter(){ sheetFilter = !sheetFilter; renderSheet(); }
 function sheetItemDone(it, id){
   return sheetMode==='std' ? !!myPlans[id] : (sheetChecked.has(id) && !!myBuys[id]);
 }
-// 내 리스트 = 체크했거나 따라하기/당근으로/물려받기로 정한 항목 (패스만 뺀 나만의 리스트)
+// 내 리스트 = 체크했거나 새제품 구매/당근으로/물려받기로 정한 항목 (패스만 뺀 나만의 리스트)
 function sheetMine(id){
   return sheetChecked.has(id) || myPlans[id]==='buy' || myPlans[id]==='carrot' || myPlans[id]==='hand';
 }
@@ -592,7 +592,7 @@ function renderSheet(){
       <span class="ss-star">🌠</span>
       <div class="ss-over">SOHAENGSEONG STANDARD</div>
       <h3>소행성 스탠다드</h3>
-      <p>선배맘들의 리스트에서 <b>공통 필수만 추린 공식 기준표</b>예요.<br>따라하기 · 당근으로 · 물려받기 · 패스만 고르면 내 리스트 완성!</p>
+      <p>선배맘들의 리스트에서 <b>공통 필수만 추린 공식 기준표</b>예요.<br>새제품 구매 · 당근으로 · 물려받기 · 패스만 고르면 내 리스트 완성!</p>
       <div class="ss-chips"><span>공통 필수 ${cnt.std}</span><span>선배맘 4명 검증</span><span>판정 데이터 기반</span></div>
     `;
   }else{
@@ -601,7 +601,7 @@ function renderSheet(){
     intro.innerHTML = `
       <span class="ri">✨</span>
       <div class="rc"><h3>내가 고른 리스트</h3>
-      <p>따라하기 · 당근으로 · 물려받기로 담은 것들이에요. <b>시세 가이드 밑으로 보이면 사세요!</b> 준비되면 체크 — 기록까지 남기면 별똥별이 쌓여요.</p>
+      <p>새제품 구매 · 당근으로 · 물려받기로 담은 것들이에요. <b>시세 가이드 밑으로 보이면 사세요!</b> 준비되면 체크 — 기록까지 남기면 별똥별이 쌓여요.</p>
       <button class="rp-open" onclick="openReport()">📄 내 똑똑한 리스트 만들기 — 친구 공유용</button></div>
     `;
   }
@@ -661,7 +661,7 @@ function renderSheet(){
   if(!shownCats){
     const empty = document.createElement('div');
     empty.className='collect-box';
-    empty.innerHTML='<b>아직 내 리스트가 비어 있어요</b>소행성 스탠다드에서 "따라하기" · "당근으로" · "물려받기"를 고르면 여기 모여요.';
+    empty.innerHTML='<b>아직 내 리스트가 비어 있어요</b>소행성 스탠다드에서 "새제품 구매" · "당근으로" · "물려받기"를 고르면 여기 모여요.';
     area.appendChild(empty);
   }
   updateSheetProgress();
