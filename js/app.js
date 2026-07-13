@@ -75,7 +75,7 @@ function deadlineChip(g, done, total){
   return `<span class="deadline info">${label}</span>`;
 }
 
-// 준비물 리스트 — 월령별 국민템도 리스트의 하나로 (리스트 다양화 전략)
+// 준비물 리스트 — 출산부터 오픈, 나머지는 하나씩 열어간다 (리스트 다양화 전략)
 const PREP_LISTS = [
   {key:'sheet',      label:'출산'},
   {key:'postpartum', label:'조리원'},
@@ -87,12 +87,19 @@ const PREP_LISTS = [
   {key:'seg7',       label:'12~24개월'},
   {key:'seg8',       label:'24~36개월'},
 ];
+const ACTIVE_LISTS = new Set(['sheet']); // 오픈된 리스트 — 여기 추가하면 열림
+
+function comingSoon(label){
+  toast(`${label} 리스트는 오픈 준비 중이에요 🌠 곧 열려요!`);
+}
 
 function renderPrepTabs(){
   const bar = document.getElementById('prep-tabs');
   bar.style.display = 'flex';
   bar.innerHTML = PREP_LISTS.map(L=>
-    `<button class="prep-chip${viewMode===L.key?' on':''}" onclick="setView('${L.key}')">${L.label}</button>`
+    ACTIVE_LISTS.has(L.key)
+      ? `<button class="prep-chip${viewMode===L.key?' on':''}" onclick="setView('${L.key}')">${L.label}</button>`
+      : `<button class="prep-chip soon" onclick="comingSoon('${L.label}')">${L.label}<span class="soon-tag">오픈예정</span></button>`
   ).join('');
 }
 
@@ -240,18 +247,18 @@ function collectTimelineChecked(){
   return out;
 }
 const MYLIST_SOURCES = [
-  {label:'출산 준비물', icon:'🛒', get:()=>collectSheetChecked(SHEET_CATEGORIES, sheetChecked, sheetItemId)},
-  {label:'조리원',      icon:'🏨', get:()=>collectSheetChecked(POSTPARTUM_CATEGORIES, ppChecked, ppItemId)},
-  {label:'어린이집',    icon:'🏫', get:()=>collectSheetChecked(DAYCARE_CATEGORIES, dcChecked, dcItemId)},
-  {label:'이유식',      icon:'🍽️', get:()=>collectSheetChecked(BABYFOOD_CATEGORIES, bfChecked, bfItemId)},
-  {label:'월령별 국민템', icon:'🗓️', get:()=>collectTimelineChecked()},
-];
+  {key:'sheet',      label:'출산 준비물', icon:'🛒', get:()=>collectSheetChecked(SHEET_CATEGORIES, sheetChecked, sheetItemId)},
+  {key:'postpartum', label:'조리원',      icon:'🏨', get:()=>collectSheetChecked(POSTPARTUM_CATEGORIES, ppChecked, ppItemId)},
+  {key:'daycare',    label:'어린이집',    icon:'🏫', get:()=>collectSheetChecked(DAYCARE_CATEGORIES, dcChecked, dcItemId)},
+  {key:'babyfood',   label:'이유식',      icon:'🍽️', get:()=>collectSheetChecked(BABYFOOD_CATEGORIES, bfChecked, bfItemId)},
+  {key:'seg4',       label:'월령별 국민템', icon:'🗓️', get:()=>collectTimelineChecked()},
+].filter(s=>ACTIVE_LISTS.has(s.key));
 function renderMyList(){
   const body = document.getElementById('mylist-body');
 
   // 살 것 / 당근 / 패스 취합
   const groups = {buy:[], carrot:[], pass:[]};
-  PLAN_SOURCES.forEach(src=>{
+  PLAN_SOURCES.filter(src=>ACTIVE_LISTS.has(src.key)).forEach(src=>{
     planListItems(src.key).forEach(x=>{
       const pl = myPlans[x.id];
       if(pl) groups[pl].push({...x, src:src.label});
@@ -277,7 +284,7 @@ function renderMyList(){
   }
 
   // 리스트별 플랜 진행률 (다 정하면 리스트당 ⭐300)
-  const prog = PLAN_SOURCES.map(src=>{
+  const prog = PLAN_SOURCES.filter(src=>ACTIVE_LISTS.has(src.key)).map(src=>{
     const items = planListItems(src.key);
     const p = items.filter(x=>myPlans[x.id]).length;
     const full = p===items.length ? ' ✓' : '';
@@ -466,6 +473,11 @@ function requestProduct(e,nm){
 }
 
 function setView(v){
+  if(!ACTIVE_LISTS.has(v)){ // 오픈 전 리스트 진입 차단
+    const L = PREP_LISTS.find(x=>x.key===v);
+    comingSoon(L ? L.label : '이');
+    return;
+  }
   if(viewMode===v) return;
   viewMode=v; render();
 }
