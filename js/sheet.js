@@ -390,6 +390,23 @@ function sheetConclusion(it){
   return null; // 아직 의견 없음
 }
 
+// ---- 판정 규모 티어 — 결론 난 템에 "N명 판정템" 신뢰 배지 ----
+// 실서비스에선 서버 집계 판정 수. 베타에선 시드 고정 난수로 재현하고
+// 100 / 300 / 500 / 1,000 / 3,000명 단위로 끊어 보여준다.
+const VERDICT_TIERS = [3000, 2000, 1000, 500, 300, 100, 50];
+function verdictCount(it, id){
+  if(!sheetConclusion(it)) return null;           // 결론 없으면 아직 판정 중
+  const r = bdRng(bdSeed('vc-' + id));
+  const boost = it.min ? 6 : it.std ? 2.5 : 1;    // 필수템일수록 판정도 많다
+  const n = Math.round((40 + r()*220) * boost * (1 + (it.ops||[]).length*0.4));
+  for(const t of VERDICT_TIERS) if(n >= t) return t;
+  return null;                                    // 50명 미만 — 표시 안 함 (신뢰 게이트)
+}
+function verdictBadge(it, id){
+  const t = verdictCount(it, id);
+  return t ? `<span class="badge vcount">⚖️ ${t.toLocaleString()}명 판정템</span>` : '';
+}
+
 // ---- 브랜드 후보 추출 — 항목이 이미 아는 유명 브랜드를 칩으로 ----
 const BRAND_STOPWORDS = ['순면','선물','당근','새것','새거','물려받음','보건소','제공','기타'];
 function sheetBrandCandidates(it){
@@ -593,6 +610,7 @@ function renderSheetItem(it,ci,ii){
   let badges='';
   const concl = sheetConclusion(it);
   if(concl) badges += `<span class="badge concl ${concl.k}">${concl.label}</span>`;
+  badges += verdictBadge(it, id);
   if(it.min) badges += `<span class="badge minimal">🌱 미니멀</span>`;
   if(it.need)   badges += `<span class="badge need">${it.need}</span>`;
   if(it.brands) badges += `<span class="badge brand">${it.brands}</span>`;

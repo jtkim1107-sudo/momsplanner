@@ -375,6 +375,7 @@
   .star-note{font-size:11.5px;color:var(--sub);text-align:center;margin-top:14px;line-height:1.6;}
 
   .badge.concl{font-weight:800;color:#fff;padding:3.5px 10px;border-radius:8px;box-shadow:0 2px 6px rgba(84,64,42,.18);}
+  .badge.vcount{background:#FBF3DC;color:#8A6D1F;border:1px solid #EAD9A8;font-weight:800;}
   .badge.concl.yes{background:var(--green);}
   .badge.concl.no{background:var(--red);}
   .badge.concl.try{background:var(--gold);}

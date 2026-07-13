@@ -230,6 +230,7 @@ function renderPostpartumItem(it,ci,ii){
   let badges='';
   const concl = sheetConclusion(it);
   if(concl) badges += `<span class="badge concl ${concl.k}">${concl.label}</span>`;
+  badges += verdictBadge(it, id);
   if(it.need)   badges += `<span class="badge need">${it.need}</span>`;
   if(it.brands) badges += `<span class="badge brand">${it.brands}</span>`;
   if(it.carrot) badges += `<span class="badge carrot">🥕 당근 추천</span>`;
