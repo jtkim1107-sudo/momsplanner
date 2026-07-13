@@ -96,7 +96,7 @@ function render(){
   if(viewMode==='sheet'){
     document.getElementById('hero-title').textContent = '출산 준비물 체크리스트';
     document.getElementById('hero-dday').textContent = `출산예정일 D-${state.dday}`;
-    document.getElementById('demo-note').textContent = '선배맘 준비물 자료 4종 병합 — 판정 · 가격 · 경험담은 참고용이에요';
+    document.getElementById('demo-note').textContent = '선배맘 네 명의 리스트로 시작했어요 · 가격과 후기는 참고만!';
     document.getElementById('preview-note').style.display='none';
     renderSheet();
     return;
@@ -113,7 +113,7 @@ function render(){
     document.getElementById('hero-dday').textContent = `임신 후기를 지나오셨어요`;
   }
   document.getElementById('demo-note').textContent =
-    `선배맘 ${BIG_STATS.moms.toLocaleString()}명 · 누적 판정 ${BIG_STATS.verdicts.toLocaleString()}건 — 판정·순위·댓글은 시뮬레이션 데이터입니다`;
+    `선배맘 ${BIG_STATS.moms.toLocaleString()}명의 판정 ${BIG_STATS.verdicts.toLocaleString()}건 · 베타 기간이라 일부는 샘플이에요`;
 
   // 미리보기 노트
   const pn = document.getElementById('preview-note');
@@ -176,7 +176,7 @@ function render(){
     nc.className='natl-card';
     nc.innerHTML = `
       <h3>🏆 ${seg.name} 국민템 ${natl.length}개</h3>
-      <p>선배맘 ${NATIONAL_MIN}% 이상이 "사요"라고 판정한 이 시기 아이템</p>
+      <p>열에 아홉은 "또 산다"고 답한 것들</p>
       <div class="natl-chips">${natl.map(x=>`<span class="natl-chip" data-id="${x.id}">${x.nm.split('(')[0].trim()}</span>`).join('')}</div>
     `;
     nc.querySelectorAll('.natl-chip').forEach(ch=> ch.addEventListener('click',()=>{
@@ -194,7 +194,7 @@ function render(){
     const gEl = document.createElement('div'); gEl.className='group';
     const done = g.items.filter(i=>checked.has(i.id)).length;
     gEl.innerHTML = `
-      <div class="group-head"><span class="overline">GROUP ${g.id}</span><h3>${g.title}</h3>${deadlineChip(g,done,g.items.length)}<span class="gprog" id="gp-${g.id}">${done}/${g.items.length}</span></div>
+      <div class="group-head"><h3>${g.title}</h3>${deadlineChip(g,done,g.items.length)}<span class="gprog" id="gp-${g.id}">${done}/${g.items.length}</span></div>
       ${g.note?`<p class="group-note">${g.note}</p>`:''}
       <div class="group-items" id="gi-${g.id}"></div>
     `;

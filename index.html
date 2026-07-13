@@ -18,14 +18,14 @@
       <div class="hero-right">
         <span class="dday" id="hero-dday"></span>
         <div class="view-switch">
-          <button id="vs-sheet" class="on" onclick="setView('sheet')">🛒 준비물</button>
-          <button id="vs-preg" onclick="setView('preg')">🤰 시기별</button>
-          <button id="vs-senior" onclick="setView('senior')">👩 선배맘</button>
+          <button id="vs-sheet" class="on" onclick="setView('sheet')">준비물</button>
+          <button id="vs-preg" onclick="setView('preg')">시기별</button>
+          <button id="vs-senior" onclick="setView('senior')">선배맘</button>
         </div>
       </div>
     </div>
     <h1 id="hero-title"></h1>
-    <div class="demo-note" id="demo-note">프로토타입 — 판정 수치 · 브랜드 순위 · 댓글은 전부 샘플 데이터입니다</div>
+    <div class="demo-note" id="demo-note">베타 기간이라 판정과 댓글 일부는 샘플이에요</div>
     <div class="progress-wrap">
       <div class="progress-label"><span id="prog-name">이번 구간 준비</span><span id="prog-text"></span></div>
       <div class="progress-bar"><div class="progress-fill" id="prog-fill"></div></div>
@@ -35,7 +35,7 @@
   <div class="timeline" id="timeline"></div>
   <div class="preview-note" id="preview-note" style="display:none"></div>
   <div class="searchwrap">
-    <input id="search" placeholder="🔍 궁금한 육아템 검색 (예: 젖병, 카시트)" oninput="doSearch()" autocomplete="off">
+    <input id="search" placeholder="젖병, 카시트, 유모차 검색" oninput="doSearch()" autocomplete="off">
     <div class="search-results" id="search-results"></div>
   </div>
   <div class="body-area" id="body-area"></div>
