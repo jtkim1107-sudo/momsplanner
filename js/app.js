@@ -77,15 +77,15 @@ function deadlineChip(g, done, total){
 
 // 준비물 리스트 — 출산부터 오픈, 나머지는 하나씩 열어간다 (리스트 다양화 전략)
 const PREP_LISTS = [
-  {key:'sheet',      label:'출산'},
-  {key:'postpartum', label:'조리원'},
-  {key:'seg4',       label:'신생아'},
-  {key:'babyfood',   label:'이유식'},
-  {key:'daycare',    label:'어린이집'},
-  {key:'seg5',       label:'3~6개월'},
-  {key:'seg6',       label:'6~12개월'},
-  {key:'seg7',       label:'12~24개월'},
-  {key:'seg8',       label:'24~36개월'},
+  {key:'sheet',      label:'출산 준비물'},
+  {key:'postpartum', label:'조리원 준비물'},
+  {key:'seg4',       label:'신생아 국민템'},
+  {key:'babyfood',   label:'이유식 준비물'},
+  {key:'daycare',    label:'어린이집 준비물'},
+  {key:'seg5',       label:'3~6개월 국민템'},
+  {key:'seg6',       label:'6~12개월 국민템'},
+  {key:'seg7',       label:'12~24개월 국민템'},
+  {key:'seg8',       label:'24~36개월 국민템'},
 ];
 const ACTIVE_LISTS = new Set(['sheet']); // 오픈된 리스트 — 여기 추가하면 열림
 
