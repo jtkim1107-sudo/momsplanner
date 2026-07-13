@@ -86,8 +86,10 @@ function deadlineChip(g, done, total){
 function render(){
   document.getElementById('vs-preg').classList.toggle('on', viewMode==='preg');
   document.getElementById('vs-sheet').classList.toggle('on', viewMode==='sheet');
-  document.getElementById('timeline').style.display = viewMode==='sheet' ? 'none' : 'flex';
-  document.querySelector('.searchwrap').style.display = viewMode==='sheet' ? 'none' : 'block';
+  document.getElementById('vs-daycare').classList.toggle('on', viewMode==='daycare');
+  const isTimeline = viewMode==='preg';
+  document.getElementById('timeline').style.display = isTimeline ? 'flex' : 'none';
+  document.querySelector('.searchwrap').style.display = isTimeline ? 'block' : 'none';
 
   // 준비물 시트 뷰 — 타임라인 없이 시트 전용 렌더
   if(viewMode==='sheet'){
@@ -96,6 +98,16 @@ function render(){
     document.getElementById('demo-note').textContent = '선배맘 네 명의 리스트로 시작했어요 · 가격과 후기는 참고만!';
     document.getElementById('preview-note').style.display='none';
     renderSheet();
+    return;
+  }
+
+  // 어린이집 입소 준비물 뷰
+  if(viewMode==='daycare'){
+    document.getElementById('hero-title').textContent = '어린이집 입소 준비물';
+    document.getElementById('hero-dday').textContent = '입소 시즌 준비';
+    document.getElementById('demo-note').textContent = '복직맘·세돌맘이 짚어준 것들 · 어린이집 안내문과 함께 확인!';
+    document.getElementById('preview-note').style.display='none';
+    renderDaycare();
     return;
   }
 
