@@ -291,9 +291,9 @@ function setSheetMode(m){
   try{ localStorage.setItem(SHEET_MODE_KEY, m); }catch(e){}
   renderSheet();
 }
-// 내 리스트 = 체크했거나 살 것/당근으로 정한 항목 (패스는 뺀 나만의 리스트)
+// 내 리스트 = 체크했거나 따라하기/당근으로/물려받기로 정한 항목 (패스만 뺀 나만의 리스트)
 function sheetMine(id){
-  return sheetChecked.has(id) || myPlans[id]==='buy' || myPlans[id]==='carrot';
+  return sheetChecked.has(id) || myPlans[id]==='buy' || myPlans[id]==='carrot' || myPlans[id]==='hand';
 }
 // 표준 구성 = 미니멀 필수(min) + 공통 필수(std) — 나머지는 '선택템'으로 접어둠
 function isStd(it){ return !!(it.min || it.std); }
@@ -424,11 +424,14 @@ function priceRowEl(it, id){
     return div;
   }
   const carrotPlan = myPlans[id]==='carrot';
+  const handPlan = myPlans[id]==='hand';
   div.innerHTML = `
     <span class="pr-head">💸 시세 가이드</span>
     <div class="pr-line">역대 최저 <b>${won(pi.low)}</b> · 요즘 시세 ${won(pi.base)}</div>
-    <div class="pr-buy">👉 ${won(pi.dealAt)} 이하로 보이면 바로 사세요</div>
-    ${(carrotPlan||it.carrot)?`<div class="pr-carrot">🥕 당근 적정가 ${won(pi.carrotLo)} ~ ${won(pi.carrotHi)} — 그 이상이면 새것 핫딜이 나아요</div>`:''}
+    ${handPlan
+      ? `<div class="pr-hand">🎁 물려받으면 새것값 ${won(pi.base)}을 아끼는 셈이에요</div>`
+      : `<div class="pr-buy">👉 ${won(pi.dealAt)} 이하로 보이면 바로 사세요</div>`}
+    ${(carrotPlan||(it.carrot&&!handPlan))?`<div class="pr-carrot">🥕 당근 적정가 ${won(pi.carrotLo)} ~ ${won(pi.carrotHi)} — 그 이상이면 새것 핫딜이 나아요</div>`:''}
     <span class="pr-note">베타 · 관측된 구매 기록 기반, 판매처별 확인</span>
   `;
   return div;
@@ -498,7 +501,7 @@ function renderSheet(){
       <span class="ss-star">🌠</span>
       <div class="ss-over">SOHAENGSEONG STANDARD</div>
       <h3>소행성 스탠다드</h3>
-      <p>선배맘들의 리스트에서 <b>공통 필수만 추린 공식 기준표</b>예요.<br>항목마다 따라하기 · 당근으로 · 패스만 고르면 내 리스트 완성!</p>
+      <p>선배맘들의 리스트에서 <b>공통 필수만 추린 공식 기준표</b>예요.<br>따라하기 · 당근으로 · 물려받기 · 패스만 고르면 내 리스트 완성!</p>
       <div class="ss-chips"><span>공통 필수 ${cnt.std}</span><span>선배맘 4명 검증</span><span>판정 데이터 기반</span></div>
     `;
   }else{
@@ -507,7 +510,7 @@ function renderSheet(){
     intro.innerHTML = `
       <span class="ri">✨</span>
       <div class="rc"><h3>내가 고른 리스트</h3>
-      <p>따라하기 · 당근으로 담은 것들이에요. <b>시세 가이드 밑으로 보이면 사세요!</b> 사면 체크 — 구매 기록까지 남기면 별똥별이 쌓여요.</p>
+      <p>따라하기 · 당근으로 · 물려받기로 담은 것들이에요. <b>시세 가이드 밑으로 보이면 사세요!</b> 준비되면 체크 — 기록까지 남기면 별똥별이 쌓여요.</p>
       <button class="rp-open" onclick="openReport()">📄 내 똑똑한 리스트 만들기 — 친구 공유용</button></div>
     `;
   }
@@ -548,7 +551,7 @@ function renderSheet(){
   if(!shownCats){
     const empty = document.createElement('div');
     empty.className='collect-box';
-    empty.innerHTML='<b>아직 내 리스트가 비어 있어요</b>소행성 스탠다드에서 "따라하기"나 "당근으로"를 고르면 여기 모여요.';
+    empty.innerHTML='<b>아직 내 리스트가 비어 있어요</b>소행성 스탠다드에서 "따라하기" · "당근으로" · "물려받기"를 고르면 여기 모여요.';
     area.appendChild(empty);
   }
   updateSheetProgress();

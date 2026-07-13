@@ -162,15 +162,17 @@ function purchaseRowEl(id, candidates){
   if(rec){
     const price = rec.p ? ' · ' + rec.p.toLocaleString() + '원' : '';
     const reqTag = rec.req ? '<span class="buy-ch req">등록 확인 중</span>' : '';
-    div.innerHTML = `내 구매 · <b class="jy">${rec.b}</b><span class="buy-ch">${rec.ch}${price}</span>${reqTag} — 시세·순위 데이터에 반영돼요`;
+    const head = (rec.ch==='물려받음'||rec.ch==='선물받음') ? '내 기록' : '내 구매';
+    div.innerHTML = `${head} · <b class="jy">${rec.b}</b><span class="buy-ch">${rec.ch}${price}</span>${reqTag} — 시세·순위 데이터에 반영돼요`;
     return div;
   }
 
   let chosen = null; // 칩에서 고른 브랜드 (직접 입력 시 null)
 
+  const isHand = typeof myPlans!=='undefined' && myPlans[id]==='hand'; // 물려받기 플랜은 질문이 다름
   const q = document.createElement('div');
   q.className = 'buy-q';
-  q.textContent = '뭘로 샀어요?';
+  q.textContent = isHand ? '뭘 물려받았어요?' : '뭘로 샀어요?';
 
   const chips = document.createElement('div');
   chips.className = 'brand-chips';
@@ -250,7 +252,7 @@ function purchaseRowEl(id, candidates){
   // 얼마에 샀어요?
   const priceInp = document.createElement('input');
   priceInp.className = 'buy-inp price';
-  priceInp.placeholder = '얼마에 샀어요? (원 · 선택)';
+  priceInp.placeholder = isHand ? '들인 돈 있으면 (원 · 선택)' : '얼마에 샀어요? (원 · 선택)';
   priceInp.inputMode = 'numeric';
   priceInp.maxLength = 12;
   priceInp.addEventListener('click', e=>e.stopPropagation());
@@ -264,6 +266,7 @@ function purchaseRowEl(id, candidates){
   const sel = document.createElement('select');
   sel.className = 'buy-sel';
   BUY_CHANNELS.forEach(c=>{ const o=document.createElement('option'); o.textContent=c; sel.appendChild(o); });
+  if(isHand) sel.value = '물려받음';
   sel.addEventListener('click', e=>e.stopPropagation());
   const btn = document.createElement('button');
   btn.className = 'jbtn save';
@@ -302,6 +305,7 @@ function purchaseRowEl(id, candidates){
 const PLAN_META = [
   {k:'buy',    label:'따라하기', cls:'p-buy'},
   {k:'carrot', label:'당근으로', cls:'p-carrot'},
+  {k:'hand',   label:'물려받기', cls:'p-hand'},
   {k:'pass',   label:'패스',    cls:'p-pass'},
 ];
 const PLAN_SOURCES = [
