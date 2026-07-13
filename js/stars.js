@@ -194,7 +194,7 @@ const PLAN_META = [
   {k:'pass',   label:'패스',    cls:'p-pass'},
 ];
 const PLAN_SOURCES = [
-  {key:'sheet',      label:'출산',     cats:()=>SHEET_CATEGORIES,      idFn:(ci,ii)=>sheetItemId(ci,ii)},
+  {key:'sheet',      label:'출산',     cats:()=>SHEET_CATEGORIES,      idFn:(ci,ii)=>sheetItemId(ci,ii), keep:it=>isStd(it)},
   {key:'postpartum', label:'조리원',   cats:()=>POSTPARTUM_CATEGORIES, idFn:(ci,ii)=>ppItemId(ci,ii)},
   {key:'daycare',    label:'어린이집', cats:()=>DAYCARE_CATEGORIES,    idFn:(ci,ii)=>dcItemId(ci,ii)},
   {key:'babyfood',   label:'이유식',   cats:()=>BABYFOOD_CATEGORIES,   idFn:(ci,ii)=>bfItemId(ci,ii)},
@@ -203,7 +203,10 @@ function planListItems(listKey){
   const src = PLAN_SOURCES.find(x=>x.key===listKey);
   if(!src) return [];
   const out=[];
-  src.cats().forEach((c,ci)=> c.items.forEach((it,ii)=> out.push({id:src.idFn(ci,ii), nm:it.nm})));
+  src.cats().forEach((c,ci)=> c.items.forEach((it,ii)=>{
+    if(src.keep && !src.keep(it)) return; // 출산은 표준 구성 기준으로 플랜 완성 판정
+    out.push({id:src.idFn(ci,ii), nm:it.nm});
+  }));
   return out;
 }
 function checkPlanComplete(listKey){
