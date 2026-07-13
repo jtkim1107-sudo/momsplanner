@@ -329,6 +329,10 @@
   .brand-chip.on{background:var(--brown-deep);border-color:var(--brown-deep);color:#fff;}
   .brand-chip.other{color:var(--brown);border-style:dashed;}
   .brand-chip.other.on{background:var(--brown);border-color:var(--brown);color:#fff;}
+  .brand-suggest{display:flex;flex-wrap:wrap;gap:6px;}
+  .brand-chip.sug{border-color:var(--brown);color:var(--brown-deep);background:#FBF7EE;}
+  .buy-inp.price{border-color:var(--line);}
+  .buy-inp.price:focus{border-color:var(--brown);}
   .buy-ctrl{display:flex;gap:7px;}
   .buy-inp{
     width:100%;font-family:inherit;font-size:12.5px;color:var(--ink);

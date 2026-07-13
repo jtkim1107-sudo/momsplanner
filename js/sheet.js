@@ -393,16 +393,17 @@ function parseWon(str){
   if(m) return (+m[1])*10000;
   return null;
 }
-function itemBasePrice(it){
+function itemBasePrice(it, id){
   const cands = [];
   const d = parseWon(it.deal); if(d) cands.push(d);
   (it.ops||[]).forEach(o=>{ const v = parseWon(o.buy); if(v) cands.push(v); });
+  if(id && myBuys[id] && myBuys[id].p) cands.push(myBuys[id].p); // 내 구매가도 관측치
   if(!cands.length) return null;
   return Math.max(...cands); // 새 상품 기준가는 관측치 중 최댓값
 }
 function round100(v){ return Math.round(v/100)*100; }
 function priceIntel(it, id){
-  const base = itemBasePrice(it);
+  const base = itemBasePrice(it, id);
   if(!base || base < 2000) return null;
   const r = bdRng(bdSeed('price-'+id));
   return {
@@ -437,7 +438,7 @@ function priceRowEl(it, id){
 function opIcon(v){ return v==='추천' ? '👍' : v==='비추' ? '👎' : v==='쏘쏘' ? '😐' : '💬'; }
 function opsHtml(it, id){
   const ops = [...(it.ops||[])];
-  if(id && myBuys[id]) ops.push({who: PROFILE.nick+' (나)', verdict: myVerdicts[id], buy: myBuys[id].b+' · '+myBuys[id].ch});
+  if(id && myBuys[id]) ops.push({who: PROFILE.nick+' (나)', verdict: myVerdicts[id], buy: myBuys[id].b+' · '+myBuys[id].ch+(myBuys[id].p?' '+myBuys[id].p.toLocaleString()+'원':'')});
   if(!ops.length) return '';
   return `<div class="ops">` + ops.map(o=>{
     const head = o.verdict ? `${opIcon(o.verdict)} <b>${o.verdict}</b>` : '💬';

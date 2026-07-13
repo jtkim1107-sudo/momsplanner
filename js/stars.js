@@ -108,16 +108,36 @@ function judgeRowEl(id){
   return div;
 }
 
-// ---- "뭘로 샀어요?" 내 구매 기록 — 브랜드 순위의 원천 데이터 ----
-// 유명 브랜드를 칩으로 먼저 제시(표기 통일 → 집계 가능), 없으면 직접 입력.
+// ---- "뭘로 샀어요? 얼마에 샀어요?" 내 구매 기록 ----
+// 브랜드는 칩 선택 or 자동완성 입력(깜빡해도 앞 글자만 치면 후보 제시),
+// 가격은 시세 가이드의 원천 데이터가 된다.
 const BUY_CHANNELS = ['새것', '당근(중고)', '선물받음', '물려받음'];
+
+// 전 리스트에서 관측된 브랜드 사전 (자동완성용)
+let _brandDict = null;
+function brandDict(){
+  if(_brandDict) return _brandDict;
+  const set = new Set();
+  [typeof SHEET_CATEGORIES!=='undefined' && SHEET_CATEGORIES,
+   typeof POSTPARTUM_CATEGORIES!=='undefined' && POSTPARTUM_CATEGORIES,
+   typeof DAYCARE_CATEGORIES!=='undefined' && DAYCARE_CATEGORIES,
+   typeof BABYFOOD_CATEGORIES!=='undefined' && BABYFOOD_CATEGORIES,
+  ].filter(Boolean).forEach(cats=> cats.forEach(c=> c.items.forEach(it=>{
+    sheetBrandCandidates(it).forEach(b=> set.add(b));
+  })));
+  Object.values(myBuys).forEach(r=>{ if(r.b) set.add(r.b); }); // 내가 입력한 것도 학습
+  _brandDict = [...set];
+  return _brandDict;
+}
+
 function purchaseRowEl(id, candidates){
   candidates = candidates || [];
   const div = document.createElement('div');
   div.className = 'judge-row buy-row';
   const rec = myBuys[id];
   if(rec){
-    div.innerHTML = `내 구매 · <b class="jy">${rec.b}</b><span class="buy-ch">${rec.ch}</span> — 브랜드 순위에 반영돼요`;
+    const price = rec.p ? ' · ' + rec.p.toLocaleString() + '원' : '';
+    div.innerHTML = `내 구매 · <b class="jy">${rec.b}</b><span class="buy-ch">${rec.ch}${price}</span> — 시세·순위 데이터에 반영돼요`;
     return div;
   }
 
@@ -132,10 +152,38 @@ function purchaseRowEl(id, candidates){
 
   const inp = document.createElement('input');
   inp.className = 'buy-inp';
-  inp.placeholder = '브랜드 · 제품명 직접 입력';
+  inp.placeholder = '브랜드 앞 글자만 쳐보세요';
   inp.maxLength = 40;
   inp.style.display = 'none';
   inp.addEventListener('click', e=>e.stopPropagation());
+
+  // 자동완성 — 깜빡해도 앞 글자만 치면 후보가 나온다
+  const suggest = document.createElement('div');
+  suggest.className = 'brand-suggest';
+  suggest.style.display = 'none';
+  inp.addEventListener('input', ()=>{
+    const v = inp.value.trim();
+    chosen = null;
+    if(!v){ suggest.style.display='none'; suggest.innerHTML=''; return; }
+    const hits = brandDict()
+      .filter(b=> b!==v && (b.startsWith(v) || b.includes(v)))
+      .sort((a,b)=> (b.startsWith(v)?1:0)-(a.startsWith(v)?1:0))
+      .slice(0,6);
+    if(!hits.length){ suggest.style.display='none'; suggest.innerHTML=''; return; }
+    suggest.innerHTML='';
+    hits.forEach(name=>{
+      const c = document.createElement('button');
+      c.className = 'brand-chip sug';
+      c.textContent = name;
+      c.addEventListener('click', e=>{
+        e.stopPropagation();
+        inp.value = name; chosen = name;
+        suggest.style.display='none'; suggest.innerHTML='';
+      });
+      suggest.appendChild(c);
+    });
+    suggest.style.display='flex';
+  });
 
   function clearSel(){ chips.querySelectorAll('.brand-chip').forEach(x=>x.classList.remove('on')); }
 
@@ -146,6 +194,7 @@ function purchaseRowEl(id, candidates){
     c.addEventListener('click', e=>{
       e.stopPropagation();
       chosen = name; inp.value=''; inp.style.display='none';
+      suggest.style.display='none';
       clearSel(); c.classList.add('on');
     });
     chips.appendChild(c);
@@ -161,6 +210,18 @@ function purchaseRowEl(id, candidates){
   });
   chips.appendChild(other);
 
+  // 얼마에 샀어요?
+  const priceInp = document.createElement('input');
+  priceInp.className = 'buy-inp price';
+  priceInp.placeholder = '얼마에 샀어요? (원 · 선택)';
+  priceInp.inputMode = 'numeric';
+  priceInp.maxLength = 12;
+  priceInp.addEventListener('click', e=>e.stopPropagation());
+  priceInp.addEventListener('input', ()=>{ // 숫자만 + 천 단위 콤마
+    const digits = priceInp.value.replace(/[^\d]/g,'').slice(0,9);
+    priceInp.value = digits ? (+digits).toLocaleString() : '';
+  });
+
   const ctrl = document.createElement('div');
   ctrl.className = 'buy-ctrl';
   const sel = document.createElement('select');
@@ -173,15 +234,19 @@ function purchaseRowEl(id, candidates){
   btn.addEventListener('click', e=>{
     e.stopPropagation();
     const b = chosen || inp.value.trim();
-    if(!b){ toast('브랜드를 고르거나 직접 적어주세요'); return; }
-    myBuys[id] = {b, ch: sel.value};
+    if(!b){ toast('브랜드를 고르거나 적어주세요'); return; }
+    const digits = priceInp.value.replace(/[^\d]/g,'');
+    const rec = {b, ch: sel.value};
+    if(digits) rec.p = +digits;
+    myBuys[id] = rec;
+    _brandDict = null; // 사전에 새 브랜드 반영
     saveStars();
-    earnStars(15, '뭘로 샀는지 기록', 'buy-'+id);
+    earnStars(15, '구매 기록 (뭘로 · 얼마에)', 'buy-'+id);
     div.replaceWith(purchaseRowEl(id, candidates));
   });
   ctrl.append(sel, btn);
 
-  div.append(q, chips, inp, ctrl);
+  div.append(q, chips, inp, suggest, priceInp, ctrl);
   return div;
 }
 
