@@ -374,6 +374,11 @@ function reconcileSheetLinks(){
 // 선배맘 의견(추천/쏘쏘/비추)·당근 추천을 집계해 한 줄 결론:
 // 무조건 사세요 / 하나만 사보세요 / 무조건 당근하세요 / 장롱템, 패스하세요 / 절대 사지 마세요
 function sheetConclusion(it){
+  // 본체 앱 판정 데이터가 있으면 그 집계가 결론의 원천
+  if(typeof verdictFeedFor==='function'){
+    const f = verdictFeedFor(it);
+    if(f) return feedConclusion(f); // 30명 미만이면 null → 결론 유보
+  }
   const ops = it.ops||[];
   let rec  = ops.filter(o=>o.verdict==='추천').length;
   const bad  = ops.filter(o=>o.verdict==='비추').length;
@@ -403,6 +408,11 @@ function verdictCount(it, id){
   return null;                                    // 50명 미만 — 표시 안 함 (신뢰 게이트)
 }
 function verdictBadge(it, id){
+  // 본체 앱 판정 연동 항목은 실제 참여 수를 그대로
+  if(typeof verdictFeedFor==='function'){
+    const f = verdictFeedFor(it);
+    if(f) return feedBadge(f);
+  }
   const t = verdictCount(it, id);
   return t ? `<span class="badge vcount">⚖️ ${t.toLocaleString()}명 판정템</span>` : '';
 }
@@ -666,6 +676,8 @@ function renderSheetItem(it,ci,ii){
       const open = el.classList.toggle('open');
       if(open && !moreEl.dataset.filled){
         moreEl.dataset.filled = '1';
+        const f = (typeof verdictFeedFor==='function') ? verdictFeedFor(it) : null;
+        if(f) moreEl.insertAdjacentHTML('beforeend', feedDetailHtml(f)); // 본체 판정 결과가 맨 위
         moreEl.appendChild(priceRowEl(it, id));
         if(ops.length){
           const od = document.createElement('div');

@@ -234,8 +234,10 @@ function renderPostpartumItem(it,ci,ii){
   badges += verdictBadge(it, id);
   if(it.need) badges += `<span class="badge need">${it.need}</span>`;
 
-  // 투뎁스 — 겉면: 대표 의견 1개 / 상세(탭): 의견 전체
+  // 투뎁스 — 겉면: 대표 의견 1개 / 상세(탭): 본체 판정 결과 + 의견 전체
   const ops = it.ops||[];
+  const ppFeed = (typeof verdictFeedFor==='function') ? verdictFeedFor(it) : null;
+  const hasMore = ops.length>1 || !!ppFeed;
   el.innerHTML = `
     <div class="item-main" style="align-items:center;">
       <div class="chk"></div>
@@ -244,9 +246,9 @@ function renderPostpartumItem(it,ci,ii){
         ${badges?`<div class="item-badges">${badges}</div>`:''}
         ${opsHtml(it, id, 1, true)}
       </div>
-      ${ops.length>1?'<span class="item-caret">﹀</span>':''}
+      ${hasMore?'<span class="item-caret">﹀</span>':''}
     </div>
-    ${ops.length>1?'<div class="item-more"></div>':''}
+    ${hasMore?'<div class="item-more"></div>':''}
   `;
   const moreEl = el.querySelector('.item-more');
   if(moreEl){
@@ -254,10 +256,13 @@ function renderPostpartumItem(it,ci,ii){
       const open = el.classList.toggle('open');
       if(open && !moreEl.dataset.filled){
         moreEl.dataset.filled = '1';
-        const od = document.createElement('div');
-        od.className = 'more-ops';
-        od.innerHTML = opsHtml(it, id, 999);
-        moreEl.appendChild(od);
+        if(ppFeed) moreEl.insertAdjacentHTML('beforeend', feedDetailHtml(ppFeed));
+        if(ops.length){
+          const od = document.createElement('div');
+          od.className = 'more-ops';
+          od.innerHTML = opsHtml(it, id, 999);
+          moreEl.appendChild(od);
+        }
       }
     });
   }
