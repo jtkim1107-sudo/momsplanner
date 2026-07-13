@@ -53,7 +53,6 @@ function addComment(e,id){
   toast('한마디가 등록됐어요 🌟');
 }
 let debateVoted = false;
-let retroIdx = 0;
 const celebratedSegs = new Set();
 
 function computeState(){
@@ -68,7 +67,6 @@ function computeState(){
 const state = computeState();
 
 function currentSegIdx(){
-  if(viewMode==='senior') return 6; // 아기 7개월 → 6~12개월 구간
   return viewSegIdx===null ? state.segIdx : viewSegIdx;
 }
 
@@ -87,7 +85,6 @@ function deadlineChip(g, done, total){
 
 function render(){
   document.getElementById('vs-preg').classList.toggle('on', viewMode==='preg');
-  document.getElementById('vs-senior').classList.toggle('on', viewMode==='senior');
   document.getElementById('vs-sheet').classList.toggle('on', viewMode==='sheet');
   document.getElementById('timeline').style.display = viewMode==='sheet' ? 'none' : 'flex';
   document.querySelector('.searchwrap').style.display = viewMode==='sheet' ? 'none' : 'block';
@@ -105,19 +102,14 @@ function render(){
   const segIdx = currentSegIdx();
   const seg = SEGMENTS[segIdx];
 
-  if(viewMode==='preg'){
-    document.getElementById('hero-title').textContent = `${PROFILE.nick}님, 임신 ${state.weeks}주차예요`;
-    document.getElementById('hero-dday').textContent = `출산예정일 D-${state.dday}`;
-  }else{
-    document.getElementById('hero-title').textContent = `다인맘님, 아기 7개월차예요`;
-    document.getElementById('hero-dday').textContent = `임신 후기를 지나오셨어요`;
-  }
+  document.getElementById('hero-title').textContent = `${PROFILE.nick}님, 임신 ${state.weeks}주차예요`;
+  document.getElementById('hero-dday').textContent = `출산예정일 D-${state.dday}`;
   document.getElementById('demo-note').textContent =
     `선배맘 ${BIG_STATS.moms.toLocaleString()}명의 판정 ${BIG_STATS.verdicts.toLocaleString()}건 · 베타 기간이라 일부는 샘플이에요`;
 
   // 미리보기 노트
   const pn = document.getElementById('preview-note');
-  if(viewMode==='preg' && segIdx!==state.segIdx){
+  if(segIdx!==state.segIdx){
     pn.style.display='block';
     pn.textContent = segIdx < state.segIdx
       ? `👀 지나온 구간을 보고 있어요 — 내 구간으로 돌아가려면 "${SEGMENTS[state.segIdx].name}" 탭`
@@ -126,7 +118,7 @@ function render(){
 
   const tl = document.getElementById('timeline');
   tl.innerHTML='';
-  const myIdx = viewMode==='senior' ? 6 : state.segIdx;
+  const myIdx = state.segIdx;
   SEGMENTS.forEach((s,i)=>{
     const el=document.createElement('span');
     let cls = 'seg ';
@@ -135,26 +127,16 @@ function render(){
     else if(i>myIdx) cls+='future';
     el.className=cls;
     el.textContent = s.name + (i===segIdx?` (${s.range})`:'');
-    el.onclick=()=>{ if(viewMode==='preg'){ viewSegIdx = (i===state.segIdx? null : i); render(); } };
+    el.onclick=()=>{ viewSegIdx = (i===state.segIdx? null : i); render(); };
     tl.appendChild(el);
   });
 
-  document.getElementById('prog-name').textContent = seg.name + ' 준비';
+  document.getElementById('prog-name').textContent = seg.name + ' 국민템';
 
   const area = document.getElementById('body-area');
   area.innerHTML='';
 
-  if(viewMode==='senior'){
-    const rb = document.createElement('div');
-    rb.className='retro-banner';
-    rb.innerHTML = `
-      <span class="rt">💬 지나온 길 판정</span>
-      <h3>다인맘님은 임신 후기를 지나오셨죠.<br>그때 산 것들, 다시 산다면?</h3>
-      <p>좌욕기 · 손목보호대 · 수유나시 — 30초면 끝나요. 지금 이 구간을 준비 중인 후배맘 ${Math.round(BIG_STATS.moms*0.26).toLocaleString()}명이 기다리고 있어요.</p>
-      <button class="retro-btn" onclick="openRetro()">그때 산 ${RETRO_ITEMS.length}개 아이템 판정하기 →</button>
-    `;
-    area.appendChild(rb);
-  }else if(segIdx<=4){
+  if(segIdx<=4){
     const rc = document.createElement('div');
     rc.className='region-card';
     rc.onclick=()=>openModal('region-modal');
@@ -167,6 +149,8 @@ function render(){
   }
 
   const content = CONTENT[seg.id];
+  // 시기별 화면은 국민템(구매 아이템) 정보만 — 접종·행정 등 할 일 항목은 준비물 연동이 있을 때만 노출
+  const visibleTL = x => x.type==='buy' || !!TL_SHEET_LINK[x.id];
 
   // 🏆 시기별 국민템 — 이 구간에서 판정 기준(85%+)을 넘은 아이템 모아보기
   const natl = [];
@@ -191,15 +175,17 @@ function render(){
   }
 
   content.groups.forEach(g=>{
+    const gItems = g.items.filter(visibleTL);
+    if(!gItems.length) return;
     const gEl = document.createElement('div'); gEl.className='group';
-    const done = g.items.filter(i=>checked.has(i.id)).length;
+    const done = gItems.filter(i=>checked.has(i.id)).length;
     gEl.innerHTML = `
-      <div class="group-head"><h3>${g.title}</h3>${deadlineChip(g,done,g.items.length)}<span class="gprog" id="gp-${g.id}">${done}/${g.items.length}</span></div>
+      <div class="group-head"><h3>${g.title}</h3>${deadlineChip(g,done,gItems.length)}<span class="gprog" id="gp-${g.id}">${done}/${gItems.length}</span></div>
       ${g.note?`<p class="group-note">${g.note}</p>`:''}
       <div class="group-items" id="gi-${g.id}"></div>
     `;
     const holder = gEl.querySelector('#gi-'+g.id);
-    g.items.forEach(it=> holder.appendChild(renderItem(it)));
+    gItems.forEach(it=> holder.appendChild(renderItem(it)));
     area.appendChild(gEl);
   });
   updateProgress();
@@ -317,16 +303,20 @@ function renderItem(it){
   return el;
 }
 
+function tlVisibleItems(g){
+  return g.items.filter(x => x.type==='buy' || !!TL_SHEET_LINK[x.id]);
+}
 function refreshChips(){
   const content = CONTENT[SEGMENTS[currentSegIdx()].id];
   content.groups.forEach(g=>{
-    const done = g.items.filter(i=>checked.has(i.id)).length;
+    const gItems = tlVisibleItems(g);
+    const done = gItems.filter(i=>checked.has(i.id)).length;
     const head = document.getElementById('gp-'+g.id);
     if(head){
       const chipHolder = head.parentElement.querySelector('.deadline');
       if(chipHolder){
         const tmp = document.createElement('div');
-        tmp.innerHTML = deadlineChip(g,done,g.items.length);
+        tmp.innerHTML = deadlineChip(g,done,gItems.length);
         chipHolder.replaceWith(tmp.firstElementChild);
       }
     }
@@ -339,10 +329,12 @@ function updateProgress(){
   const content = CONTENT[seg.id];
   let total=0, done=0;
   content.groups.forEach(g=>{
-    const gd = g.items.filter(i=>checked.has(i.id)).length;
-    total+=g.items.length; done+=gd;
+    const gItems = tlVisibleItems(g);
+    if(!gItems.length) return;
+    const gd = gItems.filter(i=>checked.has(i.id)).length;
+    total+=gItems.length; done+=gd;
     const gp=document.getElementById('gp-'+g.id);
-    if(gp) gp.textContent = gd+'/'+g.items.length;
+    if(gp) gp.textContent = gd+'/'+gItems.length;
   });
   document.getElementById('prog-text').textContent = done+' / '+total+' 완료';
   document.getElementById('prog-fill').style.width = (done/total*100)+'%';
@@ -370,29 +362,6 @@ function requestProduct(e,nm){
 
 function setView(v){ if(viewMode===v) return; viewMode=v; viewSegIdx=null; render(); }
 
-function openRetro(){
-  retroIdx = 0;
-  document.getElementById('m-done').style.display='none';
-  document.getElementById('m-close').style.display='none';
-  document.getElementById('m-card').style.display='block';
-  showRetroCard();
-  openModal('retro-modal');
-}
-function showRetroCard(){
-  const it = RETRO_ITEMS[retroIdx];
-  document.getElementById('m-prog').textContent = (retroIdx+1)+' / '+RETRO_ITEMS.length;
-  document.getElementById('m-emoji').textContent = it.emoji;
-  document.getElementById('m-name').textContent = it.nm;
-}
-function retroAnswer(ans){
-  retroIdx++;
-  if(retroIdx < RETRO_ITEMS.length){ showRetroCard(); return; }
-  document.getElementById('m-card').style.display='none';
-  document.getElementById('m-prog').textContent='완료';
-  document.getElementById('m-done').style.display='block';
-  document.getElementById('m-close').style.display='block';
-}
-
 function openModal(id){ document.getElementById(id).classList.add('on'); }
 function closeModal(id){ document.getElementById(id).classList.remove('on'); }
 
@@ -410,7 +379,10 @@ const SEARCH_INDEX = [];
 SEGMENTS.forEach((s,si)=>{
   const c = CONTENT[s.id];
   if(!c) return;
-  c.groups.forEach(g=> g.items.forEach(it=> SEARCH_INDEX.push({segIdx:si, segName:s.name, id:it.id, nm:it.nm})));
+  c.groups.forEach(g=> g.items.forEach(it=>{
+    if(it.type!=='buy' && !TL_SHEET_LINK[it.id]) return; // 화면에 없는 항목은 검색에서도 제외
+    SEARCH_INDEX.push({segIdx:si, segName:s.name, id:it.id, nm:it.nm});
+  }));
 });
 
 function doSearch(){
