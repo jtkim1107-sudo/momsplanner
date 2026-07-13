@@ -96,7 +96,7 @@ function render(){
   if(viewMode==='sheet'){
     document.getElementById('hero-title').textContent = '출산 준비물 체크리스트';
     document.getElementById('hero-dday').textContent = `출산예정일 D-${state.dday}`;
-    document.getElementById('demo-note').textContent = '선배맘 준비물 자료 3종 병합 — 판정 · 가격 · 경험담은 참고용이에요';
+    document.getElementById('demo-note').textContent = '선배맘 준비물 자료 4종 병합 — 판정 · 가격 · 경험담은 참고용이에요';
     document.getElementById('preview-note').style.display='none';
     renderSheet();
     return;

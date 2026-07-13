@@ -7,20 +7,20 @@
 //  ③ 호호마더 미니멀 리스트 — 추천/쏘쏘/비추 판정 · 실구매가 · 구매 경로
 //  ④ 선배맘 B 실구매 리스트 — 실제 구매한 제품명 위주
 // 필드: brands 참고 브랜드 / deal 핫딜가 / carrot 중고(당근) 추천 /
-//       need 필요 개수 / prep 이미 준비 완료 /
+//       need 필요 개수 / prep 이미 준비 완료 / min 미니멀 필수템(호호마더 기준) /
 //       link 구간 체크리스트의 같은 아이템 id (체크 상태 공유) /
 //       ops  선배맘별 의견 [{who, verdict(추천|쏘쏘|비추), buy(브랜드·경로·가격), txt}]
 // ============================================================
 
 const SHEET_CATEGORIES = [
   { nm:'의류', emoji:'🧥', items:[
-    {nm:'배냇저고리', link:'B4', need:'2~3개', ops:[
+    {nm:'배냇저고리', link:'B4', min:true, need:'2~3개', ops:[
       {who:'선배맘 A', txt:'입는 시기가 굉장히 짧음 — 아기 몸무게랑 키에 따라 달라짐 (나는 오래 사용했어!)'},
       {who:'호호마더', buy:'4장 선물 받음', txt:'선물로 들어오는 대표템이라 미리 많이 사지 말기'}]},
-    {nm:'바디수트', need:'8~10개', ops:[
+    {nm:'바디수트', min:true, need:'8~10개', ops:[
       {who:'선배맘 A', txt:'70 사이즈 구매 — 아기가 작게 태어나서 60도 많이 샀어!'},
       {who:'호호마더', verdict:'추천', buy:'유니클로 반팔 메쉬 · 60사이즈 4장 26,000원', txt:'여름 아기는 메쉬 소재가 진리'}]},
-    {nm:'모자 · 손발싸개', need:'2~3개', ops:[
+    {nm:'모자 · 손발싸개', min:true, need:'2~3개', ops:[
       {who:'선배맘 A', txt:'아기 딸꾹질 시 사용, 목욕하고 나면 추워서 씌워줬어!'},
       {who:'호호마더', verdict:'추천', buy:'순면 · 선물 받음'},
       {who:'선배맘 B', buy:'코니 꼭지모자 미모사 1개', txt:'재입고되면 추가 구매 예정'}]},
@@ -30,7 +30,7 @@ const SHEET_CATEGORIES = [
     {nm:'발싸개 · 양말', need:'8~10개', ops:[
       {who:'선배맘 A', txt:'속싸개로 발이 가려져서 나는 아직 구매 안 했어'},
       {who:'선배맘 B', buy:'위드 오가닉 양말'}]},
-    {nm:'속싸개', link:'B5', need:'3~4개', ops:[
+    {nm:'속싸개', link:'B5', min:true, need:'3~4개', ops:[
       {who:'선배맘 A', txt:'분유 토하고 하면 속싸개가 많이 필요하더라구'},
       {who:'호호마더', verdict:'추천', buy:'순면 · 선물 받음'},
       {who:'선배맘 B', txt:'밤부베베 천기저귀로 대체했어'}]},
@@ -40,11 +40,11 @@ const SHEET_CATEGORIES = [
     {nm:'세탁망', need:'3개', ops:[
       {who:'선배맘 A', txt:'사이즈별 세트로 구매'},
       {who:'선배맘 B', buy:'다이소 무형광 세탁망'}]},
-    {nm:'아기 세탁세제', link:'B7', need:'1개', ops:[
+    {nm:'아기 세탁세제', link:'B7', min:true, need:'1개', ops:[
       {who:'선배맘 A', txt:'아기 세제는 필수!'},
       {who:'호호마더', verdict:'비추', buy:'마더케이 · 네이버 13,200원'},
       {who:'선배맘 B', buy:'프랭클린'}]},
-    {nm:'아기 섬유유연제', need:'1개', ops:[
+    {nm:'아기 섬유유연제', min:true, need:'1개', ops:[
       {who:'호호마더', verdict:'추천', buy:'레드루트 · 네이버 31,680원'},
       {who:'선배맘 B', buy:'프랭클린'}]},
     {nm:'턱받이', ops:[
@@ -54,15 +54,15 @@ const SHEET_CATEGORIES = [
       {who:'선배맘 B', buy:'소유2 수납장'}]},
   ]},
   { nm:'수유용품', emoji:'🍼', items:[
-    {nm:'젖병세척솔', brands:'마더케이', need:'넉넉히', ops:[
+    {nm:'젖병세척솔', min:true, brands:'마더케이', need:'넉넉히', ops:[
       {who:'선배맘 A', txt:'소모품이라 한 달에 한 번 교체'},
       {who:'호호마더', verdict:'추천', buy:'베베그로우 · 쿠팡 6,000원'},
       {who:'선배맘 B', buy:'마더케이 (젖꼭지 솔 · 집게까지 세트로)'}]},
     {nm:'젖꼭지세척솔', brands:'마더케이', deal:'9,020원 (7개)'},
-    {nm:'젖병세정제', ops:[
+    {nm:'젖병세정제', min:true, ops:[
       {who:'호호마더', verdict:'추천', buy:'비앤비 · 쿠팡 4,540원'},
       {who:'선배맘 B', buy:'프랭클린'}]},
-    {nm:'젖병+젖꼭지', link:'B2', brands:'더블하트 · 헤겐 · 닥터브라운 · 모윰', deal:'14,000원 (4개)', need:'160ml 6개 · 240ml 4개', ops:[
+    {nm:'젖병+젖꼭지', link:'B2', min:true, brands:'더블하트 · 헤겐 · 닥터브라운 · 모윰', deal:'14,000원 (4개)', need:'160ml 6개 · 240ml 4개', ops:[
       {who:'선배맘 A', txt:'완분 기준 160ml 6~8개 추천! 처음엔 160만 쓰니까 240은 차차 추가해도 돼'},
       {who:'호호마더', verdict:'추천', buy:'닥터브라운 프리미 · 쿠팡 32,100원'},
       {who:'호호마더', verdict:'쏘쏘', buy:'레이퀸 · 선물 들어옴'},
@@ -78,13 +78,13 @@ const SHEET_CATEGORIES = [
       {who:'선배맘 A', txt:'세척기 있으면 없어도 될 것 같아'}]},
     {nm:'젖병세척기', brands:'베이비브레짜', deal:'300,510원', ops:[
       {who:'선배맘 A', txt:'요즘 엄청 유행하는 육아용품 — 있으면 좋을 것 같아'}]},
-    {nm:'수유시트 · 쿠션', link:'C3', brands:'더스베이비(수유쿠션) · 알프레미오(수유시트)', carrot:true, prep:true, ops:[
+    {nm:'수유시트 · 쿠션', link:'C3', min:true, brands:'더스베이비(수유쿠션) · 알프레미오(수유시트)', carrot:true, prep:true, ops:[
       {who:'선배맘 A', txt:'분유 먹이다 보니 안 쓰게 돼서 추천은 안 해!'},
       {who:'호호마더', verdict:'쏘쏘', buy:'마더스베이비 수유쿠션 · 쿠팡 48,580원'},
       {who:'호호마더', verdict:'비추', buy:'알프레미오 수유시트 · 쿠팡 18,000원'}]},
     {nm:'분유제조기', brands:'베이비브레짜', deal:'24~25만원대', prep:true, ops:[
       {who:'선배맘 A', txt:'나는 세척이 어렵고 불편할 것 같아서 안 샀어!'}]},
-    {nm:'분유포트', brands:'릴리브 · 보르르', deal:'릴리브 11만원대 · 보르르 6만원대', need:'1개', ops:[
+    {nm:'분유포트', min:true, brands:'릴리브 · 보르르', deal:'릴리브 11만원대 · 보르르 6만원대', need:'1개', ops:[
       {who:'선배맘 A', txt:'릴리브 쓰는 중 — 첫만남이용권으로 샀고 매우 만족!'},
       {who:'호호마더', verdict:'추천', buy:'오쿠 · 쿠팡 67,150원'}]},
     {nm:'분유쉐이커', ops:[
@@ -93,7 +93,7 @@ const SHEET_CATEGORIES = [
       {who:'선배맘 B', buy:'압타밀 에센시스', txt:'비상용 소량부터'}]},
     {nm:'백색소음기 (수유등)', link:'NC2', brands:'말랑하니', deal:'34,200원', ops:[
       {who:'선배맘 B', buy:'말랑허니 백색소음기'}]},
-    {nm:'모유저장팩', brands:'마더케이', ops:[
+    {nm:'모유저장팩', min:true, brands:'마더케이', ops:[
       {who:'호호마더', verdict:'추천', buy:'마더케이 · 모윰 등 물려받음'}]},
     {nm:'쪽쪽이', link:'NC3', brands:'스와비넥스 · 모윰 · 누크 · 아벤트 등', need:'2개', ops:[
       {who:'선배맘 A', txt:'애바애지만 대부분 생후 50일은 지나야 무는 편이래'},
@@ -105,24 +105,24 @@ const SHEET_CATEGORIES = [
     {nm:'수딩젤', brands:'몽디에스 · 쁘리마쥬 · 아토팜 등', ops:[
       {who:'선배맘 A', txt:'여름 아기 필수템'},
       {who:'선배맘 B', buy:'몽디에스 · 아토팜'}]},
-    {nm:'기저귀발진크림', brands:'쁘리마쥬 · 비판텐', ops:[
+    {nm:'기저귀발진크림', min:true, brands:'쁘리마쥬 · 비판텐', ops:[
       {who:'선배맘 A', txt:'발진 났을 때나 다쳤을 때 필수'},
       {who:'호호마더', verdict:'추천', buy:'비판텐 · 퇴원 시 받음'}]},
-    {nm:'로션 · 크림 · 오일', brands:'몽디에스 · 쁘리마쥬 · 아토팜 등', ops:[
+    {nm:'로션 · 크림 · 오일', min:true, brands:'몽디에스 · 쁘리마쥬 · 아토팜 등', ops:[
       {who:'호호마더', verdict:'쏘쏘', buy:'궁중비책 · 보건소 선물'},
       {who:'선배맘 B', buy:'쁘리마쥬 · 킨더프리제'}]},
   ]},
   { nm:'목욕용품', emoji:'🛁', items:[
-    {nm:'아기욕조', link:'B8', brands:'슈너글 · 온다베이비', deal:'슈너글 34,900원', need:'1~2개', ops:[
+    {nm:'아기욕조', link:'B8', min:true, brands:'슈너글 · 온다베이비', deal:'슈너글 34,900원', need:'1~2개', ops:[
       {who:'선배맘 A', txt:'씻길용·헹굴용 두 개라는데, 신생아는 물로만 씻으니 하나로도 충분해'},
       {who:'호호마더', verdict:'추천', buy:'OK베이비 신생아 욕조 · 물려받음'},
       {who:'호호마더', verdict:'쏘쏘', buy:'니스툴그로우 · 네이버 19,900원'},
       {who:'선배맘 B', buy:'말랑허니'}]},
     {nm:'샤워필터'},
-    {nm:'세면대 워터탭', ops:[
+    {nm:'세면대 워터탭', min:true, ops:[
       {who:'호호마더', verdict:'추천', buy:'올스테인리스 · 쿠팡 12,800원', txt:'세면대 목욕할 때 유용'},
       {who:'선배맘 B', buy:'대림바스 디클린 세면대용 멀티필터탭'}]},
-    {nm:'바디워시', need:'1개', ops:[
+    {nm:'바디워시', min:true, need:'1개', ops:[
       {who:'호호마더', verdict:'쏘쏘', buy:'궁중비책 샴푸&워시 · 보건소 선물'},
       {who:'선배맘 B', buy:'쁘리마쥬 (샴푸 · 바디워시)'}]},
     {nm:'목욕수건', ops:[
@@ -139,7 +139,7 @@ const SHEET_CATEGORIES = [
     {nm:'탕온계'},
   ]},
   { nm:'위생용품', emoji:'🧻', items:[
-    {nm:'거즈손수건', link:'B13', brands:'밤부베베', need:'50개 이상', ops:[
+    {nm:'거즈손수건', link:'B13', min:true, brands:'밤부베베', need:'50개 이상', ops:[
       {who:'선배맘 A', txt:'1년 이상 쓰는 손수건은 넉넉하게!'},
       {who:'호호마더', verdict:'추천', buy:'한스네이쳐 20장 · 네이버 10,000원', txt:'미니멀은 20장으로도 충분했어'},
       {who:'선배맘 B', buy:'밤부베베 거즈 · 엠보', txt:'수납은 다이소 수납함이 딱 맞아'}]},
@@ -150,17 +150,17 @@ const SHEET_CATEGORIES = [
     {nm:'온습도계', link:'B10', brands:'휴비딕', carrot:true, ops:[
       {who:'선배맘 A', txt:'보건소 같은 데서 선물로도 많이 들어오는 편이야'},
       {who:'선배맘 B', buy:'휴비딕 2개', txt:'거실이랑 아기방 하나씩'}]},
-    {nm:'체온계', link:'B9', need:'1개', ops:[
+    {nm:'체온계', link:'B9', min:true, need:'1개', ops:[
       {who:'선배맘 A', txt:'지역 출산축하 선물로 브라운 체온계 받았어!'},
       {who:'호호마더', verdict:'추천', buy:'브라운 · 네이버 60,000원'}]},
     {nm:'건티슈', brands:'마더케이'},
-    {nm:'물티슈', brands:'베베숲 · 브라운', deal:'3만4천원대', ops:[
+    {nm:'물티슈', min:true, brands:'베베숲 · 브라운', deal:'3만4천원대', ops:[
       {who:'호호마더', verdict:'추천', buy:'브라운 프리미엄 · 쿠팡 28,900원'},
       {who:'선배맘 B', buy:'베베숲'}]},
     {nm:'소독티슈', brands:'그린핑거 · 퓨어닷', deal:'28,740원'},
     {nm:'콧물흡입기', brands:'노시부', prep:true, ops:[
       {who:'선배맘 B', buy:'한일 포근'}]},
-    {nm:'손톱가위 · 깎이', link:'B12', brands:'마더케이 · 더블하트(가위)', deal:'7,250원', need:'1개', ops:[
+    {nm:'손톱가위 · 깎이', link:'B12', min:true, brands:'마더케이 · 더블하트(가위)', deal:'7,250원', need:'1개', ops:[
       {who:'선배맘 A', txt:'가위랑 깎이 둘 다 샀어'},
       {who:'호호마더', verdict:'추천', buy:'알리익스프레스 세트 · 5,000원'},
       {who:'선배맘 B', buy:'베이비 클라우드 3in1 네일트리머'}]},
@@ -168,7 +168,7 @@ const SHEET_CATEGORIES = [
       {who:'선배맘 B', buy:'마더케이 신생아 유아 면봉 3종세트'}]},
   ]},
   { nm:'기저귀', emoji:'👶', items:[
-    {nm:'기저귀 (밴드형)', link:'B6', ops:[
+    {nm:'기저귀 (밴드형)', link:'B6', min:true, ops:[
       {who:'호호마더', verdict:'쏘쏘', buy:'하기스 이른둥이 · 쿠팡 42,900원'},
       {who:'호호마더', verdict:'쏘쏘', buy:'하기스 1단계 · 쿠팡 40,680원', txt:'사이즈 금방 커지니 쟁이지 말기'},
       {who:'선배맘 B', txt:'미리 너무 많이 사지 말고 샘플 신청해서 골라!'}]},
@@ -180,25 +180,25 @@ const SHEET_CATEGORIES = [
     {nm:'기저귀정리함', need:'1개', ops:[
       {who:'선배맘 A', txt:'기저귀갈이대가 있다면 필수는 아니야'}]},
     {nm:'방수커버', brands:'포몽드 · 마리데'},
-    {nm:'기저귀쓰레기통', brands:'매직캔', deal:'47,710원', ops:[
+    {nm:'기저귀쓰레기통', min:true, brands:'매직캔', deal:'47,710원', ops:[
       {who:'호호마더', verdict:'추천', buy:'홈플러스 · 19,900원', txt:'전용 제품 아니어도 뚜껑 있는 통이면 충분'}]},
   ]},
   { nm:'침구류', emoji:'🛏️', items:[
-    {nm:'아기침대', link:'B11', brands:'리안 · 이케아 · 스토케', deal:'18만원대', carrot:true, prep:true, ops:[
+    {nm:'아기침대', link:'B11', min:true, brands:'리안 · 이케아 · 스토케', deal:'18만원대', carrot:true, prep:true, ops:[
       {who:'선배맘 A', txt:'원목·휴대용 등 다양하니 취향대로 — 나는 아직 이동식 쓰고 있어!'},
       {who:'호호마더', verdict:'추천', buy:'뉴나 · 당근 30,000원', txt:'당근으로 사면 새것 대비 1/6 가격'},
       {who:'선배맘 B', buy:'도노도노 키큰 침대 (신생아) → 소유2 싱글침대'}]},
     {nm:'이불세트', brands:'포몽드', prep:true},
-    {nm:'블랭킷 (얇은 담요)', brands:'아뜰리에슈', prep:true, ops:[
+    {nm:'블랭킷 (얇은 담요)', min:true, brands:'아뜰리에슈', prep:true, ops:[
       {who:'선배맘 A', txt:'신생아 땐 천기저귀를 블랭킷 대용으로도 쓸 수 있어'},
       {who:'호호마더', verdict:'쏘쏘', buy:'알리익스프레스 2개 · 12,000원'}]},
     {nm:'두상베개', brands:'라비킷', deal:'39,800원', need:'1~2개', ops:[
       {who:'선배맘 A', txt:'두상 때문에 필요하다는데 사실 잘 베고 자진 않아ㅜ'}]},
-    {nm:'방수요 (방수누비패드)', need:'3~4개', ops:[
+    {nm:'방수요 (방수누비패드)', min:true, need:'3~4개', ops:[
       {who:'선배맘 A', txt:'생각보다 소변이 자주 새서 침대랑 기저귀갈이대에 깔기 필수'},
       {who:'호호마더', verdict:'추천', buy:'쁘리엘르 · 쿠팡 10,170원'},
       {who:'선배맘 B', buy:'라비킷 방수매트'}]},
-    {nm:'역류방지쿠션', carrot:true, need:'1개', ops:[
+    {nm:'역류방지쿠션', min:true, carrot:true, need:'1개', ops:[
       {who:'선배맘 A', txt:'당근에서 살 땐 숨 안 죽은 걸로 잘 고르기! 첫만남이용권 사용 가능해'},
       {who:'호호마더', verdict:'추천', buy:'로토토 · 물려받음'},
       {who:'선배맘 B', buy:'엔젤앤비'}]},
@@ -223,7 +223,7 @@ const SHEET_CATEGORIES = [
       {who:'선배맘 A', txt:'신생아 시기 이후에 많이 쓰는 편이야!'}]},
     {nm:'슬링', need:'1개', ops:[
       {who:'선배맘 A', txt:'신생아 시기에만 쓰지만 많이들 쓴대 — 고민 중이야'}]},
-    {nm:'유모차', link:'B14', brands:'오이스터3 · 에그2 · 오르빗 · 부가부 등', carrot:true, ops:[
+    {nm:'유모차', link:'B14', min:true, brands:'오이스터3 · 에그2 · 오르빗 · 부가부 등', carrot:true, ops:[
       {who:'선배맘 A', txt:'6개월 전까지는 디럭스나 절충형 추천'},
       {who:'호호마더', verdict:'추천', buy:'잉글레시나 · 당근 중고 35,000원', txt:'유모차야말로 당근이 진리'},
       {who:'선배맘 B', buy:'잉글레시나 일렉타 절충형'}]},
@@ -238,15 +238,15 @@ const SHEET_CATEGORIES = [
     {nm:'휴대용 쪽쪽이 소독기', brands:'픽셀 · 모윰', carrot:true},
   ]},
   { nm:'산모용', emoji:'🤱', items:[
-    {nm:'수유브라', link:'A5', ops:[
+    {nm:'수유브라', link:'A5', min:true, ops:[
       {who:'호호마더', verdict:'비추', buy:'브이랩 · 쿠팡 35,800원', txt:'입어보고 사는 걸 추천'}]},
-    {nm:'도넛방석 (회음부 방석)', link:'C2', ops:[
+    {nm:'도넛방석 (회음부 방석)', link:'C2', min:true, ops:[
       {who:'호호마더', verdict:'추천', buy:'마더스베이비 · 쿠팡 11,880원'}]},
-    {nm:'마이비데 물티슈', ops:[
+    {nm:'마이비데 물티슈', min:true, ops:[
       {who:'호호마더', verdict:'추천', buy:'크리넥스 마이비데 · 쿠팡'}]},
-    {nm:'유축기', link:'C4', ops:[
+    {nm:'유축기', link:'C4', min:true, ops:[
       {who:'호호마더', verdict:'추천', buy:'스펙트라 2대 · 물려받음', txt:'보건소 무료 대여도 있으니 사기 전에 확인!'}]},
-    {nm:'유축 깔때기 세트', ops:[
+    {nm:'유축 깔때기 세트', min:true, ops:[
       {who:'호호마더', verdict:'추천', buy:'스펙트라 · 네이버 10,000원', txt:'깔때기는 위생상 새것으로'}]},
   ]},
   { nm:'발달 · 기타', emoji:'🧸', items:[
@@ -275,9 +275,23 @@ const SHEET_CATEGORIES = [
   ]},
 ];
 
-// ---- 상태 (준비여부 · 구매수량) ----
+// ---- 상태 (준비여부 · 구매수량 · 미니멀/맥시멀 모드) ----
 const SHEET_CHK_KEY = 'sohaengseong-sheet-checked';
 const SHEET_QTY_KEY = 'sohaengseong-sheet-qty';
+const SHEET_MODE_KEY = 'sohaengseong-sheet-mode';
+
+let sheetMode = 'min'; // 'min' 미니멀(필수템만) | 'max' 맥시멀(전체)
+try{
+  const m = localStorage.getItem(SHEET_MODE_KEY);
+  if(m==='min'||m==='max') sheetMode = m;
+}catch(e){}
+function setSheetMode(m){
+  if(sheetMode===m) return;
+  sheetMode = m;
+  try{ localStorage.setItem(SHEET_MODE_KEY, m); }catch(e){}
+  renderSheet();
+}
+function sheetVisible(it){ return sheetMode==='max' || !!it.min; }
 
 function sheetItemId(ci, ii){ return 'sh' + ci + '-' + ii; }
 
@@ -340,8 +354,23 @@ function opsHtml(it){
 function sheetTotals(){
   let total=0, done=0;
   SHEET_CATEGORIES.forEach((c,ci)=> c.items.forEach((it,ii)=>{
+    if(!sheetVisible(it)) return;
     total++; if(sheetChecked.has(sheetItemId(ci,ii))) done++;
   }));
+  return {total, done};
+}
+function sheetCountAll(){
+  let min=0, max=0;
+  SHEET_CATEGORIES.forEach(c=> c.items.forEach(it=>{ max++; if(it.min) min++; }));
+  return {min, max};
+}
+
+function sheetCatCount(ci){
+  let total=0, done=0;
+  SHEET_CATEGORIES[ci].items.forEach((it,ii)=>{
+    if(!sheetVisible(it)) return;
+    total++; if(sheetChecked.has(sheetItemId(ci,ii))) done++;
+  });
   return {total, done};
 }
 
@@ -349,29 +378,44 @@ function renderSheet(){
   const area = document.getElementById('body-area');
   area.innerHTML='';
 
+  // 미니멀 / 맥시멀 모드 토글
+  const cnt = sheetCountAll();
+  const mt = document.createElement('div');
+  mt.className='sheet-mode';
+  mt.innerHTML = `
+    <button class="${sheetMode==='min'?'on':''}" onclick="setSheetMode('min')">🌱 미니멀 필수 ${cnt.min}</button>
+    <button class="${sheetMode==='max'?'on':''}" onclick="setSheetMode('max')">🧺 맥시멀 전체 ${cnt.max}</button>
+  `;
+  area.appendChild(mt);
+
   const intro = document.createElement('div');
   intro.className='region-card';
   intro.style.cursor='default';
-  intro.innerHTML = `
+  intro.innerHTML = sheetMode==='min' ? `
+    <span class="ri">🌱</span>
+    <div class="rc"><h3>미니멀 — 이것만은 꼭 (${cnt.min}개)</h3>
+    <p>미니멀리스트 호호마더가 실제로 쓴 필수템 기준이에요. 아기 낳고 필요해지면 그때 사도 늦지 않아요 — 더 보려면 맥시멀로!</p></div>
+  ` : `
     <span class="ri">🛒</span>
-    <div class="rc"><h3>선배맘 준비물 자료 4종 병합</h3>
+    <div class="rc"><h3>맥시멀 — 선배맘 자료 4종 병합 (${cnt.max}개)</h3>
     <p>공유 시트(2025) · 선배맘 A/B 실사용 리스트 · 호호마더 미니멀 리스트를 합쳤어요.
-    👍추천/😐쏘쏘/👎비추는 각 선배맘의 개인 의견, 가격은 구매 당시 기준 — 참고용!</p></div>
+    🌱 표시는 미니멀 필수템 — 판정·가격은 각 선배맘 개인 의견, 참고용!</p></div>
   `;
   area.appendChild(intro);
 
   SHEET_CATEGORIES.forEach((cat,ci)=>{
+    const {total, done} = sheetCatCount(ci);
+    if(!total) return; // 이 모드에서 보여줄 항목이 없는 카테고리
     const gEl = document.createElement('div'); gEl.className='group';
-    const done = cat.items.filter((it,ii)=>sheetChecked.has(sheetItemId(ci,ii))).length;
-    const chip = done===cat.items.length
+    const chip = done===total
       ? '<span class="deadline done">완료 ✓</span>'
       : '<span class="deadline info">준비 중</span>';
     gEl.innerHTML = `
-      <div class="group-head"><span class="overline">${cat.emoji}</span><h3>${cat.nm}</h3>${chip}<span class="gprog" id="shp-${ci}">${done}/${cat.items.length}</span></div>
+      <div class="group-head"><span class="overline">${cat.emoji}</span><h3>${cat.nm}</h3>${chip}<span class="gprog" id="shp-${ci}">${done}/${total}</span></div>
       <div class="group-items" id="shi-${ci}"></div>
     `;
     const holder = gEl.querySelector('#shi-'+ci);
-    cat.items.forEach((it,ii)=> holder.appendChild(renderSheetItem(it,ci,ii)));
+    cat.items.forEach((it,ii)=>{ if(sheetVisible(it)) holder.appendChild(renderSheetItem(it,ci,ii)); });
     area.appendChild(gEl);
   });
   updateSheetProgress();
@@ -383,6 +427,7 @@ function renderSheetItem(it,ci,ii){
   el.className = 'item' + (sheetChecked.has(id)?' checked':'');
 
   let badges='';
+  if(it.min && sheetMode==='max') badges += `<span class="badge minimal">🌱 미니멀 필수</span>`;
   if(it.need)   badges += `<span class="badge need">📦 ${it.need}</span>`;
   if(it.brands) badges += `<span class="badge brand">🏷️ ${it.brands}</span>`;
   if(it.deal)   badges += `<span class="badge price">💰 ${it.deal}</span>`;
@@ -417,9 +462,9 @@ function renderSheetItem(it,ci,ii){
     }
     saveSheet();
     updateSheetProgress();
-    const done = SHEET_CATEGORIES[ci].items.filter((x,i)=>sheetChecked.has(sheetItemId(ci,i))).length;
+    const cc = sheetCatCount(ci);
     const gp = document.getElementById('shp-'+ci);
-    if(gp) gp.textContent = done+'/'+SHEET_CATEGORIES[ci].items.length;
+    if(gp) gp.textContent = cc.done+'/'+cc.total;
   });
   el.querySelectorAll('[data-link]').forEach(b=> b.addEventListener('click',e=>{
     e.stopPropagation();
@@ -438,7 +483,7 @@ function renderSheetItem(it,ci,ii){
 
 function updateSheetProgress(){
   const {total, done} = sheetTotals();
-  document.getElementById('prog-name').textContent = '출산 준비물';
+  document.getElementById('prog-name').textContent = sheetMode==='min' ? '출산 준비물 · 🌱 미니멀' : '출산 준비물 · 🧺 맥시멀';
   document.getElementById('prog-text').textContent = done+' / '+total+' 완료';
   document.getElementById('prog-fill').style.width = (done/total*100)+'%';
 }
