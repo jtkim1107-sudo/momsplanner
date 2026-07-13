@@ -2,7 +2,7 @@
 // 소행성 육아플래너 — 앱 로직
 // ============================================================
 
-let viewMode = 'sheet'; // 출산준비물이 기본 화면 — 나머지는 시기별 국민템
+let viewMode = 'home'; // 홈(리스트 선택) → 준비물 리스트 · 시기별
 let viewSegIdx = null; // null = 내 구간
 const STORE_KEY = 'sohaengseong-planner-checked';
 let checked = new Set(['A1','A2','A3']);
@@ -84,12 +84,21 @@ function deadlineChip(g, done, total){
 }
 
 function render(){
+  document.getElementById('vs-home').classList.toggle('on', viewMode!=='preg');
   document.getElementById('vs-preg').classList.toggle('on', viewMode==='preg');
-  document.getElementById('vs-sheet').classList.toggle('on', viewMode==='sheet');
-  document.getElementById('vs-daycare').classList.toggle('on', viewMode==='daycare');
   const isTimeline = viewMode==='preg';
   document.getElementById('timeline').style.display = isTimeline ? 'flex' : 'none';
   document.querySelector('.searchwrap').style.display = isTimeline ? 'block' : 'none';
+
+  // 홈 — 리스트 선택
+  if(viewMode==='home'){
+    document.getElementById('hero-title').textContent = `${PROFILE.nick}님의 육아 준비`;
+    document.getElementById('hero-dday').textContent = `출산예정일 D-${state.dday}`;
+    document.getElementById('demo-note').textContent = '준비할 리스트를 골라보세요 · 활동하면 별똥별이 쌓여요';
+    document.getElementById('preview-note').style.display='none';
+    renderHome();
+    return;
+  }
 
   // 준비물 시트 뷰 — 타임라인 없이 시트 전용 렌더
   if(viewMode==='sheet'){
@@ -108,6 +117,16 @@ function render(){
     document.getElementById('demo-note').textContent = '복직맘·세돌맘이 짚어준 것들 · 어린이집 안내문과 함께 확인!';
     document.getElementById('preview-note').style.display='none';
     renderDaycare();
+    return;
+  }
+
+  // 이유식 준비물 뷰
+  if(viewMode==='babyfood'){
+    document.getElementById('hero-title').textContent = '이유식 준비물';
+    document.getElementById('hero-dday').textContent = '이유식 시작 준비';
+    document.getElementById('demo-note').textContent = '이유식전쟁맘·두돌맘이 겪어본 것들 · 시작 시기는 소아과와 상담!';
+    document.getElementById('preview-note').style.display='none';
+    renderBabyfood();
     return;
   }
 
@@ -201,6 +220,47 @@ function render(){
     area.appendChild(gEl);
   });
   updateProgress();
+}
+
+// ---- 홈: 준비 리스트 카드 ----
+// 리스트를 추가할 때마다 데이터 파일 하나 + 이 배열에 한 줄이면 홈에 뜬다.
+const HOME_LISTS = [
+  {key:'sheet',    icon:'🛒', title:'출산 준비물',   sub:'낳기 전 미리 챙길 것',      totals:()=>sheetTotals()},
+  {key:'daycare',  icon:'🏫', title:'어린이집 입소', sub:'3월 입소철 준비물',         totals:()=>dcTotals()},
+  {key:'babyfood', icon:'🍽️', title:'이유식 준비물', sub:'이유식 시작 전 준비',       totals:()=>bfTotals()},
+  {key:'preg',     icon:'🗓️', title:'시기별 국민템', sub:'지금 내 구간에 필요한 것',  totals:null},
+];
+function renderHome(){
+  const area = document.getElementById('body-area');
+  area.innerHTML='';
+  const grid = document.createElement('div');
+  grid.className='home-grid';
+  HOME_LISTS.forEach(L=>{
+    const card = document.createElement('div');
+    card.className='home-card';
+    let meta = '';
+    if(L.totals){
+      const t = L.totals();
+      const pct = t.total ? Math.round(t.done/t.total*100) : 0;
+      meta = `<div class="home-bar"><div class="home-fill" style="width:${pct}%"></div></div>
+              <span class="home-count">${t.done} / ${t.total} 준비</span>`;
+    }else{
+      meta = `<span class="home-count">지금 임신 ${state.weeks}주차</span>`;
+    }
+    card.innerHTML = `
+      <span class="home-ic">${L.icon}</span>
+      <div class="home-info"><h3>${L.title}</h3><p>${L.sub}</p>${meta}</div>
+      <span class="arrow">›</span>
+    `;
+    card.onclick=()=>setView(L.key);
+    grid.appendChild(card);
+  });
+  area.appendChild(grid);
+
+  document.getElementById('prog-name').textContent = '별똥별';
+  const {done, total} = (function(){ let d=0,t=0; HOME_LISTS.forEach(L=>{ if(L.totals){ const x=L.totals(); d+=x.done; t+=x.total; } }); return {done:d,total:t}; })();
+  document.getElementById('prog-text').textContent = `전체 ${done} / ${total} 준비`;
+  document.getElementById('prog-fill').style.width = (total?done/total*100:0)+'%';
 }
 
 function isNational(it){ return it.verdict && it.verdict.n>=N_MIN && it.verdict.yes>=NATIONAL_MIN; }

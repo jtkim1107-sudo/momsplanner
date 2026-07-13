@@ -98,6 +98,22 @@
   .region-card p{font-size:12px;color:#6B7C96;margin-top:2px;line-height:1.5;}
   .region-card .arrow{color:#8CA0BC;font-weight:900;}
 
+  .home-grid{display:flex;flex-direction:column;gap:12px;}
+  .home-card{
+    background:var(--card);border:1.5px solid var(--line);border-radius:16px;
+    padding:16px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .1s,border-color .2s;
+  }
+  .home-card:active{transform:scale(.98);}
+  .home-card:hover{border-color:var(--brown);}
+  .home-ic{font-size:30px;flex:0 0 auto;}
+  .home-info{flex:1;min-width:0;}
+  .home-info h3{font-size:16px;font-weight:900;}
+  .home-info p{font-size:12px;color:var(--sub);margin-top:2px;}
+  .home-bar{height:6px;background:var(--line);border-radius:6px;overflow:hidden;margin-top:9px;}
+  .home-fill{height:100%;background:var(--brown);border-radius:6px;transition:width .3s;}
+  .home-count{display:inline-block;font-size:11px;color:var(--sub);font-weight:700;margin-top:6px;}
+  .home-card .arrow{color:var(--dim);font-weight:900;font-size:18px;}
+
   .natl-card{
     background:linear-gradient(150deg,#FBF3DF,#F6EBD0);border:1.5px solid #EBD9A8;border-radius:14px;
     padding:15px 16px;margin-bottom:18px;
