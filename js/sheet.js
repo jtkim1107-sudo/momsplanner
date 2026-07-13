@@ -358,9 +358,11 @@ function sheetConclusion(it){
 
 // ---- 선배맘 의견 렌더 (시트 + 구간 상세 공용) ----
 function opIcon(v){ return v==='추천' ? '👍' : v==='비추' ? '👎' : v==='쏘쏘' ? '😐' : '💬'; }
-function opsHtml(it){
-  if(!it.ops || !it.ops.length) return '';
-  return `<div class="ops">` + it.ops.map(o=>{
+function opsHtml(it, id){
+  const ops = [...(it.ops||[])];
+  if(id && myBuys[id]) ops.push({who: PROFILE.nick+' (나)', verdict: myVerdicts[id], buy: myBuys[id].b+' · '+myBuys[id].ch});
+  if(!ops.length) return '';
+  return `<div class="ops">` + ops.map(o=>{
     const head = o.verdict ? `${opIcon(o.verdict)} <b>${o.verdict}</b>` : '💬';
     const meta = [o.buy, o.who].filter(Boolean).join(' — ');
     return `<div class="op">${head}${o.txt?` ${o.txt}`:''}<span class="op-meta">${meta}</span></div>`;
@@ -461,7 +463,7 @@ function renderSheetItem(it,ci,ii){
       <div class="chk"></div>
       <div class="item-info">
         <div class="item-name">${it.nm}</div>
-        ${opsHtml(it)}
+        ${opsHtml(it, id)}
         ${badges?`<div class="item-badges">${badges}</div>`:''}
       </div>
       <div class="qty">
@@ -487,14 +489,16 @@ function renderSheetItem(it,ci,ii){
     // 별똥별 + "다시 산다면?" 판정 노출
     if(nowChecked){
       earnStars(5, '준비물 체크', 'chk-'+(it.link||id));
-      if(!el.querySelector('.judge-row')) el.appendChild(judgeRowEl(id));
-    }else if(!myVerdicts[id]){
-      const jr = el.querySelector('.judge-row');
-      if(jr) jr.remove();
+      if(!el.querySelector('.judge-row:not(.buy-row)')) el.appendChild(judgeRowEl(id));
+      if(!el.querySelector('.buy-row')) el.appendChild(purchaseRowEl(id));
+    }else{
+      if(!myVerdicts[id]){ const jr = el.querySelector('.judge-row:not(.buy-row)'); if(jr) jr.remove(); }
+      if(!myBuys[id]){ const br = el.querySelector('.buy-row'); if(br) br.remove(); }
     }
   });
-  // 체크한(=산) 항목엔 "다시 산다면?" 1탭 판정
+  // 체크한(=산) 항목엔 "다시 산다면?" 판정 + "뭘로 샀어요?" 기록
   if(sheetChecked.has(id) || myVerdicts[id]) el.appendChild(judgeRowEl(id));
+  if(sheetChecked.has(id) || myBuys[id]) el.appendChild(purchaseRowEl(id));
 
   el.querySelectorAll('[data-link]').forEach(b=> b.addEventListener('click',e=>{
     e.stopPropagation();

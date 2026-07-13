@@ -10,16 +10,19 @@ const STAR_KEY = 'sohaengseong-stars';
 const STAR_ONCE_KEY = 'sohaengseong-star-once';
 const STAR_LOG_KEY = 'sohaengseong-star-log';
 const MY_VERDICT_KEY = 'sohaengseong-my-verdicts';
+const MY_BUY_KEY = 'sohaengseong-my-buys';
 
 let stars = 0;
 let starOnce = new Set();   // 1회성 적립 중복 방지 키
 let starLog = [];           // 최근 적립 내역
 let myVerdicts = {};        // {itemId: '사요'|'마요'} — 내가 남긴 판정
+let myBuys = {};            // {itemId: {b:'브랜드·제품', ch:'구매 경로'}} — 내가 뭘 샀는지
 try{
   stars = +localStorage.getItem(STAR_KEY) || 0;
   const o = localStorage.getItem(STAR_ONCE_KEY); if(o) starOnce = new Set(JSON.parse(o));
   const l = localStorage.getItem(STAR_LOG_KEY);  if(l) starLog = JSON.parse(l);
   const v = localStorage.getItem(MY_VERDICT_KEY); if(v) myVerdicts = JSON.parse(v);
+  const b = localStorage.getItem(MY_BUY_KEY); if(b) myBuys = JSON.parse(b);
 }catch(e){}
 function saveStars(){
   try{
@@ -27,6 +30,7 @@ function saveStars(){
     localStorage.setItem(STAR_ONCE_KEY, JSON.stringify([...starOnce]));
     localStorage.setItem(STAR_LOG_KEY, JSON.stringify(starLog.slice(0,30)));
     localStorage.setItem(MY_VERDICT_KEY, JSON.stringify(myVerdicts));
+    localStorage.setItem(MY_BUY_KEY, JSON.stringify(myBuys));
   }catch(e){}
 }
 
@@ -51,6 +55,7 @@ function updateStarChip(){
 const STAR_RULES = [
   ['준비물 · 아이템 체크', 5],
   ['"다시 산다면?" 판정', 10],
+  ['뭘로 샀는지 기록', 15],
   ['제품 등록 요청', 10],
   ['선배맘 한마디 남기기', 20],
   ['달라진 지역정보 제보', 20],
@@ -96,5 +101,43 @@ function judgeRowEl(id){
     });
     div.appendChild(b);
   });
+  return div;
+}
+
+// ---- "뭘로 샀어요?" 내 구매 기록 — 브랜드 순위의 원천 데이터 ----
+const BUY_CHANNELS = ['새것', '당근(중고)', '선물받음', '물려받음'];
+function purchaseRowEl(id){
+  const div = document.createElement('div');
+  div.className = 'judge-row buy-row';
+  const rec = myBuys[id];
+  if(rec){
+    div.innerHTML = `내 구매 · <b class="jy">${rec.b}</b><span class="buy-ch">${rec.ch}</span> — 브랜드 순위에 반영돼요`;
+    return div;
+  }
+  const q = document.createElement('span');
+  q.textContent = '뭘로 샀어요?';
+  div.appendChild(q);
+  const inp = document.createElement('input');
+  inp.className = 'buy-inp';
+  inp.placeholder = '브랜드 · 제품명';
+  inp.maxLength = 40;
+  inp.addEventListener('click', e=>e.stopPropagation());
+  const sel = document.createElement('select');
+  sel.className = 'buy-sel';
+  BUY_CHANNELS.forEach(c=>{ const o=document.createElement('option'); o.textContent=c; sel.appendChild(o); });
+  sel.addEventListener('click', e=>e.stopPropagation());
+  const btn = document.createElement('button');
+  btn.className = 'jbtn save';
+  btn.textContent = '남기기';
+  btn.addEventListener('click', e=>{
+    e.stopPropagation();
+    const b = inp.value.trim();
+    if(!b){ toast('브랜드나 제품명을 적어주세요'); return; }
+    myBuys[id] = {b, ch: sel.value};
+    saveStars();
+    earnStars(15, '뭘로 샀는지 기록', 'buy-'+id);
+    div.replaceWith(purchaseRowEl(id));
+  });
+  div.append(inp, sel, btn);
   return div;
 }

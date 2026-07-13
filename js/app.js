@@ -250,13 +250,15 @@ function renderItem(it){
   // 준비물 시트에 같은 항목이 있으면 시트 정보(개수·브랜드·가격·선배맘 의견) 표시
   const si = sheetInfoFor(it.id);
   if(si){
+    const se = TL_SHEET_LINK[it.id];
+    const sid = sheetItemId(se.ci, se.ii);
     const parts = [
       si.need ? '📦 필요 '+si.need : null,
       si.brands ? '🏷️ '+si.brands : null,
       si.deal ? '💰 '+si.deal : null,
       si.carrot ? '🥕 당근 추천' : null,
     ].filter(Boolean);
-    detail += `<div class="tip-box">🛒 <b>준비물 시트 연동</b>${parts.length?'<br>'+parts.join(' · '):''}${opsHtml(si)}</div>`;
+    detail += `<div class="tip-box">🛒 <b>준비물 시트 연동</b>${parts.length?'<br>'+parts.join(' · '):''}${opsHtml(si, sid)}</div>`;
   }
   if(it.gender){ detail += `<div class="tip-box"><b>👶 성별 팁:</b> 성별 확정 전이면 화이트·아이보리 계열이 무난 — 둘째까지 물려 입히기도 좋아요.</div>`; }
   if(it.type==='buy' && detail){
