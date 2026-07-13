@@ -105,8 +105,10 @@ function judgeRowEl(id){
 }
 
 // ---- "뭘로 샀어요?" 내 구매 기록 — 브랜드 순위의 원천 데이터 ----
+// 유명 브랜드를 칩으로 먼저 제시(표기 통일 → 집계 가능), 없으면 직접 입력.
 const BUY_CHANNELS = ['새것', '당근(중고)', '선물받음', '물려받음'];
-function purchaseRowEl(id){
+function purchaseRowEl(id, candidates){
+  candidates = candidates || [];
   const div = document.createElement('div');
   div.className = 'judge-row buy-row';
   const rec = myBuys[id];
@@ -114,14 +116,49 @@ function purchaseRowEl(id){
     div.innerHTML = `내 구매 · <b class="jy">${rec.b}</b><span class="buy-ch">${rec.ch}</span> — 브랜드 순위에 반영돼요`;
     return div;
   }
-  const q = document.createElement('span');
+
+  let chosen = null; // 칩에서 고른 브랜드 (직접 입력 시 null)
+
+  const q = document.createElement('div');
+  q.className = 'buy-q';
   q.textContent = '뭘로 샀어요?';
-  div.appendChild(q);
+
+  const chips = document.createElement('div');
+  chips.className = 'brand-chips';
+
   const inp = document.createElement('input');
   inp.className = 'buy-inp';
-  inp.placeholder = '브랜드 · 제품명';
+  inp.placeholder = '브랜드 · 제품명 직접 입력';
   inp.maxLength = 40;
+  inp.style.display = 'none';
   inp.addEventListener('click', e=>e.stopPropagation());
+
+  function clearSel(){ chips.querySelectorAll('.brand-chip').forEach(x=>x.classList.remove('on')); }
+
+  candidates.forEach(name=>{
+    const c = document.createElement('button');
+    c.className = 'brand-chip';
+    c.textContent = name;
+    c.addEventListener('click', e=>{
+      e.stopPropagation();
+      chosen = name; inp.value=''; inp.style.display='none';
+      clearSel(); c.classList.add('on');
+    });
+    chips.appendChild(c);
+  });
+
+  const other = document.createElement('button');
+  other.className = 'brand-chip other';
+  other.textContent = candidates.length ? '＋ 직접 입력' : '＋ 브랜드 입력';
+  other.addEventListener('click', e=>{
+    e.stopPropagation();
+    chosen = null; clearSel(); other.classList.add('on');
+    inp.style.display=''; inp.focus();
+  });
+  chips.appendChild(other);
+
+  const ctrl = document.createElement('div');
+  ctrl.className = 'buy-ctrl';
   const sel = document.createElement('select');
   sel.className = 'buy-sel';
   BUY_CHANNELS.forEach(c=>{ const o=document.createElement('option'); o.textContent=c; sel.appendChild(o); });
@@ -131,13 +168,15 @@ function purchaseRowEl(id){
   btn.textContent = '남기기';
   btn.addEventListener('click', e=>{
     e.stopPropagation();
-    const b = inp.value.trim();
-    if(!b){ toast('브랜드나 제품명을 적어주세요'); return; }
+    const b = chosen || inp.value.trim();
+    if(!b){ toast('브랜드를 고르거나 직접 적어주세요'); return; }
     myBuys[id] = {b, ch: sel.value};
     saveStars();
     earnStars(15, '뭘로 샀는지 기록', 'buy-'+id);
-    div.replaceWith(purchaseRowEl(id));
+    div.replaceWith(purchaseRowEl(id, candidates));
   });
-  div.append(inp, sel, btn);
+  ctrl.append(sel, btn);
+
+  div.append(q, chips, inp, ctrl);
   return div;
 }

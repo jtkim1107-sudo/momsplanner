@@ -188,15 +188,28 @@
     display:inline-block;margin-left:6px;font-size:11px;font-weight:700;color:var(--brown-deep);
     background:#F1EADB;border-radius:5px;padding:2px 7px;
   }
+  .buy-row{flex-direction:column;align-items:stretch;gap:8px;}
+  .buy-q{font-size:12.5px;font-weight:700;color:var(--brown-deep);}
+  .brand-chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .brand-chip{
+    font-family:inherit;font-size:12px;font-weight:700;color:var(--sub);
+    background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:6px 12px;
+    cursor:pointer;transition:transform .1s;
+  }
+  .brand-chip:active{transform:scale(.95);}
+  .brand-chip.on{background:var(--brown-deep);border-color:var(--brown-deep);color:#fff;}
+  .brand-chip.other{color:var(--brown);border-style:dashed;}
+  .brand-chip.other.on{background:var(--brown);border-color:var(--brown);color:#fff;}
+  .buy-ctrl{display:flex;gap:7px;}
   .buy-inp{
-    flex:1;min-width:90px;font-family:inherit;font-size:12.5px;color:var(--ink);
-    background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:7px 10px;outline:none;
+    width:100%;font-family:inherit;font-size:12.5px;color:var(--ink);
+    background:#fff;border:1.5px solid var(--brown);border-radius:8px;padding:8px 11px;outline:none;
   }
-  .buy-inp:focus{border-color:var(--brown);}
   .buy-sel{
-    font-family:inherit;font-size:12px;font-weight:700;color:var(--ink);
-    background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:7px 6px;outline:none;
+    flex:1;font-family:inherit;font-size:12px;font-weight:700;color:var(--ink);
+    background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:8px 6px;outline:none;
   }
+  .buy-ctrl .jbtn.save{flex:0 0 76px;}
   .star-balance{text-align:center;font-size:30px;font-weight:900;color:#9A7B2E;padding:16px 0 6px;}
   .star-balance span{display:block;font-size:11.5px;color:var(--sub);font-weight:500;margin-top:2px;}
   .star-rules{list-style:none;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px 14px;margin-top:6px;}

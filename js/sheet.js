@@ -356,6 +356,18 @@ function sheetConclusion(it){
   return null; // 아직 의견 없음
 }
 
+// ---- 브랜드 후보 추출 — 항목이 이미 아는 유명 브랜드를 칩으로 ----
+function sheetBrandCandidates(it){
+  const out = [];
+  const push = v => {
+    v = (v||'').replace(/\(.*?\)/g,'').trim();
+    if(v && !out.includes(v) && out.length<8) out.push(v);
+  };
+  if(it.brands) it.brands.split('·').forEach(push);         // 참고 브랜드 필드
+  (it.ops||[]).forEach(o=>{ if(o.buy) push(o.buy.split('·')[0].split(' ')[0]); }); // 선배맘이 산 브랜드
+  return out;
+}
+
 // ---- 선배맘 의견 렌더 (시트 + 구간 상세 공용) ----
 function opIcon(v){ return v==='추천' ? '👍' : v==='비추' ? '👎' : v==='쏘쏘' ? '😐' : '💬'; }
 function opsHtml(it, id){
@@ -490,7 +502,7 @@ function renderSheetItem(it,ci,ii){
     if(nowChecked){
       earnStars(5, '준비물 체크', 'chk-'+(it.link||id));
       if(!el.querySelector('.judge-row:not(.buy-row)')) el.appendChild(judgeRowEl(id));
-      if(!el.querySelector('.buy-row')) el.appendChild(purchaseRowEl(id));
+      if(!el.querySelector('.buy-row')) el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
     }else{
       if(!myVerdicts[id]){ const jr = el.querySelector('.judge-row:not(.buy-row)'); if(jr) jr.remove(); }
       if(!myBuys[id]){ const br = el.querySelector('.buy-row'); if(br) br.remove(); }
@@ -498,7 +510,7 @@ function renderSheetItem(it,ci,ii){
   });
   // 체크한(=산) 항목엔 "다시 산다면?" 판정 + "뭘로 샀어요?" 기록
   if(sheetChecked.has(id) || myVerdicts[id]) el.appendChild(judgeRowEl(id));
-  if(sheetChecked.has(id) || myBuys[id]) el.appendChild(purchaseRowEl(id));
+  if(sheetChecked.has(id) || myBuys[id]) el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
 
   el.querySelectorAll('[data-link]').forEach(b=> b.addEventListener('click',e=>{
     e.stopPropagation();
