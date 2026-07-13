@@ -96,7 +96,7 @@ function render(){
   if(viewMode==='sheet'){
     document.getElementById('hero-title').textContent = '출산 준비물 체크리스트';
     document.getElementById('hero-dday').textContent = `출산예정일 D-${state.dday}`;
-    document.getElementById('demo-note').textContent = '선배맘 준비물 시트 2종 병합 — 브랜드 · 가격 · 경험담은 참고용이에요';
+    document.getElementById('demo-note').textContent = '선배맘 준비물 자료 3종 병합 — 판정 · 가격 · 경험담은 참고용이에요';
     document.getElementById('preview-note').style.display='none';
     renderSheet();
     return;
@@ -231,7 +231,7 @@ function renderItem(it){
       </div>`;
   }
   if(it.tip){ detail += `<div class="tip-box">${it.tip}</div>`; }
-  // 준비물 시트에 같은 항목이 있으면 시트 정보(개수·브랜드·가격·경험담) 표시
+  // 준비물 시트에 같은 항목이 있으면 시트 정보(개수·브랜드·가격·선배맘 의견) 표시
   const si = sheetInfoFor(it.id);
   if(si){
     const parts = [
@@ -240,7 +240,7 @@ function renderItem(it){
       si.deal ? '💰 '+si.deal : null,
       si.carrot ? '🥕 당근 추천' : null,
     ].filter(Boolean);
-    detail += `<div class="tip-box">🛒 <b>준비물 시트 연동</b>${parts.length?'<br>'+parts.join(' · '):''}${si.note?`<br>💬 "${si.note}"`:''}</div>`;
+    detail += `<div class="tip-box">🛒 <b>준비물 시트 연동</b>${parts.length?'<br>'+parts.join(' · '):''}${opsHtml(si)}</div>`;
   }
   if(it.gender){ detail += `<div class="tip-box"><b>👶 성별 팁:</b> 성별 확정 전이면 화이트·아이보리 계열이 무난 — 둘째까지 물려 입히기도 좋아요.</div>`; }
   if(it.type==='buy' && detail){
