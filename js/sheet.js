@@ -508,7 +508,7 @@ function renderSheet(){
       <span class="ri">✨</span>
       <div class="rc"><h3>내가 고른 리스트</h3>
       <p>따라하기 · 당근으로 담은 것들이에요. <b>시세 가이드 밑으로 보이면 사세요!</b> 사면 체크 — 구매 기록까지 남기면 별똥별이 쌓여요.</p>
-      <button class="rp-open" onclick="openReport()">📄 내 리포트 만들기 — 카페·카톡 공유용</button></div>
+      <button class="rp-open" onclick="openReport()">📄 내 똑똑한 리스트 만들기 — 친구 공유용</button></div>
     `;
   }
   area.appendChild(intro);
@@ -607,7 +607,10 @@ function renderSheetItem(it,ci,ii){
     const cc = sheetCatCount(ci);
     const gp = document.getElementById('shp-'+ci);
     if(gp) gp.textContent = cc.done+'/'+cc.total;
-    if(nowChecked) earnStars(5, '준비물 체크', 'chk-'+(it.link||id));
+    if(nowChecked){
+      earnStars(5, '준비물 체크', 'chk-'+(it.link||id));
+      checkSmartListComplete();
+    }
   });
   // 내 리스트에선 시세 가이드 + 내가 채우는 구매 기록 빈칸
   if(sheetMode==='mine'){
@@ -640,6 +643,23 @@ function updateSheetProgress(){
     document.getElementById('prog-fill').style.width = (total?done/total*100:0)+'%';
   }
 }
+
+// 내 리스트를 전부 채우면(체크+구매기록) 똑똑한 리스트 완성 → ⭐500 + 리포트
+function myListComplete(){
+  const ids=[];
+  SHEET_CATEGORIES.forEach((c,ci)=> c.items.forEach((it,ii)=>{
+    const id = sheetItemId(ci,ii);
+    if(sheetMine(id)) ids.push(id);
+  }));
+  return ids.length>0 && ids.every(id=> sheetChecked.has(id) && myBuys[id]);
+}
+function checkSmartListComplete(){
+  if(!myListComplete()) return;
+  if(earnStars(500, '내 똑똑한 리스트 완성', 'smart-list-sheet')){
+    setTimeout(()=> openReport(), 800); // 완성 순간 리포트가 짠!
+  }
+}
+function onBuyRecordSaved(){ checkSmartListComplete(); }
 
 // 플랜을 고르면 스탠다드 진행률·카테고리 카운트 즉시 갱신
 function onPlanChanged(listKey){

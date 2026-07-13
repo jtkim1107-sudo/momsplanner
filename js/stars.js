@@ -60,6 +60,7 @@ const STAR_RULES = [
   ['준비물 · 아이템 체크', 5],
   ['뭘로 샀는지 기록', 15],
   ['리스트 플랜 완성 (리스트당)', 300],
+  ['내 똑똑한 리스트 완성 (전부 채우면)', 500],
   ['새 브랜드 · 제품 등록 요청', 10],
   ['선배맘 한마디 남기기', 20],
   ['달라진 지역정보 제보', 20],
@@ -288,6 +289,7 @@ function purchaseRowEl(id, candidates){
     if(regReq) earnStars(10, '새 브랜드 등록 요청', 'breq-'+b);
     earnStars(15, '구매 기록 (뭘로 · 얼마에)', 'buy-'+id);
     div.replaceWith(purchaseRowEl(id, candidates));
+    if(typeof onBuyRecordSaved==='function') onBuyRecordSaved(id);
   });
   ctrl.append(sel, btn);
 

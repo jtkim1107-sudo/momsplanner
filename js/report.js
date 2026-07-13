@@ -8,6 +8,7 @@
 function reportData(){
   const bought=[], toBuy=[], carrot=[], passed=[];
   let baseSum=0, carrotSum=0, noPrice=0;
+  let paidSum=0, paidBase=0, recCount=0; // 실구매 기록 통계
 
   SHEET_CATEGORIES.forEach((c,ci)=> c.items.forEach((it,ii)=>{
     const id = sheetItemId(ci,ii);
@@ -24,6 +25,8 @@ function reportData(){
     else if(plan==='carrot'){ carrot.push(row); }
     else { toBuy.push(row); }
 
+    if(rec){ recCount++; if(rec.p){ paidSum += rec.p; paidBase += pi ? pi.base : rec.p; } }
+
     // 예상 지출 (구매 완료는 실지출로)
     if(sheetChecked.has(id)){
       if(rec && rec.p){ baseSum += rec.p; carrotSum += rec.p; }
@@ -34,7 +37,7 @@ function reportData(){
       carrotSum += (plan==='carrot') ? Math.round((pi.carrotLo+pi.carrotHi)/2) : pi.base;
     }else noPrice++;
   }));
-  return {bought, toBuy, carrot, passed, baseSum, carrotSum, noPrice};
+  return {bought, toBuy, carrot, passed, baseSum, carrotSum, noPrice, paidSum, paidBase, recCount};
 }
 
 function manwon(v){
@@ -64,16 +67,29 @@ function openReport(){
     return `<div class="rp-item"><span class="rp-nm">${row.nm}</span>${brand}<span class="rp-price">${price}</span></div>`;
   };
 
+  const complete = d.toBuy.length===0 && d.carrot.length===0 && d.bought.length>0 && d.bought.every(r=>r.brand);
+  const smartSave = d.paidBase - d.paidSum;
+
   const body = document.getElementById('report-body');
   body.innerHTML = `
     <div class="rp-hero">
-      <div class="ss-over">SOHAENGSEONG STANDARD REPORT</div>
-      <h2>🌠 ${PROFILE.nick}의<br>출산 준비 리포트</h2>
-      <p>${dateStr} · 소행성 스탠다드 ${decided}/${items.length} 완성${decided<items.length?' (진행 중)':' 🎉'}</p>
+      <div class="ss-over">SOHAENGSEONG SMART LIST</div>
+      <h2>🌠 ${PROFILE.nick}의<br>똑똑한 리스트</h2>
+      <p>${dateStr} · 소행성 스탠다드 ${decided}/${items.length}${decided<items.length?' 진행 중':' 완성'}</p>
+      ${complete?'<div class="rp-medal">🏅 리스트 100% 완성 — 전부 사고 전부 기록했어요</div>':''}
       <div class="rp-sum">
         <span>🛍️ 살 것 ${d.toBuy.length}</span><span>🥕 당근 ${d.carrot.length}</span><span>✅ 샀어요 ${d.bought.length}</span><span>🚫 패스 ${d.passed.length}</span>
       </div>
     </div>
+
+    ${d.recCount?`
+    <div class="rp-brain">
+      <h3>🧠 똑똑 지수</h3>
+      <div class="rp-money-row"><span>구매 기록</span><b>${d.recCount}건</b></div>
+      ${d.paidSum?`<div class="rp-money-row"><span>실제로 쓴 돈</span><b>${manwon(d.paidSum)}</b></div>`:''}
+      ${smartSave>0?`<div class="rp-save">💡 시세보다 ${manwon(smartSave)} 똑똑하게 샀어요!</div>`
+        : d.paidSum?`<div class="rp-money-row"><span>시세 대비</span><b>딱 시세에 샀어요</b></div>`:''}
+    </div>`:''}
 
     <div class="rp-money">
       <div class="rp-money-row"><span>새것으로 다 사면</span><b>${manwon(d.baseSum)}</b></div>
