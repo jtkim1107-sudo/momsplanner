@@ -224,6 +224,14 @@
   .badge.need{background:#EEF2F8;color:var(--blue);}
   .badge.price{background:var(--green-bg);color:var(--green);}
   .badge.carrot{background:#F9EDE0;color:#B97A48;}
+  .focus-bar{display:flex;flex-direction:column;gap:6px;margin:-6px 2px 14px;}
+  .sheet-filter{
+    align-self:flex-start;border:1.5px solid #E2D7C3;background:#fff;color:#8A7357;
+    font-family:inherit;font-size:12px;font-weight:800;border-radius:20px;padding:7px 14px;
+    cursor:pointer;transition:background .15s,color .15s;
+  }
+  .sheet-filter.on{background:var(--brown);border-color:var(--brown);color:#fff;}
+  .nudge{font-size:11px;color:var(--sub);font-weight:600;padding-left:4px;}
   .sheet-mode{
     display:flex;gap:4px;background:var(--card);border:none;box-shadow:var(--sh-sm);
     border-radius:16px;padding:5px;margin-bottom:14px;

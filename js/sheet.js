@@ -313,8 +313,17 @@ try{
 function setSheetMode(m){
   if(sheetMode===m) return;
   sheetMode = m;
+  sheetFilter = false; // 모드 바꾸면 필터 초기화
   try{ localStorage.setItem(SHEET_MODE_KEY, m); }catch(e){}
   renderSheet();
+}
+
+// 🎯 하나씩 준비하는 분들용 — 남은 것만 모아 보기
+let sheetFilter = false;
+function toggleSheetFilter(){ sheetFilter = !sheetFilter; renderSheet(); }
+// 스탠다드: 아직 플랜 안 정한 것 / 내 리스트: 체크·기록이 안 끝난 것
+function sheetItemDone(it, id){
+  return sheetMode==='std' ? !!myPlans[id] : (sheetChecked.has(id) && !!myBuys[id]);
 }
 // 내 리스트 = 체크했거나 따라하기/당근으로/물려받기로 정한 항목 (패스만 뺀 나만의 리스트)
 function sheetMine(id){
@@ -598,11 +607,30 @@ function renderSheet(){
   }
   area.appendChild(intro);
 
+  // 🎯 남은 것만 보기 + 오늘의 3개 넛지 — 하나씩 준비하는 분들용
+  const todos = [];
+  SHEET_CATEGORIES.forEach((c,ci)=> c.items.forEach((it,ii)=>{
+    const id = sheetItemId(ci,ii);
+    if(!sheetVisible(it, id)) return;
+    if(!sheetItemDone(it, id)) todos.push(it.nm);
+  }));
+  if(todos.length){
+    const fb = document.createElement('div');
+    fb.className = 'focus-bar';
+    fb.innerHTML = `
+      <button class="sheet-filter ${sheetFilter?'on':''}" onclick="toggleSheetFilter()">🎯 ${sheetMode==='std'?'안 정한 것만':'남은 것만'} 보기 · ${todos.length}</button>
+      ${!sheetFilter && todos.length>3 ? `<span class="nudge">오늘은 딱 3개만 — ${todos.slice(0,3).join(', ')}</span>`:''}
+    `;
+    area.appendChild(fb);
+  }else if(sheetFilter){ sheetFilter = false; }
+
   let shownCats = 0;
   SHEET_CATEGORIES.forEach((cat,ci)=>{
     const main=[], extra=[];
     cat.items.forEach((it,ii)=>{
-      if(sheetMode==='mine'){ if(sheetMine(sheetItemId(ci,ii))) main.push([it,ii]); }
+      const iid = sheetItemId(ci,ii);
+      if(sheetFilter && sheetItemDone(it, iid)) return; // 끝낸 건 치우기
+      if(sheetMode==='mine'){ if(sheetMine(iid)) main.push([it,ii]); }
       else { (isStd(it) ? main : extra).push([it,ii]); }
     });
     if(!main.length && !extra.length) return;
@@ -618,7 +646,7 @@ function renderSheet(){
     `;
     const holder = gEl.querySelector('#shi-'+ci);
     main.forEach(([it,ii])=> holder.appendChild(renderSheetItem(it,ci,ii)));
-    if(sheetMode==='std' && extra.length){
+    if(sheetMode==='std' && extra.length && !sheetFilter){ // 집중 모드에선 선택템 감춤
       const more = document.createElement('button');
       more.className='more-row';
       more.textContent = `＋ 선택템 ${extra.length}개 더 보기`;
@@ -730,6 +758,7 @@ function renderSheetItem(it,ci,ii){
       earnStars(5, '준비물 체크', 'chk-'+(it.link||id));
       checkSmartListComplete();
     }
+    updateFocusBar();
   });
   // 내 리스트에선 내가 채우는 구매 기록 빈칸 (시세 숫자는 상세에서)
   if(sheetMode==='mine'){
@@ -777,9 +806,9 @@ function checkSmartListComplete(){
     setTimeout(()=> openReport(), 800); // 완성 순간 리포트가 짠!
   }
 }
-function onBuyRecordSaved(){ checkSmartListComplete(); }
+function onBuyRecordSaved(){ checkSmartListComplete(); updateFocusBar(); }
 
-// 플랜을 고르면 스탠다드 진행률·카테고리 카운트 즉시 갱신
+// 플랜을 고르면 스탠다드 진행률·카테고리 카운트·집중 필터 라벨 즉시 갱신
 function onPlanChanged(listKey){
   if(listKey!=='sheet' || typeof viewMode==='undefined' || viewMode!=='sheet') return;
   updateSheetProgress();
@@ -787,4 +816,23 @@ function onPlanChanged(listKey){
     const gp = document.getElementById('shp-'+ci);
     if(gp){ const cc = sheetCatCount(ci); gp.textContent = cc.done+'/'+cc.total; }
   });
+  updateFocusBar();
+}
+// 집중 필터 라벨 + 오늘의 3개 라이브 갱신
+function updateFocusBar(){
+  const btn = document.querySelector('.sheet-filter');
+  if(!btn) return;
+  const todos = [];
+  SHEET_CATEGORIES.forEach((c,ci)=> c.items.forEach((it,ii)=>{
+    const id = sheetItemId(ci,ii);
+    if(!sheetVisible(it, id)) return;
+    if(!sheetItemDone(it, id)) todos.push(it.nm);
+  }));
+  btn.textContent = `🎯 ${sheetMode==='std'?'안 정한 것만':'남은 것만'} 보기 · ${todos.length}`;
+  const nd = document.querySelector('.nudge');
+  if(nd){
+    if(todos.length>3) nd.textContent = `오늘은 딱 3개만 — ${todos.slice(0,3).join(', ')}`;
+    else nd.remove();
+  }
+  if(!todos.length){ const fb = document.querySelector('.focus-bar'); if(fb) fb.remove(); }
 }
