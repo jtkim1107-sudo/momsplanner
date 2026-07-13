@@ -87,7 +87,7 @@ const PREP_LISTS = [
   {key:'seg7',       label:'12~24개월 국민템'},
   {key:'seg8',       label:'24~36개월 국민템'},
 ];
-const ACTIVE_LISTS = new Set(['sheet']); // 오픈된 리스트 — 여기 추가하면 열림
+const ACTIVE_LISTS = new Set(['sheet','postpartum']); // 오픈된 리스트 — 여기 추가하면 열림
 
 function comingSoon(label){
   toast(`${label} 리스트는 오픈 준비 중이에요 🌠 곧 열려요!`);
@@ -123,7 +123,7 @@ function render(){
   if(viewMode==='postpartum'){
     document.getElementById('hero-title').textContent = '조리원 준비물';
     document.getElementById('hero-dday').textContent = `출산예정일 D-${state.dday}`;
-    document.getElementById('demo-note').textContent = '조리원동기맘·산후8주맘이 챙긴 것들 · 제공 품목은 조리원에 먼저 확인!';
+    document.getElementById('demo-note').textContent = '선배맘 실제 출산가방 3종 병합 · 제공 품목은 조리원에 먼저 확인!';
     document.getElementById('preview-note').style.display='none';
     renderPostpartum();
     return;
