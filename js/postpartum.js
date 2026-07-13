@@ -234,17 +234,33 @@ function renderPostpartumItem(it,ci,ii){
   badges += verdictBadge(it, id);
   if(it.need) badges += `<span class="badge need">${it.need}</span>`;
 
+  // 투뎁스 — 겉면: 대표 의견 1개 / 상세(탭): 의견 전체
+  const ops = it.ops||[];
   el.innerHTML = `
     <div class="item-main" style="align-items:center;">
       <div class="chk"></div>
       <div class="item-info">
         <div class="item-name">${it.nm}</div>
         ${badges?`<div class="item-badges">${badges}</div>`:''}
-        ${opsHtml(it, id)}
+        ${opsHtml(it, id, 1, true)}
       </div>
+      ${ops.length>1?'<span class="item-caret">﹀</span>':''}
     </div>
+    ${ops.length>1?'<div class="item-more"></div>':''}
   `;
-  bindOpsMore(el, it, id);
+  const moreEl = el.querySelector('.item-more');
+  if(moreEl){
+    el.querySelector('.item-main').addEventListener('click', ()=>{
+      const open = el.classList.toggle('open');
+      if(open && !moreEl.dataset.filled){
+        moreEl.dataset.filled = '1';
+        const od = document.createElement('div');
+        od.className = 'more-ops';
+        od.innerHTML = opsHtml(it, id, 999);
+        moreEl.appendChild(od);
+      }
+    });
+  }
 
   if(myPlans[id]==='pass') el.classList.add('passed');
   el.appendChild(planRowEl(id, 'postpartum'));

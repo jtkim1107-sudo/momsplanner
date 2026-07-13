@@ -484,7 +484,7 @@ function priceRowEl(it, id){
 
 // ---- 선배맘 의견 렌더 (시트 + 구간 상세 공용) ----
 function opIcon(v){ return v==='추천' ? '👍' : v==='비추' ? '👎' : v==='쏘쏘' ? '😐' : '💬'; }
-function opsHtml(it, id, limit){
+function opsHtml(it, id, limit, hideMore){
   const ops = [...(it.ops||[])];
   if(id && myBuys[id]) ops.push({who: PROFILE.nick+' (나)', verdict: myVerdicts[id], buy: myBuys[id].b+' · '+myBuys[id].ch+(myBuys[id].p?' '+myBuys[id].p.toLocaleString()+'원':'')});
   if(!ops.length) return '';
@@ -492,7 +492,7 @@ function opsHtml(it, id, limit){
   const sorted = [...ops].sort((a,b)=> (b.txt?1:0)-(a.txt?1:0));
   const max = limit || 2;
   const shown = sorted.slice(0, max);
-  const rest = sorted.length - shown.length;
+  const rest = hideMore ? 0 : sorted.length - shown.length;
   const row = o => {
     const head = o.verdict ? `${opIcon(o.verdict)} <b>${o.verdict}</b>` : '💬';
     if(o.txt){ // 코멘트가 본문, 산 것·작성자는 메타로
@@ -642,13 +642,11 @@ function renderSheetItem(it,ci,ii){
   }
 
   const showChk = sheetMode==='mine'; // 체크(샀어요)는 내 리스트에서
-  // 스탠다드엔 '보통 얼마에 사는지' 시세 한 줄
-  let priceMini = '';
-  if(sheetMode==='std'){
-    const pi = priceIntel(it, id);
-    if(pi) priceMini = `<div class="price-mini">💰 보통 ${won(pi.base)} · <b>${won(pi.dealAt)} 이하면 득템</b></div>`;
-  }
-  // 순서: 이름 → 결론 → 따라하기 → 시세 → 선배맘 의견(2개+접기)
+
+  // 투뎁스 — 겉면: 이름 · 결론 · 따라하기 · 대표 의견 1개
+  //          상세(탭): 시세 숫자 전체 · 선배맘 의견 전체
+  const ops = it.ops||[];
+  const hasMore = !!(priceIntel(it, id) || ops.length);
   el.innerHTML = `
     <div class="item-main" style="align-items:center;">
       ${showChk?'<div class="chk"></div>':''}
@@ -656,12 +654,29 @@ function renderSheetItem(it,ci,ii){
         <div class="item-name">${it.nm}</div>
         ${badges?`<div class="item-badges">${badges}</div>`:''}
         ${it.how?`<div class="how">👉 ${it.how}</div>`:''}
-        ${priceMini}
-        ${opsHtml(it, id)}
+        ${opsHtml(it, id, 1, true)}
       </div>
+      ${hasMore?'<span class="item-caret">﹀</span>':''}
     </div>
+    ${hasMore?'<div class="item-more"></div>':''}
   `;
-  bindOpsMore(el, it, id);
+  // 상세는 펼칠 때 채운다
+  const moreEl = el.querySelector('.item-more');
+  if(moreEl){
+    el.querySelector('.item-main').addEventListener('click', ()=>{
+      const open = el.classList.toggle('open');
+      if(open && !moreEl.dataset.filled){
+        moreEl.dataset.filled = '1';
+        moreEl.appendChild(priceRowEl(it, id));
+        if(ops.length){
+          const od = document.createElement('div');
+          od.className = 'more-ops';
+          od.innerHTML = opsHtml(it, id, 999);
+          moreEl.appendChild(od);
+        }
+      }
+    });
+  }
 
   const chkEl = el.querySelector('.chk');
   if(chkEl) chkEl.addEventListener('click',e=>{
@@ -683,9 +698,8 @@ function renderSheetItem(it,ci,ii){
       checkSmartListComplete();
     }
   });
-  // 내 리스트에선 시세 가이드 + 내가 채우는 구매 기록 빈칸
+  // 내 리스트에선 내가 채우는 구매 기록 빈칸 (시세 숫자는 상세에서)
   if(sheetMode==='mine'){
-    el.appendChild(priceRowEl(it, id));
     el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
   }
 
