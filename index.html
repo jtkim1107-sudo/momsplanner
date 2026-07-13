@@ -26,6 +26,7 @@
     <div class="hero-top">
       <span class="app">소행성 · 육아플래너</span>
       <div class="hero-right">
+        <button class="icon-chip" id="mylist-chip" onclick="openMyList()">📋 내 목록</button>
         <button class="star-chip" id="star-chip" onclick="openStarModal()">⭐ 0</button>
         <span class="dday" id="hero-dday"></span>
       </div>
@@ -51,6 +52,15 @@
     <div class="search-results" id="search-results"></div>
   </div>
   <div class="body-area" id="body-area"></div>
+
+  <!-- 내 목록 (체크한 것 모아보기) -->
+  <div class="modal-veil" id="mylist-modal">
+    <div class="modal">
+      <span class="m-label">📋 내 목록 — 체크한 것 모아보기</span>
+      <div id="mylist-body"></div>
+      <button class="m-close2" onclick="closeModal('mylist-modal')">닫기</button>
+    </div>
+  </div>
 
   <!-- 별똥별 지갑 -->
   <div class="modal-veil" id="star-modal">

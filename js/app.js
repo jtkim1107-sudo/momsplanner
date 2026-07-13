@@ -243,6 +243,53 @@ function render(){
   updateProgress();
 }
 
+// ---- 내 목록: 모든 리스트에서 체크한 항목 한눈에 모아보기 ----
+function collectSheetChecked(cats, checkedSet, idFn){
+  const out=[];
+  cats.forEach((c,ci)=> c.items.forEach((it,ii)=>{
+    const id = idFn(ci,ii);
+    if(checkedSet.has(id)) out.push({id, nm:it.nm});
+  }));
+  return out;
+}
+function collectTimelineChecked(){
+  const out=[], seen=new Set();
+  SEGMENTS.forEach(s=>{
+    const c = CONTENT[s.id]; if(!c) return;
+    c.groups.forEach(g=> g.items.forEach(it=>{
+      if(checked.has(it.id) && !seen.has(it.id)){ seen.add(it.id); out.push({id:it.id, nm:it.nm}); }
+    }));
+  });
+  return out;
+}
+const MYLIST_SOURCES = [
+  {label:'출산 준비물', icon:'🛒', get:()=>collectSheetChecked(SHEET_CATEGORIES, sheetChecked, sheetItemId)},
+  {label:'조리원',      icon:'🏨', get:()=>collectSheetChecked(POSTPARTUM_CATEGORIES, ppChecked, ppItemId)},
+  {label:'어린이집',    icon:'🏫', get:()=>collectSheetChecked(DAYCARE_CATEGORIES, dcChecked, dcItemId)},
+  {label:'이유식',      icon:'🍽️', get:()=>collectSheetChecked(BABYFOOD_CATEGORIES, bfChecked, bfItemId)},
+  {label:'월령별 국민템', icon:'🗓️', get:()=>collectTimelineChecked()},
+];
+function renderMyList(){
+  const body = document.getElementById('mylist-body');
+  let total=0, html='';
+  MYLIST_SOURCES.forEach(src=>{
+    const items = src.get();
+    if(!items.length) return;
+    total += items.length;
+    html += `<div class="ml-group"><div class="ml-head">${src.icon} ${src.label}<b>${items.length}</b></div>`;
+    html += items.map(it=>{
+      const buy = myBuys[it.id] ? `<span class="ml-buy">${myBuys[it.id].b} · ${myBuys[it.id].ch}</span>` : '';
+      const v = myVerdicts[it.id] ? `<span class="ml-v ${myVerdicts[it.id]==='사요'?'y':'n'}">${myVerdicts[it.id]}</span>` : '';
+      return `<div class="ml-item"><span class="ml-nm">${it.nm}</span>${v}${buy}</div>`;
+    }).join('');
+    html += `</div>`;
+  });
+  body.innerHTML = total
+    ? `<div class="ml-total">지금까지 체크한 <b>${total}가지</b></div>${html}`
+    : `<div class="ml-empty">아직 체크한 게 없어요.<br>준비물에서 체크하면 여기 한눈에 모여요 📋</div>`;
+}
+function openMyList(){ renderMyList(); openModal('mylist-modal'); }
+
 function isNational(it){ return it.verdict && it.verdict.n>=N_MIN && it.verdict.yes>=NATIONAL_MIN; }
 
 function renderItem(it){
