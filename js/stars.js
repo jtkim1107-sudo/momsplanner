@@ -11,18 +11,21 @@ const STAR_ONCE_KEY = 'sohaengseong-star-once';
 const STAR_LOG_KEY = 'sohaengseong-star-log';
 const MY_VERDICT_KEY = 'sohaengseong-my-verdicts';
 const MY_BUY_KEY = 'sohaengseong-my-buys';
+const MY_PLAN_KEY = 'sohaengseong-my-plans';
 
 let stars = 0;
 let starOnce = new Set();   // 1회성 적립 중복 방지 키
 let starLog = [];           // 최근 적립 내역
 let myVerdicts = {};        // {itemId: '사요'|'마요'} — 내가 남긴 판정
 let myBuys = {};            // {itemId: {b:'브랜드·제품', ch:'구매 경로'}} — 내가 뭘 샀는지
+let myPlans = {};           // {itemId: 'buy'|'carrot'|'pass'} — 살 것/당근/패스 내 결정
 try{
   stars = +localStorage.getItem(STAR_KEY) || 0;
   const o = localStorage.getItem(STAR_ONCE_KEY); if(o) starOnce = new Set(JSON.parse(o));
   const l = localStorage.getItem(STAR_LOG_KEY);  if(l) starLog = JSON.parse(l);
   const v = localStorage.getItem(MY_VERDICT_KEY); if(v) myVerdicts = JSON.parse(v);
   const b = localStorage.getItem(MY_BUY_KEY); if(b) myBuys = JSON.parse(b);
+  const pl = localStorage.getItem(MY_PLAN_KEY); if(pl) myPlans = JSON.parse(pl);
 }catch(e){}
 function saveStars(){
   try{
@@ -31,6 +34,7 @@ function saveStars(){
     localStorage.setItem(STAR_LOG_KEY, JSON.stringify(starLog.slice(0,30)));
     localStorage.setItem(MY_VERDICT_KEY, JSON.stringify(myVerdicts));
     localStorage.setItem(MY_BUY_KEY, JSON.stringify(myBuys));
+    localStorage.setItem(MY_PLAN_KEY, JSON.stringify(myPlans));
   }catch(e){}
 }
 
@@ -56,6 +60,7 @@ const STAR_RULES = [
   ['준비물 · 아이템 체크', 5],
   ['"다시 산다면?" 판정', 10],
   ['뭘로 샀는지 기록', 15],
+  ['리스트 플랜 완성 (리스트당)', 300],
   ['제품 등록 요청', 10],
   ['선배맘 한마디 남기기', 20],
   ['달라진 지역정보 제보', 20],
@@ -178,5 +183,59 @@ function purchaseRowEl(id, candidates){
   ctrl.append(sel, btn);
 
   div.append(q, chips, inp, ctrl);
+  return div;
+}
+
+// ---- 살 것 / 당근 / 패스 — 항목별 내 결정 ----
+// 리스트의 모든 항목을 정하면(플랜 완성) 리스트당 별똥별 +300.
+const PLAN_META = [
+  {k:'buy',    label:'살 것',   cls:'p-buy'},
+  {k:'carrot', label:'당근으로', cls:'p-carrot'},
+  {k:'pass',   label:'패스',    cls:'p-pass'},
+];
+const PLAN_SOURCES = [
+  {key:'sheet',      label:'출산',     cats:()=>SHEET_CATEGORIES,      idFn:(ci,ii)=>sheetItemId(ci,ii)},
+  {key:'postpartum', label:'조리원',   cats:()=>POSTPARTUM_CATEGORIES, idFn:(ci,ii)=>ppItemId(ci,ii)},
+  {key:'daycare',    label:'어린이집', cats:()=>DAYCARE_CATEGORIES,    idFn:(ci,ii)=>dcItemId(ci,ii)},
+  {key:'babyfood',   label:'이유식',   cats:()=>BABYFOOD_CATEGORIES,   idFn:(ci,ii)=>bfItemId(ci,ii)},
+];
+function planListItems(listKey){
+  const src = PLAN_SOURCES.find(x=>x.key===listKey);
+  if(!src) return [];
+  const out=[];
+  src.cats().forEach((c,ci)=> c.items.forEach((it,ii)=> out.push({id:src.idFn(ci,ii), nm:it.nm})));
+  return out;
+}
+function checkPlanComplete(listKey){
+  const src = PLAN_SOURCES.find(x=>x.key===listKey);
+  const items = planListItems(listKey);
+  if(src && items.length && items.every(x=>myPlans[x.id])){
+    earnStars(300, src.label+' 준비물 플랜 완성', 'plan-done-'+listKey);
+  }
+}
+function planRowEl(id, listKey){
+  const div = document.createElement('div');
+  div.className = 'plan-row';
+  const q = document.createElement('span');
+  q.className = 'plan-q';
+  q.textContent = '어떻게 할까?';
+  div.appendChild(q);
+  PLAN_META.forEach(m=>{
+    const b = document.createElement('button');
+    b.className = 'plan-chip '+m.cls + (myPlans[id]===m.k?' on':'');
+    b.textContent = m.label;
+    b.addEventListener('click', e=>{
+      e.stopPropagation();
+      if(myPlans[id]===m.k) delete myPlans[id];   // 다시 누르면 해제
+      else myPlans[id] = m.k;
+      saveStars();
+      div.querySelectorAll('.plan-chip').forEach(c=>c.classList.remove('on'));
+      if(myPlans[id]) b.classList.add('on');
+      const item = div.closest('.item');
+      if(item) item.classList.toggle('passed', myPlans[id]==='pass');
+      checkPlanComplete(listKey);
+    });
+    div.appendChild(b);
+  });
   return div;
 }

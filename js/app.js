@@ -280,22 +280,45 @@ const MYLIST_SOURCES = [
 ];
 function renderMyList(){
   const body = document.getElementById('mylist-body');
-  let total=0, html='';
-  MYLIST_SOURCES.forEach(src=>{
-    const items = src.get();
-    if(!items.length) return;
-    total += items.length;
-    html += `<div class="ml-group"><div class="ml-head">${src.icon} ${src.label}<b>${items.length}</b></div>`;
-    html += items.map(it=>{
-      const buy = myBuys[it.id] ? `<span class="ml-buy">${myBuys[it.id].b} · ${myBuys[it.id].ch}</span>` : '';
-      const v = myVerdicts[it.id] ? `<span class="ml-v ${myVerdicts[it.id]==='사요'?'y':'n'}">${myVerdicts[it.id]}</span>` : '';
-      return `<div class="ml-item"><span class="ml-nm">${it.nm}</span>${v}${buy}</div>`;
-    }).join('');
-    html += `</div>`;
+
+  // 살 것 / 당근 / 패스 취합
+  const groups = {buy:[], carrot:[], pass:[]};
+  PLAN_SOURCES.forEach(src=>{
+    planListItems(src.key).forEach(x=>{
+      const pl = myPlans[x.id];
+      if(pl) groups[pl].push({...x, src:src.label});
+    });
   });
-  body.innerHTML = total
-    ? `<div class="ml-total">지금까지 체크한 <b>${total}가지</b></div>${html}`
-    : `<div class="ml-empty">아직 체크한 게 없어요.<br>준비물에서 체크하면 여기 한눈에 모여요 📋</div>`;
+  const planned = groups.buy.length + groups.carrot.length + groups.pass.length;
+
+  const row = (it, cls) => {
+    const buy = myBuys[it.id] ? `<span class="ml-buy">${myBuys[it.id].b} · ${myBuys[it.id].ch}</span>` : '';
+    return `<div class="ml-item ${cls}"><span class="ml-nm">${it.nm}</span><span class="ml-src">${it.src}</span>${buy}</div>`;
+  };
+  let html='';
+  [['buy','🛍️ 살 것 (새것)'],['carrot','🥕 당근으로 (중고)'],['pass','🚫 패스']].forEach(([k,label])=>{
+    if(!groups[k].length) return;
+    html += `<div class="ml-group"><div class="ml-head">${label}<b>${groups[k].length}</b></div>${groups[k].map(it=>row(it,k)).join('')}</div>`;
+  });
+
+  // 준비 완료(체크) 섹션
+  const done=[];
+  MYLIST_SOURCES.forEach(s=>{ s.get().forEach(x=> done.push({...x, src:s.label})); });
+  if(done.length){
+    html += `<div class="ml-group"><div class="ml-head">✅ 준비 완료<b>${done.length}</b></div>${done.map(it=>row(it,'done')).join('')}</div>`;
+  }
+
+  // 리스트별 플랜 진행률 (다 정하면 리스트당 ⭐300)
+  const prog = PLAN_SOURCES.map(src=>{
+    const items = planListItems(src.key);
+    const p = items.filter(x=>myPlans[x.id]).length;
+    const full = p===items.length ? ' ✓' : '';
+    return `${src.label} ${p}/${items.length}${full}`;
+  }).join(' · ');
+
+  body.innerHTML = (planned || done.length)
+    ? `<div class="ml-total">플랜 — ${prog}<br><span class="ml-hint">리스트를 다 정하면 리스트당 ⭐300!</span></div>${html}`
+    : `<div class="ml-empty">항목마다 <b>살 것 · 당근으로 · 패스</b>를 골라보세요.<br>리스트를 다 정하면 별똥별 300개를 드려요 ⭐</div>`;
 }
 function openMyList(){ renderMyList(); openModal('mylist-modal'); }
 

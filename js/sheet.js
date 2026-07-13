@@ -510,6 +510,10 @@ function renderSheetItem(it,ci,ii){
       if(!myBuys[id]){ const br = el.querySelector('.buy-row'); if(br) br.remove(); }
     }
   });
+  // 살 것 / 당근 / 패스 선택
+  if(myPlans[id]==='pass') el.classList.add('passed');
+  el.appendChild(planRowEl(id, 'sheet'));
+
   // 체크한(=산) 항목엔 "다시 산다면?" 판정 + "뭘로 샀어요?" 기록
   if(sheetChecked.has(id) || myVerdicts[id]) el.appendChild(judgeRowEl(id));
   if(sheetChecked.has(id) || myBuys[id]) el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));

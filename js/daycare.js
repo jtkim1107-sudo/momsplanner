@@ -158,6 +158,8 @@ function renderDaycareItem(it,ci,ii){
     </div>
   `;
 
+  if(myPlans[id]==='pass') el.classList.add('passed');
+  el.appendChild(planRowEl(id, 'daycare'));
   if(dcChecked.has(id) || myVerdicts[id]) el.appendChild(judgeRowEl(id));
   if(dcChecked.has(id) || myBuys[id]) el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
 

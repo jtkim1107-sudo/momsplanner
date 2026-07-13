@@ -166,6 +166,8 @@ function renderPostpartumItem(it,ci,ii){
     </div>
   `;
 
+  if(myPlans[id]==='pass') el.classList.add('passed');
+  el.appendChild(planRowEl(id, 'postpartum'));
   if(ppChecked.has(id) || myVerdicts[id]) el.appendChild(judgeRowEl(id));
   if(ppChecked.has(id) || myBuys[id]) el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
 

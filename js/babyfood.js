@@ -159,6 +159,8 @@ function renderBabyfoodItem(it,ci,ii){
     </div>
   `;
 
+  if(myPlans[id]==='pass') el.classList.add('passed');
+  el.appendChild(planRowEl(id, 'babyfood'));
   if(bfChecked.has(id) || myVerdicts[id]) el.appendChild(judgeRowEl(id));
   if(bfChecked.has(id) || myBuys[id]) el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
 
