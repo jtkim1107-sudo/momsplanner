@@ -658,7 +658,23 @@ function renderSheetItem(it,ci,ii){
 
   const showChk = sheetMode==='mine'; // 체크(샀어요)는 내 리스트에서
 
-  // 투뎁스 — 겉면: 이름 · 결론 · 따라하기 · 대표 의견 1개
+  // ⚖️ 판정 결과 한 줄 — "뭘로 · 대략 얼마에" (판정 1등 브랜드 + 집계 가격이 말한다)
+  let answer = '';
+  if(sheetMode==='std' && concl){
+    const pi = priceIntel(it, id);
+    const f = (typeof verdictFeedFor==='function') ? verdictFeedFor(it) : null;
+    const brand = (f && f.n>=30 && f.brands && f.brands[0]) ? f.brands[0].nm : sheetBrandCandidates(it)[0];
+    let verdictLine = '';
+    if(concl.k==='yes' && pi)
+      verdictLine = `<b>${brand?brand+' · ':''}${won(pi.dealAt)} 이하</b>로 사세요`;
+    else if(concl.k==='carrot' && pi)
+      verdictLine = `<b>${brand?brand+' · ':''}당근 ${won(pi.carrotLo)}~${won(pi.carrotHi)}</b>에 사세요`;
+    else if(concl.k==='try' && pi)
+      verdictLine = `하나만 사보세요 — <b>${won(pi.dealAt)} 이하</b>`;
+    if(verdictLine) answer = `<span class="ans-k">⚖️ 판정 결과</span>${verdictLine}`;
+  }
+
+  // 투뎁스 — 겉면: 이름 · 결론 · 정답 한 줄 · 따라하기 · 대표 의견 1개
   //          상세(탭): 시세 숫자 전체 · 선배맘 의견 전체
   const ops = it.ops||[];
   const hasMore = !!(priceIntel(it, id) || ops.length);
@@ -668,6 +684,7 @@ function renderSheetItem(it,ci,ii){
       <div class="item-info">
         <div class="item-name">${it.nm}</div>
         ${badges?`<div class="item-badges">${badges}</div>`:''}
+        ${answer?`<div class="ans">${answer}</div>`:''}
         ${it.how?`<div class="how">👉 ${it.how}</div>`:opsHtml(it, id, 1, true)}
       </div>
       ${hasMore?'<span class="item-caret">﹀</span>':''}

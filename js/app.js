@@ -113,7 +113,7 @@ function render(){
   if(viewMode==='sheet'){
     document.getElementById('hero-title').textContent = '출산 준비물 체크리스트';
     document.getElementById('hero-dday').textContent = `출산예정일 D-${state.dday}`;
-    document.getElementById('demo-note').textContent = '선배맘 네 명의 리스트로 시작했어요 · 가격과 후기는 참고만!';
+    document.getElementById('demo-note').textContent = '뭘 사야 하는지 · 뭘로 · 대략 얼마에 — 선배맘 판정으로 알려드려요';
     document.getElementById('preview-note').style.display='none';
     renderSheet();
     return;
