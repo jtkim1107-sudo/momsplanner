@@ -300,7 +300,8 @@
   .badge.concl{font-weight:900;color:#fff;padding:3px 10px;border-radius:7px;}
   .badge.concl.yes{background:var(--green);}
   .badge.concl.no{background:var(--red);}
-  .badge.concl.debate{background:var(--gold);}
+  .badge.concl.try{background:var(--gold);}
+  .badge.concl.closet{background:#8D8477;}
   .badge.concl.carrot{background:#E8712E;}
   .ops{display:flex;flex-direction:column;gap:4px;margin-top:5px;}
   .op{font-size:12px;color:var(--ink);line-height:1.55;}

@@ -2,8 +2,7 @@
 // 소행성 육아플래너 — 앱 로직
 // ============================================================
 
-let viewMode = 'sheet'; // 상단 두 탭: 준비물(출산/어린이집/이유식) · 월령별 국민템
-let viewSegIdx = null; // null = 내 구간
+let viewMode = 'sheet'; // 준비물 리스트 칩: 출산/조리원/신생아/이유식/어린이집/월령별(seg4~8)
 const STORE_KEY = 'sohaengseong-planner-checked';
 let checked = new Set(['A1','A2','A3']);
 try{
@@ -67,49 +66,41 @@ function computeState(){
 const state = computeState();
 
 function currentSegIdx(){
-  return viewSegIdx===null ? state.segIdx : viewSegIdx;
+  return viewMode.startsWith('seg') ? +viewMode.slice(3) : 4;
 }
 
 function deadlineChip(g, done, total){
   if(done===total) return `<span class="deadline done">완료 ✓</span>`;
-  if(g.deadlineWeek && currentSegIdx()===state.segIdx && viewMode==='preg'){
-    const left = g.deadlineWeek - state.weeks;
-    const label = g.deadlineWeek===40 ? '출산 전' : g.deadlineWeek+'주까지';
-    if(left<=0) return `<span class="deadline urgent">${label} · 지금!</span>`;
-    if(left<=2) return `<span class="deadline urgent">${label} · ${left}주 남음</span>`;
-    return `<span class="deadline">${label} · ${left}주 남음</span>`;
-  }
   const label = g.deadlineLabel || (g.deadlineWeek===40?'출산 전':g.deadlineWeek+'주까지');
   return `<span class="deadline info">${label}</span>`;
 }
 
-// 준비물 하위 리스트
+// 준비물 리스트 — 월령별 국민템도 리스트의 하나로 (리스트 다양화 전략)
 const PREP_LISTS = [
   {key:'sheet',      label:'출산'},
   {key:'postpartum', label:'조리원'},
-  {key:'daycare',    label:'어린이집'},
+  {key:'seg4',       label:'신생아'},
   {key:'babyfood',   label:'이유식'},
+  {key:'daycare',    label:'어린이집'},
+  {key:'seg5',       label:'3~6개월'},
+  {key:'seg6',       label:'6~12개월'},
+  {key:'seg7',       label:'12~24개월'},
+  {key:'seg8',       label:'24~36개월'},
 ];
-function isPrepView(v){ return v==='sheet'||v==='postpartum'||v==='daycare'||v==='babyfood'; }
-let prepView = 'sheet'; // 준비물 탭에서 마지막으로 본 리스트
 
-function renderPrepTabs(show){
+function renderPrepTabs(){
   const bar = document.getElementById('prep-tabs');
-  bar.style.display = show ? 'flex' : 'none';
-  if(!show){ bar.innerHTML=''; return; }
+  bar.style.display = 'flex';
   bar.innerHTML = PREP_LISTS.map(L=>
     `<button class="prep-chip${viewMode===L.key?' on':''}" onclick="setView('${L.key}')">${L.label}</button>`
   ).join('');
 }
 
 function render(){
-  const isTimeline = viewMode==='preg';
-  const isPrep = isPrepView(viewMode);
-  document.getElementById('timeline').style.display = isTimeline ? 'flex' : 'none';
-  document.querySelector('.searchwrap').style.display = isTimeline ? 'block' : 'none';
-  document.getElementById('mt-prep').classList.toggle('on', isPrep);
-  document.getElementById('mt-preg').classList.toggle('on', isTimeline);
-  renderPrepTabs(isPrep);
+  renderPrepTabs();
+  document.getElementById('timeline').style.display = 'none';
+  document.querySelector('.searchwrap').style.display = 'none';
+  document.getElementById('preview-note').style.display = 'none';
 
   // 준비물 시트 뷰 — 타임라인 없이 시트 전용 렌더
   if(viewMode==='sheet'){
@@ -151,37 +142,14 @@ function render(){
     return;
   }
 
+  // 월령별 국민템 — 준비물 리스트의 하나 (seg4~seg8)
   const segIdx = currentSegIdx();
   const seg = SEGMENTS[segIdx];
 
-  document.getElementById('hero-title').textContent = `${PROFILE.nick}님, 임신 ${state.weeks}주차예요`;
-  document.getElementById('hero-dday').textContent = `출산예정일 D-${state.dday}`;
+  document.getElementById('hero-title').textContent = `${seg.name} 국민템`;
+  document.getElementById('hero-dday').textContent = seg.range;
   document.getElementById('demo-note').textContent =
     `선배맘 ${BIG_STATS.moms.toLocaleString()}명의 판정 ${BIG_STATS.verdicts.toLocaleString()}건 · 베타 기간이라 일부는 샘플이에요`;
-
-  // 미리보기 노트
-  const pn = document.getElementById('preview-note');
-  if(segIdx!==state.segIdx){
-    pn.style.display='block';
-    pn.textContent = segIdx < state.segIdx
-      ? `👀 지나온 구간을 보고 있어요 — 내 구간으로 돌아가려면 "${SEGMENTS[state.segIdx].name}" 구간을 눌러요`
-      : `👀 다음 구간 미리보기 — 지금은 "${SEGMENTS[state.segIdx].name}"에 집중해도 충분해요`;
-  }else{ pn.style.display='none'; }
-
-  const tl = document.getElementById('timeline');
-  tl.innerHTML='';
-  const myIdx = state.segIdx;
-  SEGMENTS.forEach((s,i)=>{
-    const el=document.createElement('span');
-    let cls = 'seg ';
-    if(i===segIdx) cls+='active';
-    else if(i<myIdx) cls+='done';
-    else if(i>myIdx) cls+='future';
-    el.className=cls;
-    el.textContent = s.name + (i===segIdx?` (${s.range})`:'');
-    el.onclick=()=>{ viewSegIdx = (i===state.segIdx? null : i); render(); };
-    tl.appendChild(el);
-  });
 
   document.getElementById('prog-name').textContent = seg.name + ' 국민템';
 
@@ -201,10 +169,10 @@ function render(){
   }
 
   const content = CONTENT[seg.id];
-  // 시기별 화면은 국민템(구매 아이템) 정보만 — 접종·행정 등 할 일 항목은 준비물 연동이 있을 때만 노출
+  // 국민템(구매 아이템) 정보만 — 접종·행정 등 할 일 항목은 준비물 연동이 있을 때만 노출
   const visibleTL = x => x.type==='buy' || !!TL_SHEET_LINK[x.id];
 
-  // 🏆 시기별 국민템 — 이 구간에서 판정 기준(85%+)을 넘은 아이템 모아보기
+  // 🏆 이 월령에서 판정 기준(85%+)을 넘은 아이템 모아보기
   const natl = [];
   content.groups.forEach(g=> g.items.forEach(x=>{ if(isNational(x)) natl.push(x); }));
   if(natl.length){
@@ -331,14 +299,15 @@ function renderItem(it){
 
   let badges='';
   if(it.type==='buy'){
-    if(it.debate){ badges+=`<span class="badge concl debate">고민해봐요</span><span class="badge debate">🔥 논쟁 중 — 의견이 갈려요</span>`; }
+    if(it.debate){ badges+=`<span class="badge concl try">하나만 사보세요</span><span class="badge debate">🔥 논쟁 중 — 의견이 갈려요</span>`; }
     else if(it.verdict && it.verdict.n>=N_MIN){
-      // 판정 % → 한 줄 결론 (연동된 준비물이 당근 추천이면 '당근해요')
+      // 판정 % → 한 줄 결론 (연동된 준비물이 당근 추천이면 '무조건 당근하세요')
       const linked = sheetInfoFor(it.id);
-      const concl = (linked && linked.carrot && it.verdict.yes>=60) ? {k:'carrot', label:'당근해요'}
-        : it.verdict.yes>=NATIONAL_MIN ? {k:'yes', label:'사요'}
-        : it.verdict.yes>=60 ? {k:'debate', label:'고민해봐요'}
-        : {k:'no', label:'마요'};
+      const concl = (linked && linked.carrot && it.verdict.yes>=60) ? {k:'carrot', label:'무조건 당근하세요'}
+        : it.verdict.yes>=NATIONAL_MIN ? {k:'yes', label:'무조건 사세요'}
+        : it.verdict.yes>=60 ? {k:'try', label:'하나만 사보세요'}
+        : it.verdict.yes>=45 ? {k:'closet', label:'장롱템, 패스하세요'}
+        : {k:'no', label:'절대 사지 마세요'};
       badges+=`<span class="badge concl ${concl.k}">${concl.label}</span>`;
       if(isNational(it)) badges+=`<span class="badge national">🏆 국민템</span>`;
       badges+=`<span class="badge verdict">사요 ${it.verdict.yes}% · 선배맘 ${it.verdict.n.toLocaleString()}명</span>`;
@@ -497,9 +466,8 @@ function requestProduct(e,nm){
 }
 
 function setView(v){
-  if(isPrepView(v)) prepView = v; // 준비물 탭이 기억할 리스트
   if(viewMode===v) return;
-  viewMode=v; viewSegIdx=null; render();
+  viewMode=v; render();
 }
 
 function openModal(id){ document.getElementById(id).classList.add('on'); }
@@ -537,11 +505,7 @@ function doSearch(){
 }
 
 function gotoItem(segIdx, itemId){
-  document.getElementById('search').value='';
-  document.getElementById('search-results').classList.remove('on');
-  if(viewMode!=='preg'){ viewMode='preg'; }
-  viewSegIdx = (segIdx===state.segIdx ? null : segIdx);
-  render();
+  setView('seg'+segIdx);
   const el = document.getElementById('item-'+itemId);
   if(el){
     if(el.querySelector('.item-detail')) el.classList.add('open');

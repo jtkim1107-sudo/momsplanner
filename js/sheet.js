@@ -339,20 +339,23 @@ function reconcileSheetLinks(){
   });
 }
 
-// ---- 결론: 사요 / 마요 / 고민해봐요 / 당근해요 ----
-// 선배맘 의견(추천/쏘쏘/비추)과 당근 추천 여부를 집계해 한 줄 결론을 낸다.
+// ---- 결론 5단계 ----
+// 선배맘 의견(추천/쏘쏘/비추)·당근 추천을 집계해 한 줄 결론:
+// 무조건 사세요 / 하나만 사보세요 / 무조건 당근하세요 / 장롱템, 패스하세요 / 절대 사지 마세요
 function sheetConclusion(it){
   const ops = it.ops||[];
   let rec  = ops.filter(o=>o.verdict==='추천').length;
   const bad  = ops.filter(o=>o.verdict==='비추').length;
   const soso = ops.filter(o=>o.verdict==='쏘쏘').length;
-  if(it.min) rec++; // 미니멀 필수 선정 = 사요 한 표
-  if(bad>0 && rec>0)  return {k:'debate', label:'고민해봐요'};
-  if(bad>0)           return {k:'no',     label:'마요'};
-  if(it.carrot && rec>0) return {k:'carrot', label:'당근해요'};
-  if(rec>0)           return {k:'yes',    label:'사요'};
-  if(it.carrot)       return {k:'carrot', label:'당근해요'};
-  if(soso>0)          return {k:'debate', label:'고민해봐요'};
+  if(it.min) rec++; // 미니멀 필수 선정 = 추천 한 표
+  if(bad>0 && rec===0 && soso===0) return {k:'no',     label:'절대 사지 마세요'};
+  if(bad>0 && rec===0)             return {k:'closet', label:'장롱템, 패스하세요'};   // 쏘쏘+비추
+  if(bad>0 && rec>0)               return {k:'try',    label:'하나만 사보세요'};      // 의견 갈림
+  if(it.carrot && rec>0)           return {k:'carrot', label:'무조건 당근하세요'};
+  if(rec>0 && soso>rec)            return {k:'try',    label:'하나만 사보세요'};
+  if(rec>0)                        return {k:'yes',    label:'무조건 사세요'};
+  if(it.carrot)                    return {k:'carrot', label:'무조건 당근하세요'};
+  if(soso>0)                       return {k:'try',    label:'하나만 사보세요'};
   return null; // 아직 의견 없음
 }
 
@@ -468,7 +471,7 @@ function renderSheetItem(it,ci,ii){
   if(it.carrot) badges += `<span class="badge carrot">🥕 당근 추천</span>`;
   if(it.link){
     const si = tlSegIdx(it.link);
-    if(si>=0) badges += `<span class="badge region" data-link="${it.link}" data-seg="${si}">${SEGMENTS[si].name} ↗</span>`;
+    if(si>=4) badges += `<span class="badge region" data-link="${it.link}" data-seg="${si}">${SEGMENTS[si].name} ↗</span>`; // 월령 리스트로 점프
   }
 
   const qty = sheetQty[id]||0;
