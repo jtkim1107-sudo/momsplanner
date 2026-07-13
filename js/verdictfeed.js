@@ -13,21 +13,21 @@
 const VERDICT_FEED = {
   // 출산 준비물 — brands: 본격 판정의 브랜드 응답 집계 (점유율순)
   '유모차':            {need:93, n:412, ch:{'새제품':38,'중고':44,'대여':5,'선물받음':11,'구매안함':2},
-                        brands:[{nm:'오이스터',p:23},{nm:'잉글레시나',p:19},{nm:'부가부',p:14}]},
+                        brands:[{nm:'오이스터',p:23,won:680000},{nm:'잉글레시나',p:19,won:850000},{nm:'부가부',p:14,won:1390000}]},
   '젖병소독기':        {need:78, n:214, ch:{'새제품':52,'중고':31,'대여':6,'선물받음':8,'구매안함':3},
-                        brands:[{nm:'유팡',p:41},{nm:'에디슨',p:22},{nm:'픽셀',p:11}]},
+                        brands:[{nm:'유팡',p:41,won:280000},{nm:'에디슨',p:22,won:230000},{nm:'픽셀',p:11,won:260000}]},
   '아기욕조':          {need:81, n:186, ch:{'새제품':47,'중고':28,'대여':3,'선물받음':17,'구매안함':5},
-                        brands:[{nm:'슈너글',p:32},{nm:'마더케이',p:21},{nm:'말랑하니',p:17}]},
+                        brands:[{nm:'슈너글',p:32,won:35000},{nm:'마더케이',p:21,won:30000},{nm:'말랑하니',p:17,won:20000}]},
   '역류방지쿠션':      {need:64, n:143, ch:{'새제품':41,'중고':33,'대여':2,'선물받음':16,'구매안함':8},
-                        brands:[{nm:'로토토',p:38},{nm:'엔젤앤비',p:16},{nm:'포몽드',p:9}]},
+                        brands:[{nm:'로토토',p:38,won:46000},{nm:'엔젤앤비',p:16,won:40000},{nm:'포몽드',p:9,won:36000}]},
   '바운서':            {need:52, n:97,  hot:true, ch:{'새제품':24,'중고':48,'대여':11,'선물받음':9,'구매안함':8},
-                        brands:[{nm:'베이비뵨',p:34},{nm:'포맘스',p:18},{nm:'타이니러브',p:12}]},
+                        brands:[{nm:'베이비뵨',p:34,won:240000},{nm:'포맘스',p:18,won:320000},{nm:'타이니러브',p:12,won:130000}]},
   '도넛방석 (회음부 방석)': {need:49, n:26, hot:true, ch:{'새제품':55,'중고':14,'대여':0,'선물받음':22,'구매안함':9}}, // 30명 미만 — 순위 비공개 (신뢰 게이트)
   // 조리원 준비물
   '손목 보호대':       {need:71, n:58,  ch:{'새제품':66,'중고':9,'대여':0,'선물받음':19,'구매안함':6},
-                        brands:[{nm:'언더렉스',p:44},{nm:'다이소',p:13},{nm:'멀티맘',p:8}]},
+                        brands:[{nm:'언더렉스',p:44,won:25000},{nm:'다이소',p:13,won:5000},{nm:'멀티맘',p:8,won:15000}]},
   '다리마사지기':      {need:47, n:41,  hot:true, ch:{'새제품':31,'중고':27,'대여':18,'선물받음':15,'구매안함':9},
-                        brands:[{nm:'LG',p:21},{nm:'샤오미',p:18},{nm:'휴롬',p:9}]},
+                        brands:[{nm:'LG',p:21,won:590000},{nm:'샤오미',p:18,won:130000},{nm:'휴롬',p:9,won:450000}]},
 };
 
 function verdictFeedFor(it){
@@ -76,13 +76,23 @@ function feedDetailHtml(f){
     </div>`;
 }
 
-// 판정 완료 상품의 브랜드 1·2·3등 — 30명 미만이면 순위 비공개
+// 판정 완료 상품의 브랜드 1·2·3등 + 브랜드별 적정가 — 30명 미만이면 비공개
+function vfWon(v){ return v>=100000 ? Math.round(v/10000)+'만원' : v.toLocaleString()+'원'; }
 function feedRankHtml(f){
   if(!f.brands || !f.brands.length) return '';
   if(f.n < 30) return `<div class="vf-rank wait">🏷️ 브랜드 순위는 판정 30명부터 공개돼요</div>`;
   const medals = ['🥇','🥈','🥉'];
+  const rows = f.brands.slice(0,3).map((b,i)=>{
+    // 브랜드별 적정가 — 관측 신품가 + 당근 적정 범위(신품의 35~50%)
+    const price = b.won
+      ? `<span class="rk-price">새것 ${vfWon(b.won)} · 🥕 ${vfWon(Math.round(b.won*0.35/100)*100)}~${vfWon(Math.round(b.won*0.5/100)*100)}</span>`
+      : '';
+    return `<div class="vf-rk"><span class="rk-medal">${medals[i]}</span>
+      <div class="rk-body"><span class="rk-nm">${b.nm} <b>${b.p}%</b></span>${price}</div></div>`;
+  }).join('');
   return `<div class="vf-rank">
-    <span class="vf-rank-head">🏆 브랜드 순위</span>
-    ${f.brands.slice(0,3).map((b,i)=>`<div class="vf-rk"><span class="rk-medal">${medals[i]}</span><span class="rk-nm">${b.nm}</span><b>${b.p}%</b></div>`).join('')}
+    <span class="vf-rank-head">🏆 브랜드 순위 · 적정가</span>
+    ${rows}
+    <span class="rk-note">점유율은 판정 브랜드 응답 · 가격은 구매 기록(뭘로·얼마에) 집계</span>
   </div>`;
 }
