@@ -84,14 +84,11 @@ function deadlineChip(g, done, total){
 }
 
 function render(){
-  document.getElementById('nav-home').classList.toggle('on', viewMode!=='preg');
-  document.getElementById('nav-preg').classList.toggle('on', viewMode==='preg');
   const isTimeline = viewMode==='preg';
   document.getElementById('timeline').style.display = isTimeline ? 'flex' : 'none';
   document.querySelector('.searchwrap').style.display = isTimeline ? 'block' : 'none';
-  // 홈/시기별은 최상위, 리스트 상세에서는 "‹ 홈" 뒤로가기 노출
-  const isList = (viewMode==='sheet' || viewMode==='daycare' || viewMode==='babyfood');
-  document.getElementById('hero-back').style.display = isList ? 'inline-flex' : 'none';
+  // 홈이 허브 — 홈이 아니면 어디서든 "‹ 홈" 뒤로가기
+  document.getElementById('hero-back').style.display = viewMode==='home' ? 'none' : 'inline-flex';
 
   // 홈 — 리스트 선택
   if(viewMode==='home'){
@@ -228,9 +225,10 @@ function render(){
 // ---- 홈: 준비 리스트 카드 ----
 // 리스트를 추가할 때마다 데이터 파일 하나 + 이 배열에 한 줄이면 홈에 뜬다.
 const HOME_LISTS = [
-  {key:'sheet',    icon:'🛒', title:'출산 준비물',   sub:'낳기 전 미리 챙길 것',  totals:()=>sheetTotals()},
-  {key:'daycare',  icon:'🏫', title:'어린이집 입소', sub:'3월 입소철 준비물',     totals:()=>dcTotals()},
-  {key:'babyfood', icon:'🍽️', title:'이유식 준비물', sub:'이유식 시작 전 준비',   totals:()=>bfTotals()},
+  {key:'preg',     icon:'🗓️', title:'시기별 국민템', sub:'지금 내 구간에 필요한 것', totals:null},
+  {key:'sheet',    icon:'🛒', title:'출산 준비물',   sub:'낳기 전 미리 챙길 것',     totals:()=>sheetTotals()},
+  {key:'daycare',  icon:'🏫', title:'어린이집 입소', sub:'3월 입소철 준비물',        totals:()=>dcTotals()},
+  {key:'babyfood', icon:'🍽️', title:'이유식 준비물', sub:'이유식 시작 전 준비',      totals:()=>bfTotals()},
 ];
 function renderHome(){
   const area = document.getElementById('body-area');
@@ -258,13 +256,6 @@ function renderHome(){
     grid.appendChild(card);
   });
   area.appendChild(grid);
-
-  // 시기별은 하단 탭에 있지만, 홈에서도 바로 갈 수 있게 얇은 링크
-  const tl = document.createElement('button');
-  tl.className='home-tl-link';
-  tl.innerHTML = `🗓️ 지금 임신 ${state.weeks}주차 — <b>이 시기 국민템 보기</b> ›`;
-  tl.onclick=()=>setView('preg');
-  area.appendChild(tl);
 
   document.getElementById('prog-name').textContent = '별똥별';
   const {done, total} = (function(){ let d=0,t=0; HOME_LISTS.forEach(L=>{ if(L.totals){ const x=L.totals(); d+=x.done; t+=x.total; } }); return {done:d,total:t}; })();

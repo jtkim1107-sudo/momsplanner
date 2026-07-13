@@ -84,7 +84,7 @@
   .sr .ss{font-size:10.5px;font-weight:900;color:var(--brown-deep);background:#F1EADB;border-radius:5px;padding:2px 8px;white-space:nowrap;}
   .sr-empty{padding:16px;text-align:center;font-size:12.5px;color:var(--sub);}
 
-  .body-area{flex:1;padding:18px 14px 80px;overflow-y:auto;}
+  .body-area{flex:1;padding:18px 14px 28px;overflow-y:auto;}
   .body-area::-webkit-scrollbar{display:none;}
 
   .region-card{
@@ -104,27 +104,6 @@
     font-family:inherit;font-size:12px;font-weight:800;border-radius:16px;padding:5px 13px 5px 9px;cursor:pointer;
   }
   .hero-back:active{transform:scale(.96);}
-
-  .tabbar{
-    position:absolute;left:0;right:0;bottom:0;height:60px;
-    background:var(--card);border-top:1px solid var(--line);display:flex;z-index:20;
-  }
-  .tabbar button{
-    flex:1;border:none;background:none;font-family:inherit;cursor:pointer;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
-    font-size:11px;font-weight:800;color:var(--sub);transition:color .15s;
-  }
-  .tabbar button .ic{font-size:19px;line-height:1;filter:grayscale(.4);opacity:.7;transition:.15s;}
-  .tabbar button.on{color:var(--brown-deep);}
-  .tabbar button.on .ic{filter:none;opacity:1;}
-
-  .home-tl-link{
-    display:block;width:100%;margin-top:16px;background:none;border:1.5px dashed var(--line);
-    border-radius:12px;padding:13px 0;font-family:inherit;font-size:13px;color:var(--sub);
-    font-weight:700;cursor:pointer;
-  }
-  .home-tl-link b{color:var(--brown-deep);font-weight:900;}
-  .home-tl-link:active{transform:scale(.99);}
 
   .home-grid{display:flex;flex-direction:column;gap:12px;}
   .home-card{
