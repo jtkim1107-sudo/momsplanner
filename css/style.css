@@ -137,6 +137,7 @@
   .badge.gender{background:#F6EFE2;color:var(--gold);}
   .badge.region{background:#EEF2F8;color:var(--blue);cursor:pointer;}
   .badge.brand{background:#F4F0E8;color:var(--sub);font-weight:500;}
+  .badge.need{background:#EEF2F8;color:var(--blue);}
   .badge.price{background:var(--green-bg);color:var(--green);}
   .badge.carrot{background:#FFF0E3;color:#D97B29;}
   .qty{flex:0 0 auto;display:flex;align-items:center;gap:7px;}
