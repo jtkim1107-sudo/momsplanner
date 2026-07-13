@@ -426,6 +426,11 @@ function sheetBrandCandidates(it){
     if(!v || /^\d/.test(v) || BRAND_STOPWORDS.includes(v)) return; // 수량·일반명사는 브랜드가 아님
     if(!out.includes(v) && out.length<8) out.push(v);
   };
+  // 판정 순위 브랜드가 있으면 그게 최우선 후보 (1등부터)
+  if(typeof verdictFeedFor==='function'){
+    const f = verdictFeedFor(it);
+    if(f && f.n>=30 && f.brands) f.brands.forEach(b=> push(b.nm));
+  }
   if(it.brands) it.brands.split('·').forEach(push);         // 참고 브랜드 필드
   (it.ops||[]).forEach(o=>{ if(o.buy) push(o.buy.split('·')[0].split(' ')[0]); }); // 선배맘이 산 브랜드
   return out;

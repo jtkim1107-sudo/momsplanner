@@ -415,8 +415,15 @@
   .vf-lbl span:last-child{color:#9C5844;}
   .vf-ch{display:flex;gap:5px;flex-wrap:wrap;margin-top:2px;}
   .vf-ch span{font-size:10px;font-weight:700;color:#8A7357;background:#fff;border:1px solid #EAE0CD;border-radius:20px;padding:2.5px 8px;}
-  .vf-top{font-size:11px;color:var(--sub);font-weight:600;}
   .vf-src{font-size:9.5px;color:var(--dim);}
+  .badge.rank1{background:#FDF6E3;color:#8A7357;border:1px solid #EEE2C4;font-weight:800;}
+  .vf-rank{background:#fff;border:1px solid #EFE7D8;border-radius:12px;padding:9px 12px;margin-top:2px;}
+  .vf-rank.wait{font-size:11px;color:var(--sub);font-weight:600;}
+  .vf-rank-head{display:block;font-size:10px;font-weight:900;color:#8A7357;letter-spacing:.04em;margin-bottom:5px;}
+  .vf-rk{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;padding:3px 0;}
+  .vf-rk .rk-nm{flex:1;}
+  .vf-rk b{color:#8A7357;font-weight:800;font-size:11.5px;}
+  .rk-medal{font-size:14px;}
   .tip-box .op{color:#7A6142;}
   .tip-box .op-meta{color:#B8A98F;}
   .qty{flex:0 0 auto;display:flex;align-items:center;gap:7px;}
