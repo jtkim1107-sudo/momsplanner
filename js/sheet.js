@@ -280,10 +280,10 @@ const SHEET_CHK_KEY = 'sohaengseong-sheet-checked';
 const SHEET_QTY_KEY = 'sohaengseong-sheet-qty';
 const SHEET_MODE_KEY = 'sohaengseong-sheet-mode';
 
-let sheetMode = 'min'; // 'min' 미니멀(필수템만) | 'max' 맥시멀(전체)
+let sheetMode = 'std'; // 'std' 표준 리스트(전체) | 'mine' 내 리스트(체크·사기로 한 것)
 try{
   const m = localStorage.getItem(SHEET_MODE_KEY);
-  if(m==='min'||m==='max') sheetMode = m;
+  if(m==='std'||m==='mine') sheetMode = m;
 }catch(e){}
 function setSheetMode(m){
   if(sheetMode===m) return;
@@ -291,7 +291,11 @@ function setSheetMode(m){
   try{ localStorage.setItem(SHEET_MODE_KEY, m); }catch(e){}
   renderSheet();
 }
-function sheetVisible(it){ return sheetMode==='max' || !!it.min; }
+// 내 리스트 = 체크했거나 살 것/당근으로 정한 항목 (패스는 뺀 나만의 리스트)
+function sheetMine(id){
+  return sheetChecked.has(id) || myPlans[id]==='buy' || myPlans[id]==='carrot';
+}
+function sheetVisible(it, id){ return sheetMode==='std' || sheetMine(id); }
 
 function sheetItemId(ci, ii){ return 'sh' + ci + '-' + ii; }
 
@@ -390,22 +394,26 @@ function opsHtml(it, id){
 function sheetTotals(){
   let total=0, done=0;
   SHEET_CATEGORIES.forEach((c,ci)=> c.items.forEach((it,ii)=>{
-    if(!sheetVisible(it)) return;
-    total++; if(sheetChecked.has(sheetItemId(ci,ii))) done++;
+    const id = sheetItemId(ci,ii);
+    if(!sheetVisible(it, id)) return;
+    total++; if(sheetChecked.has(id)) done++;
   }));
   return {total, done};
 }
 function sheetCountAll(){
-  let min=0, max=0;
-  SHEET_CATEGORIES.forEach(c=> c.items.forEach(it=>{ max++; if(it.min) min++; }));
-  return {min, max};
+  let mine=0, all=0;
+  SHEET_CATEGORIES.forEach((c,ci)=> c.items.forEach((it,ii)=>{
+    all++; if(sheetMine(sheetItemId(ci,ii))) mine++;
+  }));
+  return {mine, all};
 }
 
 function sheetCatCount(ci){
   let total=0, done=0;
   SHEET_CATEGORIES[ci].items.forEach((it,ii)=>{
-    if(!sheetVisible(it)) return;
-    total++; if(sheetChecked.has(sheetItemId(ci,ii))) done++;
+    const id = sheetItemId(ci,ii);
+    if(!sheetVisible(it, id)) return;
+    total++; if(sheetChecked.has(id)) done++;
   });
   return {total, done};
 }
@@ -414,33 +422,35 @@ function renderSheet(){
   const area = document.getElementById('body-area');
   area.innerHTML='';
 
-  // 미니멀 / 맥시멀 모드 토글
+  // 표준 리스트 / 내 리스트 토글 — 남들 표준과 내가 고른 것 비교
   const cnt = sheetCountAll();
   const mt = document.createElement('div');
   mt.className='sheet-mode';
   mt.innerHTML = `
-    <button class="${sheetMode==='min'?'on':''}" onclick="setSheetMode('min')">미니멀 · ${cnt.min}</button>
-    <button class="${sheetMode==='max'?'on':''}" onclick="setSheetMode('max')">맥시멀 · ${cnt.max}</button>
+    <button class="${sheetMode==='std'?'on':''}" onclick="setSheetMode('std')">표준 리스트 · ${cnt.all}</button>
+    <button class="${sheetMode==='mine'?'on':''}" onclick="setSheetMode('mine')">내 리스트 · ${cnt.mine}</button>
   `;
   area.appendChild(mt);
 
   const intro = document.createElement('div');
   intro.className='region-card';
   intro.style.cursor='default';
-  intro.innerHTML = sheetMode==='min' ? `
-    <span class="ri">🌱</span>
-    <div class="rc"><h3>이것만 있어도 돼요</h3>
-    <p>미니멀리스트 호호마더가 다섯 달 써보고 남긴 것들. 나머지는 낳고 나서 사도 안 늦어요.</p></div>
-  ` : `
+  intro.innerHTML = sheetMode==='std' ? `
     <span class="ri">🛒</span>
-    <div class="rc"><h3>다 보고 고르고 싶다면</h3>
-    <p>선배맘 네 명이 공유해준 리스트를 전부 합쳤어요. 잎사귀 붙은 게 미니멀 쪽 필수, 가격은 산 시점 기준이라 오차 있어요.</p></div>
+    <div class="rc"><h3>선배맘들의 표준 리스트</h3>
+    <p>선배맘 네 명의 리스트를 합친 기준표예요. 체크하거나 "살 것 · 당근으로"를 고르면 내 리스트에 담겨요. 🌱는 미니멀 필수템!</p></div>
+  ` : `
+    <span class="ri">✨</span>
+    <div class="rc"><h3>내가 고른 리스트</h3>
+    <p>체크했거나 살 것 · 당근으로 정한 것만 모았어요. 표준 리스트와 오가며 비교해보세요 — 빠진 게 보이면 담으면 돼요.</p></div>
   `;
   area.appendChild(intro);
 
+  let shownCats = 0;
   SHEET_CATEGORIES.forEach((cat,ci)=>{
     const {total, done} = sheetCatCount(ci);
     if(!total) return; // 이 모드에서 보여줄 항목이 없는 카테고리
+    shownCats++;
     const gEl = document.createElement('div'); gEl.className='group';
     const chip = done===total
       ? '<span class="deadline done">완료 ✓</span>'
@@ -450,9 +460,15 @@ function renderSheet(){
       <div class="group-items" id="shi-${ci}"></div>
     `;
     const holder = gEl.querySelector('#shi-'+ci);
-    cat.items.forEach((it,ii)=>{ if(sheetVisible(it)) holder.appendChild(renderSheetItem(it,ci,ii)); });
+    cat.items.forEach((it,ii)=>{ if(sheetVisible(it, sheetItemId(ci,ii))) holder.appendChild(renderSheetItem(it,ci,ii)); });
     area.appendChild(gEl);
   });
+  if(!shownCats){
+    const empty = document.createElement('div');
+    empty.className='collect-box';
+    empty.innerHTML='<b>아직 내 리스트가 비어 있어요</b>표준 리스트에서 체크하거나 "살 것 · 당근으로"를 고르면 여기 모여요.';
+    area.appendChild(empty);
+  }
   updateSheetProgress();
 }
 
@@ -464,7 +480,7 @@ function renderSheetItem(it,ci,ii){
   let badges='';
   const concl = sheetConclusion(it);
   if(concl) badges += `<span class="badge concl ${concl.k}">${concl.label}</span>`;
-  if(it.min && sheetMode==='max') badges += `<span class="badge minimal">🌱 미니멀</span>`;
+  if(it.min) badges += `<span class="badge minimal">🌱 미니멀</span>`;
   if(it.need)   badges += `<span class="badge need">${it.need}</span>`;
   if(it.brands) badges += `<span class="badge brand">${it.brands}</span>`;
   if(it.deal)   badges += `<span class="badge price">핫딜 ${it.deal}</span>`;
@@ -538,7 +554,7 @@ function renderSheetItem(it,ci,ii){
 
 function updateSheetProgress(){
   const {total, done} = sheetTotals();
-  document.getElementById('prog-name').textContent = sheetMode==='min' ? '출산 준비물 (미니멀)' : '출산 준비물 (전체)';
+  document.getElementById('prog-name').textContent = sheetMode==='mine' ? '출산 준비물 · 내 리스트' : '출산 준비물 · 표준';
   document.getElementById('prog-text').textContent = done+' / '+total+' 완료';
   document.getElementById('prog-fill').style.width = (done/total*100)+'%';
 }
