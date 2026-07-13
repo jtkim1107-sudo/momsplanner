@@ -227,24 +227,24 @@ function renderPostpartumItem(it,ci,ii){
   const el = document.createElement('div');
   el.className = 'item' + (ppChecked.has(id)?' checked':'');
 
+  // 배지는 결론 + 판정 규모 + 개수만 — 브랜드·당근추천은 의견/결론과 중복
   let badges='';
   const concl = sheetConclusion(it);
   if(concl) badges += `<span class="badge concl ${concl.k}">${concl.label}</span>`;
   badges += verdictBadge(it, id);
-  if(it.need)   badges += `<span class="badge need">${it.need}</span>`;
-  if(it.brands) badges += `<span class="badge brand">${it.brands}</span>`;
-  if(it.carrot) badges += `<span class="badge carrot">🥕 당근 추천</span>`;
+  if(it.need) badges += `<span class="badge need">${it.need}</span>`;
 
   el.innerHTML = `
     <div class="item-main" style="align-items:center;">
       <div class="chk"></div>
       <div class="item-info">
         <div class="item-name">${it.nm}</div>
-        ${opsHtml(it, id)}
         ${badges?`<div class="item-badges">${badges}</div>`:''}
+        ${opsHtml(it, id)}
       </div>
     </div>
   `;
+  bindOpsMore(el, it, id);
 
   if(myPlans[id]==='pass') el.classList.add('passed');
   el.appendChild(planRowEl(id, 'postpartum'));

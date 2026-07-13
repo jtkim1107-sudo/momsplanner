@@ -484,15 +484,37 @@ function priceRowEl(it, id){
 
 // ---- 선배맘 의견 렌더 (시트 + 구간 상세 공용) ----
 function opIcon(v){ return v==='추천' ? '👍' : v==='비추' ? '👎' : v==='쏘쏘' ? '😐' : '💬'; }
-function opsHtml(it, id){
+function opsHtml(it, id, limit){
   const ops = [...(it.ops||[])];
   if(id && myBuys[id]) ops.push({who: PROFILE.nick+' (나)', verdict: myVerdicts[id], buy: myBuys[id].b+' · '+myBuys[id].ch+(myBuys[id].p?' '+myBuys[id].p.toLocaleString()+'원':'')});
   if(!ops.length) return '';
-  return `<div class="ops">` + ops.map(o=>{
+  // 코멘트 있는 의견 우선, 기본 2개까지 — 나머지는 접어둔다 (누더기 방지)
+  const sorted = [...ops].sort((a,b)=> (b.txt?1:0)-(a.txt?1:0));
+  const max = limit || 2;
+  const shown = sorted.slice(0, max);
+  const rest = sorted.length - shown.length;
+  const row = o => {
     const head = o.verdict ? `${opIcon(o.verdict)} <b>${o.verdict}</b>` : '💬';
-    const meta = [o.buy, o.who].filter(Boolean).join(' — ');
-    return `<div class="op">${head}${o.txt?` ${o.txt}`:''}<span class="op-meta">${meta}</span></div>`;
-  }).join('') + `</div>`;
+    if(o.txt){ // 코멘트가 본문, 산 것·작성자는 메타로
+      const meta = [o.buy, o.who].filter(Boolean).join(' — ');
+      return `<div class="op">${head} ${o.txt}<span class="op-meta">${meta}</span></div>`;
+    }
+    // 코멘트 없이 구매 기록만 — 산 것을 본문으로 (빈 말풍선 방지)
+    return `<div class="op">${head} ${o.buy||''}<span class="op-meta">${o.who}</span></div>`;
+  };
+  return `<div class="ops">` + shown.map(row).join('')
+    + (rest>0?`<button class="ops-more" data-oid="${id||''}">선배맘 의견 ${rest}개 더 보기</button>`:'')
+    + `</div>`;
+}
+// "더 보기" 클릭 시 그 자리에서 전체 의견으로 펼침
+function bindOpsMore(el, it, id){
+  const om = el.querySelector('.ops-more');
+  if(!om) return;
+  om.addEventListener('click', e=>{
+    e.stopPropagation();
+    const wrap = om.closest('.ops');
+    if(wrap) wrap.outerHTML = opsHtml(it, id, 999);
+  });
 }
 
 // ---- 렌더링 ----
@@ -607,15 +629,13 @@ function renderSheetItem(it,ci,ii){
   const el = document.createElement('div');
   el.className = 'item' + (sheetChecked.has(id)?' checked':'');
 
+  // 배지는 핵심만: 결론 + 판정 규모 (+ 개수는 가이드 없을 때만, 월령 점프)
+  // 브랜드·핫딜가·당근추천·미니멀 배지는 의견/시세/결론과 중복이라 제거
   let badges='';
   const concl = sheetConclusion(it);
   if(concl) badges += `<span class="badge concl ${concl.k}">${concl.label}</span>`;
   badges += verdictBadge(it, id);
-  if(it.min) badges += `<span class="badge minimal">🌱 미니멀</span>`;
-  if(it.need)   badges += `<span class="badge need">${it.need}</span>`;
-  if(it.brands) badges += `<span class="badge brand">${it.brands}</span>`;
-  if(it.deal)   badges += `<span class="badge price">핫딜 ${it.deal}</span>`;
-  if(it.carrot) badges += `<span class="badge carrot">🥕 당근 추천</span>`;
+  if(!it.how && it.need) badges += `<span class="badge need">${it.need}</span>`;
   if(it.link){
     const si = tlSegIdx(it.link);
     if(si>=4) badges += `<span class="badge region" data-link="${it.link}" data-seg="${si}">${SEGMENTS[si].name} ↗</span>`; // 월령 리스트로 점프
@@ -628,18 +648,20 @@ function renderSheetItem(it,ci,ii){
     const pi = priceIntel(it, id);
     if(pi) priceMini = `<div class="price-mini">💰 보통 ${won(pi.base)} · <b>${won(pi.dealAt)} 이하면 득템</b></div>`;
   }
+  // 순서: 이름 → 결론 → 따라하기 → 시세 → 선배맘 의견(2개+접기)
   el.innerHTML = `
     <div class="item-main" style="align-items:center;">
       ${showChk?'<div class="chk"></div>':''}
       <div class="item-info">
         <div class="item-name">${it.nm}</div>
-        ${it.how?`<div class="how">👉 ${it.how}</div>`:''}
-        ${opsHtml(it, id)}
-        ${priceMini}
         ${badges?`<div class="item-badges">${badges}</div>`:''}
+        ${it.how?`<div class="how">👉 ${it.how}</div>`:''}
+        ${priceMini}
+        ${opsHtml(it, id)}
       </div>
     </div>
   `;
+  bindOpsMore(el, it, id);
 
   const chkEl = el.querySelector('.chk');
   if(chkEl) chkEl.addEventListener('click',e=>{

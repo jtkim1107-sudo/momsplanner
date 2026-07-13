@@ -153,6 +153,7 @@ function renderDaycareItem(it,ci,ii){
       </div>
     </div>
   `;
+  bindOpsMore(el, it, id);
 
   if(myPlans[id]==='pass') el.classList.add('passed');
   el.appendChild(planRowEl(id, 'daycare'));

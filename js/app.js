@@ -294,7 +294,7 @@ function renderItem(it){
       si.deal ? '💰 '+si.deal : null,
       si.carrot ? '🥕 당근 추천' : null,
     ].filter(Boolean);
-    detail += `<div class="tip-box">🛒 <b>준비물 시트 연동</b>${parts.length?'<br>'+parts.join(' · '):''}${opsHtml(si, sid)}</div>`;
+    detail += `<div class="tip-box">🛒 <b>준비물 시트 연동</b>${parts.length?'<br>'+parts.join(' · '):''}${opsHtml(si, sid, 999)}</div>`;
   }
   if(it.gender){ detail += `<div class="tip-box"><b>👶 성별 팁:</b> 성별 확정 전이면 화이트·아이보리 계열이 무난 — 둘째까지 물려 입히기도 좋아요.</div>`; }
   if(it.type==='buy' && detail){
