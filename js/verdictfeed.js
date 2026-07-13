@@ -83,12 +83,9 @@ function feedRankHtml(f){
   if(f.n < 30) return `<div class="vf-rank wait">🏷️ 브랜드 순위는 판정 30명부터 공개돼요</div>`;
   const medals = ['🥇','🥈','🥉'];
   const rows = f.brands.slice(0,3).map((b,i)=>{
-    // 브랜드별 적정가 — 관측 신품가 + 당근 적정 범위(신품의 35~50%)
-    const price = b.won
-      ? `<span class="rk-price">새것 ${vfWon(b.won)} · 🥕 ${vfWon(Math.round(b.won*0.35/100)*100)}~${vfWon(Math.round(b.won*0.5/100)*100)}</span>`
-      : '';
+    const price = b.won ? `<span class="rk-price">${vfWon(b.won)}</span>` : '';
     return `<div class="vf-rk"><span class="rk-medal">${medals[i]}</span>
-      <div class="rk-body"><span class="rk-nm">${b.nm} <b>${b.p}%</b></span>${price}</div></div>`;
+      <span class="rk-nm">${b.nm} <b>${b.p}%</b></span>${price}</div>`;
   }).join('');
   return `<div class="vf-rank">
     <span class="vf-rank-head">🏆 브랜드 순위 · 적정가</span>
