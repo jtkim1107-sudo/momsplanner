@@ -85,10 +85,12 @@ function deadlineChip(g, done, total){
 
 // 준비물 하위 리스트
 const PREP_LISTS = [
-  {key:'sheet',    label:'출산'},
-  {key:'daycare',  label:'어린이집'},
-  {key:'babyfood', label:'이유식'},
+  {key:'sheet',      label:'출산'},
+  {key:'postpartum', label:'조리원'},
+  {key:'daycare',    label:'어린이집'},
+  {key:'babyfood',   label:'이유식'},
 ];
+function isPrepView(v){ return v==='sheet'||v==='postpartum'||v==='daycare'||v==='babyfood'; }
 let prepView = 'sheet'; // 준비물 탭에서 마지막으로 본 리스트
 
 function renderPrepTabs(show){
@@ -102,7 +104,7 @@ function renderPrepTabs(show){
 
 function render(){
   const isTimeline = viewMode==='preg';
-  const isPrep = (viewMode==='sheet'||viewMode==='daycare'||viewMode==='babyfood');
+  const isPrep = isPrepView(viewMode);
   document.getElementById('timeline').style.display = isTimeline ? 'flex' : 'none';
   document.querySelector('.searchwrap').style.display = isTimeline ? 'block' : 'none';
   document.getElementById('mt-prep').classList.toggle('on', isPrep);
@@ -116,6 +118,16 @@ function render(){
     document.getElementById('demo-note').textContent = '선배맘 네 명의 리스트로 시작했어요 · 가격과 후기는 참고만!';
     document.getElementById('preview-note').style.display='none';
     renderSheet();
+    return;
+  }
+
+  // 조리원 준비물 뷰
+  if(viewMode==='postpartum'){
+    document.getElementById('hero-title').textContent = '조리원 준비물';
+    document.getElementById('hero-dday').textContent = `출산예정일 D-${state.dday}`;
+    document.getElementById('demo-note').textContent = '조리원동기맘·산후8주맘이 챙긴 것들 · 제공 품목은 조리원에 먼저 확인!';
+    document.getElementById('preview-note').style.display='none';
+    renderPostpartum();
     return;
   }
 
@@ -406,7 +418,7 @@ function requestProduct(e,nm){
 }
 
 function setView(v){
-  if(v==='sheet'||v==='daycare'||v==='babyfood') prepView = v; // 준비물 탭이 기억할 리스트
+  if(isPrepView(v)) prepView = v; // 준비물 탭이 기억할 리스트
   if(viewMode===v) return;
   viewMode=v; viewSegIdx=null; render();
 }
