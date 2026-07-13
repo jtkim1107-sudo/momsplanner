@@ -144,7 +144,6 @@ function renderBabyfoodItem(it,ci,ii){
   if(it.brands) badges += `<span class="badge brand">${it.brands}</span>`;
   if(it.carrot) badges += `<span class="badge carrot">🥕 당근 추천</span>`;
 
-  const qty = bfQty[id]||0;
   el.innerHTML = `
     <div class="item-main" style="align-items:center;">
       <div class="chk"></div>
@@ -152,9 +151,6 @@ function renderBabyfoodItem(it,ci,ii){
         <div class="item-name">${it.nm}</div>
         ${opsHtml(it, id)}
         ${badges?`<div class="item-badges">${badges}</div>`:''}
-      </div>
-      <div class="qty">
-        <button class="qbtn" data-d="-1">−</button><span class="qnum">${qty}</span><button class="qbtn" data-d="1">＋</button>
       </div>
     </div>
   `;
@@ -183,14 +179,6 @@ function renderBabyfoodItem(it,ci,ii){
       if(!myBuys[id]){ const br = el.querySelector('.buy-row'); if(br) br.remove(); }
     }
   });
-  el.querySelectorAll('.qbtn').forEach(b=> b.addEventListener('click',e=>{
-    e.stopPropagation();
-    const next = Math.max(0, Math.min(99, (bfQty[id]||0) + (+b.dataset.d)));
-    bfQty[id] = next;
-    if(next===0) delete bfQty[id];
-    el.querySelector('.qnum').textContent = next;
-    saveBabyfood();
-  }));
   return el;
 }
 

@@ -416,7 +416,8 @@ function sheetCatCount(ci){
   SHEET_CATEGORIES[ci].items.forEach((it,ii)=>{
     const id = sheetItemId(ci,ii);
     if(!sheetVisible(it, id)) return;
-    total++; if(sheetChecked.has(id)) done++;
+    total++;
+    if(sheetMode==='std' ? !!myPlans[id] : sheetChecked.has(id)) done++;
   });
   return {total, done};
 }
@@ -442,7 +443,7 @@ function renderSheet(){
       <span class="ss-star">🌠</span>
       <div class="ss-over">SOHAENGSEONG STANDARD</div>
       <h3>소행성 스탠다드</h3>
-      <p>선배맘들의 리스트에서 <b>공통 필수만 추린 공식 기준표</b>예요.<br>이대로만 준비해도 충분해요 — 취향템은 "선택템 더 보기"에.</p>
+      <p>선배맘들의 리스트에서 <b>공통 필수만 추린 공식 기준표</b>예요.<br>항목마다 따라하기 · 당근으로 · 패스만 고르면 내 리스트 완성!</p>
       <div class="ss-chips"><span>공통 필수 ${cnt.std}</span><span>선배맘 4명 검증</span><span>판정 데이터 기반</span></div>
     `;
   }else{
@@ -451,7 +452,7 @@ function renderSheet(){
     intro.innerHTML = `
       <span class="ri">✨</span>
       <div class="rc"><h3>내가 고른 리스트</h3>
-      <p>체크했거나 살 것 · 당근으로 정한 것만 모았어요. 소행성 스탠다드와 오가며 비교해보세요 — 빠진 게 보이면 담으면 돼요.</p></div>
+      <p>따라하기 · 당근으로 담은 것들이에요. 사면 체크! 체크하면 판정·구매 기록도 남길 수 있어요.</p></div>
     `;
   }
   area.appendChild(intro);
@@ -491,7 +492,7 @@ function renderSheet(){
   if(!shownCats){
     const empty = document.createElement('div');
     empty.className='collect-box';
-    empty.innerHTML='<b>아직 내 리스트가 비어 있어요</b>소행성 스탠다드에서 체크하거나 "살 것 · 당근으로"를 고르면 여기 모여요.';
+    empty.innerHTML='<b>아직 내 리스트가 비어 있어요</b>소행성 스탠다드에서 "따라하기"나 "당근으로"를 고르면 여기 모여요.';
     area.appendChild(empty);
   }
   updateSheetProgress();
@@ -515,23 +516,21 @@ function renderSheetItem(it,ci,ii){
     if(si>=4) badges += `<span class="badge region" data-link="${it.link}" data-seg="${si}">${SEGMENTS[si].name} ↗</span>`; // 월령 리스트로 점프
   }
 
-  const qty = sheetQty[id]||0;
+  const showChk = sheetMode==='mine'; // 체크(샀어요)는 내 리스트에서
   el.innerHTML = `
     <div class="item-main" style="align-items:center;">
-      <div class="chk"></div>
+      ${showChk?'<div class="chk"></div>':''}
       <div class="item-info">
         <div class="item-name">${it.nm}</div>
         ${it.how?`<div class="how">👉 ${it.how}</div>`:''}
         ${opsHtml(it, id)}
         ${badges?`<div class="item-badges">${badges}</div>`:''}
       </div>
-      <div class="qty">
-        <button class="qbtn" data-d="-1">−</button><span class="qnum">${qty}</span><button class="qbtn" data-d="1">＋</button>
-      </div>
     </div>
   `;
 
-  el.querySelector('.chk').addEventListener('click',e=>{
+  const chkEl = el.querySelector('.chk');
+  if(chkEl) chkEl.addEventListener('click',e=>{
     e.stopPropagation();
     sheetChecked.has(id)?sheetChecked.delete(id):sheetChecked.add(id);
     el.classList.toggle('checked');
@@ -567,20 +566,30 @@ function renderSheetItem(it,ci,ii){
     e.stopPropagation();
     gotoItem(+b.dataset.seg, b.dataset.link);
   }));
-  el.querySelectorAll('.qbtn').forEach(b=> b.addEventListener('click',e=>{
-    e.stopPropagation();
-    const next = Math.max(0, Math.min(99, (sheetQty[id]||0) + (+b.dataset.d)));
-    sheetQty[id] = next;
-    if(next===0) delete sheetQty[id];
-    el.querySelector('.qnum').textContent = next;
-    saveSheet();
-  }));
   return el;
 }
 
 function updateSheetProgress(){
-  const {total, done} = sheetTotals();
-  document.getElementById('prog-name').textContent = sheetMode==='mine' ? '출산 준비물 · 내 리스트' : '소행성 스탠다드';
-  document.getElementById('prog-text').textContent = done+' / '+total+' 완료';
-  document.getElementById('prog-fill').style.width = (done/total*100)+'%';
+  if(sheetMode==='std'){
+    const items = planListItems('sheet');
+    const decided = items.filter(x=>myPlans[x.id]).length;
+    document.getElementById('prog-name').textContent = '소행성 스탠다드';
+    document.getElementById('prog-text').textContent = decided+' / '+items.length+' 정했어요';
+    document.getElementById('prog-fill').style.width = (items.length?decided/items.length*100:0)+'%';
+  }else{
+    const {total, done} = sheetTotals();
+    document.getElementById('prog-name').textContent = '출산 준비물 · 내 리스트';
+    document.getElementById('prog-text').textContent = done+' / '+total+' 완료';
+    document.getElementById('prog-fill').style.width = (total?done/total*100:0)+'%';
+  }
+}
+
+// 플랜을 고르면 스탠다드 진행률·카테고리 카운트 즉시 갱신
+function onPlanChanged(listKey){
+  if(listKey!=='sheet' || typeof viewMode==='undefined' || viewMode!=='sheet') return;
+  updateSheetProgress();
+  SHEET_CATEGORIES.forEach((c,ci)=>{
+    const gp = document.getElementById('shp-'+ci);
+    if(gp){ const cc = sheetCatCount(ci); gp.textContent = cc.done+'/'+cc.total; }
+  });
 }

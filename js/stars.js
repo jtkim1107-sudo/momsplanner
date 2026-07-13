@@ -189,7 +189,7 @@ function purchaseRowEl(id, candidates){
 // ---- 살 것 / 당근 / 패스 — 항목별 내 결정 ----
 // 리스트의 모든 항목을 정하면(플랜 완성) 리스트당 별똥별 +300.
 const PLAN_META = [
-  {k:'buy',    label:'살 것',   cls:'p-buy'},
+  {k:'buy',    label:'따라하기', cls:'p-buy'},
   {k:'carrot', label:'당근으로', cls:'p-carrot'},
   {k:'pass',   label:'패스',    cls:'p-pass'},
 ];
@@ -237,6 +237,7 @@ function planRowEl(id, listKey){
       const item = div.closest('.item');
       if(item) item.classList.toggle('passed', myPlans[id]==='pass');
       checkPlanComplete(listKey);
+      if(typeof onPlanChanged==='function') onPlanChanged(listKey);
     });
     div.appendChild(b);
   });
