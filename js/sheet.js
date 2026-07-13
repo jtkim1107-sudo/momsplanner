@@ -379,6 +379,60 @@ function sheetBrandCandidates(it){
   return out;
 }
 
+// ---- 시세 가이드 — 내 리스트 전용 ----
+// 이미 수집된 가격(핫딜가 deal · 선배맘 실구매가 buy)에서 기준가를 뽑고,
+// 역대 최저 · 매수 기준선 · 당근 적정가를 시드 고정 난수로 산출한다.
+// 실서비스에서는 가격 트래킹 API로 대체되는 자리.
+function parseWon(str){
+  if(!str) return null;
+  let m = str.match(/([\d,]{4,})원/);          // 34,900원
+  if(m) return parseInt(m[1].replace(/,/g,''));
+  m = str.match(/(\d+)만\s*(\d)천원대/);      // 3만4천원대
+  if(m) return (+m[1])*10000 + (+m[2])*1000;
+  m = str.match(/(\d+)~?\d*만원대/);           // 28만원대 · 24~25만원대
+  if(m) return (+m[1])*10000;
+  return null;
+}
+function itemBasePrice(it){
+  const cands = [];
+  const d = parseWon(it.deal); if(d) cands.push(d);
+  (it.ops||[]).forEach(o=>{ const v = parseWon(o.buy); if(v) cands.push(v); });
+  if(!cands.length) return null;
+  return Math.max(...cands); // 새 상품 기준가는 관측치 중 최댓값
+}
+function round100(v){ return Math.round(v/100)*100; }
+function priceIntel(it, id){
+  const base = itemBasePrice(it);
+  if(!base || base < 2000) return null;
+  const r = bdRng(bdSeed('price-'+id));
+  return {
+    base: round100(base),
+    low: round100(base*(0.62 + r()*0.13)),      // 역대 최저
+    dealAt: round100(base*(0.78 + r()*0.07)),   // 이 밑이면 사세요
+    carrotLo: round100(base*0.35),
+    carrotHi: round100(base*0.5),
+  };
+}
+const won = v => v.toLocaleString()+'원';
+function priceRowEl(it, id){
+  const div = document.createElement('div');
+  div.className = 'price-row';
+  const pi = priceIntel(it, id);
+  if(!pi){
+    div.innerHTML = `<span class="pr-head">💸 시세 가이드</span><span class="pr-wait">아직 모으는 중 — 구매 기록이 쌓이면 열려요</span>`;
+    return div;
+  }
+  const carrotPlan = myPlans[id]==='carrot';
+  div.innerHTML = `
+    <span class="pr-head">💸 시세 가이드</span>
+    <div class="pr-line">역대 최저 <b>${won(pi.low)}</b> · 요즘 시세 ${won(pi.base)}</div>
+    <div class="pr-buy">👉 ${won(pi.dealAt)} 이하로 보이면 바로 사세요</div>
+    ${(carrotPlan||it.carrot)?`<div class="pr-carrot">🥕 당근 적정가 ${won(pi.carrotLo)} ~ ${won(pi.carrotHi)} — 그 이상이면 새것 핫딜이 나아요</div>`:''}
+    <span class="pr-note">베타 · 관측된 구매 기록 기반, 판매처별 확인</span>
+  `;
+  return div;
+}
+
 // ---- 선배맘 의견 렌더 (시트 + 구간 상세 공용) ----
 function opIcon(v){ return v==='추천' ? '👍' : v==='비추' ? '👎' : v==='쏘쏘' ? '😐' : '💬'; }
 function opsHtml(it, id){
@@ -452,7 +506,7 @@ function renderSheet(){
     intro.innerHTML = `
       <span class="ri">✨</span>
       <div class="rc"><h3>내가 고른 리스트</h3>
-      <p>따라하기 · 당근으로 담은 것들이에요. 사면 체크! 체크하면 판정·구매 기록도 남길 수 있어요.</p></div>
+      <p>따라하기 · 당근으로 담은 것들이에요. <b>시세 가이드 밑으로 보이면 사세요!</b> 사면 체크 — 판정·구매 기록까지 남기면 별똥별이 쌓여요.</p></div>
     `;
   }
   area.appendChild(intro);
@@ -544,22 +598,22 @@ function renderSheetItem(it,ci,ii){
     const cc = sheetCatCount(ci);
     const gp = document.getElementById('shp-'+ci);
     if(gp) gp.textContent = cc.done+'/'+cc.total;
-    // 별똥별 + "다시 산다면?" 판정 노출
+    // 별똥별 + "뭘로 샀어요?" 기록 노출
     if(nowChecked){
       earnStars(5, '준비물 체크', 'chk-'+(it.link||id));
-      if(!el.querySelector('.judge-row:not(.buy-row)')) el.appendChild(judgeRowEl(id));
       if(!el.querySelector('.buy-row')) el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
     }else{
-      if(!myVerdicts[id]){ const jr = el.querySelector('.judge-row:not(.buy-row)'); if(jr) jr.remove(); }
       if(!myBuys[id]){ const br = el.querySelector('.buy-row'); if(br) br.remove(); }
     }
   });
+  // 내 리스트에선 시세 가이드 먼저
+  if(sheetMode==='mine') el.appendChild(priceRowEl(it, id));
+
   // 살 것 / 당근 / 패스 선택
   if(myPlans[id]==='pass') el.classList.add('passed');
   el.appendChild(planRowEl(id, 'sheet'));
 
-  // 체크한(=산) 항목엔 "다시 산다면?" 판정 + "뭘로 샀어요?" 기록
-  if(sheetChecked.has(id) || myVerdicts[id]) el.appendChild(judgeRowEl(id));
+  // 체크한(=산) 항목엔 "뭘로 샀어요?" 기록
   if(sheetChecked.has(id) || myBuys[id]) el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
 
   el.querySelectorAll('[data-link]').forEach(b=> b.addEventListener('click',e=>{
