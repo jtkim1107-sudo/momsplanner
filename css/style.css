@@ -208,6 +208,29 @@
     border-radius:10px;padding:10px 0;transition:background .15s,color .15s;
   }
   .sheet-mode button.on{background:var(--brown-deep);color:#fff;box-shadow:0 1px 4px rgba(58,49,40,.18);}
+  .sheet-mode button.ss.on{
+    background:linear-gradient(135deg,#8A6B42,#B8934A);
+    box-shadow:0 2px 8px rgba(154,123,46,.35);
+  }
+
+  .ss-card{
+    position:relative;overflow:hidden;border-radius:16px;padding:17px 18px;margin-bottom:16px;
+    background:linear-gradient(140deg,#6B5439 0%,#8A6B42 55%,#A8843F 100%);color:#fff;
+    box-shadow:0 6px 18px rgba(107,84,57,.25);
+  }
+  .ss-card .ss-star{
+    position:absolute;right:12px;top:10px;font-size:34px;opacity:.95;
+    filter:drop-shadow(0 2px 6px rgba(0,0,0,.25));
+  }
+  .ss-card .ss-over{font-size:9px;letter-spacing:.24em;font-weight:800;opacity:.7;}
+  .ss-card h3{font-size:19px;font-weight:900;margin-top:4px;}
+  .ss-card p{font-size:12px;opacity:.92;margin-top:7px;line-height:1.65;}
+  .ss-card p b{font-weight:900;}
+  .ss-card .ss-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px;}
+  .ss-card .ss-chips span{
+    font-size:10.5px;font-weight:800;background:rgba(255,255,255,.16);
+    border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:3px 10px;
+  }
   .badge.minimal{background:#EDF5EF;color:var(--green);border:1px solid #CCE3D3;}
   .star-chip,.icon-chip{
     border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.16);color:#fff;

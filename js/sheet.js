@@ -430,23 +430,30 @@ function renderSheet(){
   const mt = document.createElement('div');
   mt.className='sheet-mode';
   mt.innerHTML = `
-    <button class="${sheetMode==='std'?'on':''}" onclick="setSheetMode('std')">표준 리스트 · ${cnt.std}</button>
+    <button class="ss ${sheetMode==='std'?'on':''}" onclick="setSheetMode('std')">🌠 소행성 스탠다드 · ${cnt.std}</button>
     <button class="${sheetMode==='mine'?'on':''}" onclick="setSheetMode('mine')">내 리스트 · ${cnt.mine}</button>
   `;
   area.appendChild(mt);
 
   const intro = document.createElement('div');
-  intro.className='region-card';
-  intro.style.cursor='default';
-  intro.innerHTML = sheetMode==='std' ? `
-    <span class="ri">🛒</span>
-    <div class="rc"><h3>선배맘들의 표준 구성</h3>
-    <p>공통으로 꼽힌 필수템만 추린 기준표예요. 체크하거나 "살 것 · 당근으로"를 고르면 내 리스트에 담겨요. 취향템은 카테고리마다 "선택템 더 보기"에!</p></div>
-  ` : `
-    <span class="ri">✨</span>
-    <div class="rc"><h3>내가 고른 리스트</h3>
-    <p>체크했거나 살 것 · 당근으로 정한 것만 모았어요. 표준 리스트와 오가며 비교해보세요 — 빠진 게 보이면 담으면 돼요.</p></div>
-  `;
+  if(sheetMode==='std'){
+    intro.className='ss-card';
+    intro.innerHTML = `
+      <span class="ss-star">🌠</span>
+      <div class="ss-over">SOHAENGSEONG STANDARD</div>
+      <h3>소행성 스탠다드</h3>
+      <p>선배맘들의 리스트에서 <b>공통 필수만 추린 공식 기준표</b>예요.<br>이대로만 준비해도 충분해요 — 취향템은 "선택템 더 보기"에.</p>
+      <div class="ss-chips"><span>공통 필수 ${cnt.std}</span><span>선배맘 4명 검증</span><span>판정 데이터 기반</span></div>
+    `;
+  }else{
+    intro.className='region-card';
+    intro.style.cursor='default';
+    intro.innerHTML = `
+      <span class="ri">✨</span>
+      <div class="rc"><h3>내가 고른 리스트</h3>
+      <p>체크했거나 살 것 · 당근으로 정한 것만 모았어요. 소행성 스탠다드와 오가며 비교해보세요 — 빠진 게 보이면 담으면 돼요.</p></div>
+    `;
+  }
   area.appendChild(intro);
 
   let shownCats = 0;
@@ -484,7 +491,7 @@ function renderSheet(){
   if(!shownCats){
     const empty = document.createElement('div');
     empty.className='collect-box';
-    empty.innerHTML='<b>아직 내 리스트가 비어 있어요</b>표준 리스트에서 체크하거나 "살 것 · 당근으로"를 고르면 여기 모여요.';
+    empty.innerHTML='<b>아직 내 리스트가 비어 있어요</b>소행성 스탠다드에서 체크하거나 "살 것 · 당근으로"를 고르면 여기 모여요.';
     area.appendChild(empty);
   }
   updateSheetProgress();
@@ -572,7 +579,7 @@ function renderSheetItem(it,ci,ii){
 
 function updateSheetProgress(){
   const {total, done} = sheetTotals();
-  document.getElementById('prog-name').textContent = sheetMode==='mine' ? '출산 준비물 · 내 리스트' : '출산 준비물 · 표준';
+  document.getElementById('prog-name').textContent = sheetMode==='mine' ? '출산 준비물 · 내 리스트' : '소행성 스탠다드';
   document.getElementById('prog-text').textContent = done+' / '+total+' 완료';
   document.getElementById('prog-fill').style.width = (done/total*100)+'%';
 }
