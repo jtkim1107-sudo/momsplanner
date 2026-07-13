@@ -339,6 +339,23 @@ function reconcileSheetLinks(){
   });
 }
 
+// ---- 결론: 사요 / 마요 / 고민해봐요 / 당근해요 ----
+// 선배맘 의견(추천/쏘쏘/비추)과 당근 추천 여부를 집계해 한 줄 결론을 낸다.
+function sheetConclusion(it){
+  const ops = it.ops||[];
+  let rec  = ops.filter(o=>o.verdict==='추천').length;
+  const bad  = ops.filter(o=>o.verdict==='비추').length;
+  const soso = ops.filter(o=>o.verdict==='쏘쏘').length;
+  if(it.min) rec++; // 미니멀 필수 선정 = 사요 한 표
+  if(bad>0 && rec>0)  return {k:'debate', label:'고민해봐요'};
+  if(bad>0)           return {k:'no',     label:'마요'};
+  if(it.carrot && rec>0) return {k:'carrot', label:'당근해요'};
+  if(rec>0)           return {k:'yes',    label:'사요'};
+  if(it.carrot)       return {k:'carrot', label:'당근해요'};
+  if(soso>0)          return {k:'debate', label:'고민해봐요'};
+  return null; // 아직 의견 없음
+}
+
 // ---- 선배맘 의견 렌더 (시트 + 구간 상세 공용) ----
 function opIcon(v){ return v==='추천' ? '👍' : v==='비추' ? '👎' : v==='쏘쏘' ? '😐' : '💬'; }
 function opsHtml(it){
@@ -426,6 +443,8 @@ function renderSheetItem(it,ci,ii){
   el.className = 'item' + (sheetChecked.has(id)?' checked':'');
 
   let badges='';
+  const concl = sheetConclusion(it);
+  if(concl) badges += `<span class="badge concl ${concl.k}">${concl.label}</span>`;
   if(it.min && sheetMode==='max') badges += `<span class="badge minimal">🌱 미니멀</span>`;
   if(it.need)   badges += `<span class="badge need">${it.need}</span>`;
   if(it.brands) badges += `<span class="badge brand">${it.brands}</span>`;

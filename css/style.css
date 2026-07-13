@@ -164,6 +164,11 @@
   }
   .sheet-mode button.on{background:var(--brown-deep);color:#fff;box-shadow:0 1px 4px rgba(58,49,40,.18);}
   .badge.minimal{background:#EDF5EF;color:var(--green);border:1px solid #CCE3D3;}
+  .badge.concl{font-weight:900;color:#fff;padding:3px 10px;border-radius:7px;}
+  .badge.concl.yes{background:var(--green);}
+  .badge.concl.no{background:var(--red);}
+  .badge.concl.debate{background:var(--gold);}
+  .badge.concl.carrot{background:#E8712E;}
   .ops{display:flex;flex-direction:column;gap:4px;margin-top:5px;}
   .op{font-size:12px;color:var(--ink);line-height:1.55;}
   .op b{font-weight:900;}

@@ -214,12 +214,19 @@ function renderItem(it){
 
   let badges='';
   if(it.type==='buy'){
-    if(it.debate){ badges+=`<span class="badge debate">🔥 논쟁 중 — 의견이 갈려요</span>`; }
+    if(it.debate){ badges+=`<span class="badge concl debate">고민해봐요</span><span class="badge debate">🔥 논쟁 중 — 의견이 갈려요</span>`; }
     else if(it.verdict && it.verdict.n>=N_MIN){
+      // 판정 % → 한 줄 결론 (연동된 준비물이 당근 추천이면 '당근해요')
+      const linked = sheetInfoFor(it.id);
+      const concl = (linked && linked.carrot && it.verdict.yes>=60) ? {k:'carrot', label:'당근해요'}
+        : it.verdict.yes>=NATIONAL_MIN ? {k:'yes', label:'사요'}
+        : it.verdict.yes>=60 ? {k:'debate', label:'고민해봐요'}
+        : {k:'no', label:'마요'};
+      badges+=`<span class="badge concl ${concl.k}">${concl.label}</span>`;
       if(isNational(it)) badges+=`<span class="badge national">🏆 국민템</span>`;
-      badges+=`<span class="badge verdict">👍 사요 ${it.verdict.yes}% · 선배맘 ${it.verdict.n.toLocaleString()}명</span>`;
+      badges+=`<span class="badge verdict">사요 ${it.verdict.yes}% · 선배맘 ${it.verdict.n.toLocaleString()}명</span>`;
     }
-    else if(it.verdict){ badges+=`<span class="badge collecting">⏳ 선배맘 판정 모으는 중 (${it.verdict.n}명)</span>`; }
+    else if(it.verdict){ badges+=`<span class="badge collecting">판정 모으는 중 · ${it.verdict.n}명</span>`; }
   }
   if(it.gender) badges+=`<span class="badge gender">👶 성별 팁</span>`;
   if(it.region) badges+=`<span class="badge region" onclick="event.stopPropagation();openModal('region-modal')">📍 지역혜택</span>`;
