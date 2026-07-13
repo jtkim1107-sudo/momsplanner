@@ -341,6 +341,10 @@
   .badge.concl.try{background:var(--gold);}
   .badge.concl.closet{background:#8D8477;}
   .badge.concl.carrot{background:#E8712E;}
+  .how{
+    font-size:13px;font-weight:800;color:var(--brown-deep);line-height:1.5;margin-top:4px;
+    background:#F6EFE2;border-radius:8px;padding:6px 10px;
+  }
   .ops{display:flex;flex-direction:column;gap:4px;margin-top:5px;}
   .op{font-size:12px;color:var(--ink);line-height:1.55;}
   .op b{font-weight:900;}
