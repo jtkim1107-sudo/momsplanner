@@ -86,6 +86,22 @@ function deadlineChip(g, done, total){
 }
 
 function render(){
+  document.getElementById('vs-preg').classList.toggle('on', viewMode==='preg');
+  document.getElementById('vs-senior').classList.toggle('on', viewMode==='senior');
+  document.getElementById('vs-sheet').classList.toggle('on', viewMode==='sheet');
+  document.getElementById('timeline').style.display = viewMode==='sheet' ? 'none' : 'flex';
+  document.querySelector('.searchwrap').style.display = viewMode==='sheet' ? 'none' : 'block';
+
+  // 준비물 시트 뷰 — 타임라인 없이 시트 전용 렌더
+  if(viewMode==='sheet'){
+    document.getElementById('hero-title').textContent = '출산 준비물 체크리스트';
+    document.getElementById('hero-dday').textContent = `출산예정일 D-${state.dday}`;
+    document.getElementById('demo-note').textContent = '선배맘 공유 시트(2025) 기반 — 브랜드 · 가격은 참고용이에요';
+    document.getElementById('preview-note').style.display='none';
+    renderSheet();
+    return;
+  }
+
   const segIdx = currentSegIdx();
   const seg = SEGMENTS[segIdx];
 
@@ -96,8 +112,6 @@ function render(){
     document.getElementById('hero-title').textContent = `다인맘님, 아기 7개월차예요`;
     document.getElementById('hero-dday').textContent = `임신 후기를 지나오셨어요`;
   }
-  document.getElementById('vs-preg').classList.toggle('on', viewMode==='preg');
-  document.getElementById('vs-senior').classList.toggle('on', viewMode==='senior');
   document.getElementById('demo-note').textContent =
     `선배맘 ${BIG_STATS.moms.toLocaleString()}명 · 누적 판정 ${BIG_STATS.verdicts.toLocaleString()}건 — 판정·순위·댓글은 시뮬레이션 데이터입니다`;
 
