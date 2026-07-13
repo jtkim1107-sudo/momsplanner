@@ -507,7 +507,8 @@ function renderSheet(){
     intro.innerHTML = `
       <span class="ri">✨</span>
       <div class="rc"><h3>내가 고른 리스트</h3>
-      <p>따라하기 · 당근으로 담은 것들이에요. <b>시세 가이드 밑으로 보이면 사세요!</b> 사면 체크 — 판정·구매 기록까지 남기면 별똥별이 쌓여요.</p></div>
+      <p>따라하기 · 당근으로 담은 것들이에요. <b>시세 가이드 밑으로 보이면 사세요!</b> 사면 체크 — 구매 기록까지 남기면 별똥별이 쌓여요.</p>
+      <button class="rp-open" onclick="openReport()">📄 내 리포트 만들기 — 카페·카톡 공유용</button></div>
     `;
   }
   area.appendChild(intro);
