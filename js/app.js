@@ -2,7 +2,7 @@
 // 소행성 육아플래너 — 앱 로직
 // ============================================================
 
-let viewMode = 'preg';
+let viewMode = 'sheet'; // 출산준비물이 기본 화면 — 나머지는 시기별 국민템
 let viewSegIdx = null; // null = 내 구간
 const STORE_KEY = 'sohaengseong-planner-checked';
 let checked = new Set(['A1','A2','A3']);
@@ -167,6 +167,29 @@ function render(){
   }
 
   const content = CONTENT[seg.id];
+
+  // 🏆 시기별 국민템 — 이 구간에서 판정 기준(85%+)을 넘은 아이템 모아보기
+  const natl = [];
+  content.groups.forEach(g=> g.items.forEach(x=>{ if(isNational(x)) natl.push(x); }));
+  if(natl.length){
+    const nc = document.createElement('div');
+    nc.className='natl-card';
+    nc.innerHTML = `
+      <h3>🏆 ${seg.name} 국민템 ${natl.length}개</h3>
+      <p>선배맘 ${NATIONAL_MIN}% 이상이 "사요"라고 판정한 이 시기 아이템</p>
+      <div class="natl-chips">${natl.map(x=>`<span class="natl-chip" data-id="${x.id}">${x.nm.split('(')[0].trim()}</span>`).join('')}</div>
+    `;
+    nc.querySelectorAll('.natl-chip').forEach(ch=> ch.addEventListener('click',()=>{
+      const el = document.getElementById('item-'+ch.dataset.id);
+      if(el){
+        document.querySelectorAll('.item.open').forEach(i=>i.classList.remove('open'));
+        if(el.querySelector('.item-detail')) el.classList.add('open');
+        el.scrollIntoView({behavior:'smooth', block:'center'});
+      }
+    }));
+    area.appendChild(nc);
+  }
+
   content.groups.forEach(g=>{
     const gEl = document.createElement('div'); gEl.className='group';
     const done = g.items.filter(i=>checked.has(i.id)).length;
