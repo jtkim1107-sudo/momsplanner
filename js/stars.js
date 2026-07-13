@@ -332,8 +332,20 @@ function checkPlanComplete(listKey){
   const src = PLAN_SOURCES.find(x=>x.key===listKey);
   const items = planListItems(listKey);
   if(src && items.length && items.every(x=>myPlans[x.id])){
-    earnStars(300, src.label+' 준비물 플랜 완성', 'plan-done-'+listKey);
+    if(earnStars(300, src.label+' 준비물 플랜 완성', 'plan-done-'+listKey)){
+      babySurprise(src.label+' 준비 플랜', 'baby-plan-'+listKey, 100, 900);
+    }
   }
+}
+
+// 👶 완성의 순간 — 태명이가 몰래 모아둔 별똥별을 깜짝 선물
+function babySurprise(occasion, onceKey, amount, delay){
+  const nm = PROFILE.baby || '아기';
+  if(!earnStars(amount, nm+'의 깜짝 선물 · '+occasion, onceKey)) return;
+  document.getElementById('baby-title').textContent = `${nm}의 깜짝 선물이 도착했어요!`;
+  document.getElementById('baby-desc').textContent = `"엄마, ${occasion} 다 해줘서 고마워요. 몰래 모아둔 별똥별 드릴게요!" — ${nm} 올림`;
+  document.getElementById('baby-reward').textContent = `🌟 별똥별 ${amount}개`;
+  setTimeout(()=> document.getElementById('baby-modal').classList.add('on'), delay||600);
 }
 function planRowEl(id, listKey){
   const div = document.createElement('div');

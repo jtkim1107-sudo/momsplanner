@@ -804,6 +804,7 @@ function checkSmartListComplete(){
   if(!myListComplete()) return;
   if(earnStars(500, '내 똑똑한 리스트 완성', 'smart-list-sheet')){
     setTimeout(()=> openReport(), 800); // 완성 순간 리포트가 짠!
+    babySurprise('출산 준비', 'baby-smart-sheet', 100, 2000); // 리포트 위로 아기 선물이 짠!
   }
 }
 function onBuyRecordSaved(){ checkSmartListComplete(); updateFocusBar(); }

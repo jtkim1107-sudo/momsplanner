@@ -528,6 +528,7 @@
   }
 
   .modal-veil{display:none;position:absolute;inset:0;background:rgba(58,49,40,.5);z-index:40;align-items:flex-end;}
+  #baby-modal{z-index:80;} /* 리포트 위에도 뜨는 깜짝 선물 */
   .modal-veil.on{display:flex;}
   .modal{
     background:var(--bg);width:100%;border-radius:22px 22px 0 0;padding:22px 20px 28px;

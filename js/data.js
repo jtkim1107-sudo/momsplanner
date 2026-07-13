@@ -2,7 +2,7 @@
 // 소행성 육아플래너 — 콘텐츠 데이터
 // ============================================================
 
-const PROFILE = { nick:'지원맘', dueDate:'2026-09-06', region:'서울시' };
+const PROFILE = { nick:'지원맘', baby:'별이', dueDate:'2026-09-06', region:'서울시' }; // baby = 태명
 
 const SEGMENTS = [
   {id:'prep', name:'임신 준비', range:'프리맘'},
