@@ -231,6 +231,17 @@ function renderItem(it){
       </div>`;
   }
   if(it.tip){ detail += `<div class="tip-box">${it.tip}</div>`; }
+  // 준비물 시트에 같은 항목이 있으면 시트 정보(개수·브랜드·가격·경험담) 표시
+  const si = sheetInfoFor(it.id);
+  if(si){
+    const parts = [
+      si.need ? '📦 필요 '+si.need : null,
+      si.brands ? '🏷️ '+si.brands : null,
+      si.deal ? '💰 '+si.deal : null,
+      si.carrot ? '🥕 당근 추천' : null,
+    ].filter(Boolean);
+    detail += `<div class="tip-box">🛒 <b>준비물 시트 연동</b>${parts.length?'<br>'+parts.join(' · '):''}${si.note?`<br>💬 "${si.note}"`:''}</div>`;
+  }
   if(it.gender){ detail += `<div class="tip-box"><b>👶 성별 팁:</b> 성별 확정 전이면 화이트·아이보리 계열이 무난 — 둘째까지 물려 입히기도 좋아요.</div>`; }
   if(it.type==='buy' && detail){
     detail += `<button class="add-product" onclick="requestProduct(event,'${it.nm}')">＋ 내가 쓴 제품이 목록에 없어요 · 등록 요청</button>`;
@@ -257,6 +268,12 @@ function renderItem(it){
     e.stopPropagation();
     checked.has(it.id)?checked.delete(it.id):checked.add(it.id);
     el.classList.toggle('checked');
+    const se = TL_SHEET_LINK[it.id];
+    if(se){ // 준비물 시트와 상태 동기화
+      const sid = sheetItemId(se.ci, se.ii);
+      checked.has(it.id) ? sheetChecked.add(sid) : sheetChecked.delete(sid);
+      saveSheet();
+    }
     saveChecked();
     updateProgress();
     refreshChips();
@@ -380,7 +397,7 @@ function doSearch(){
 function gotoItem(segIdx, itemId){
   document.getElementById('search').value='';
   document.getElementById('search-results').classList.remove('on');
-  if(viewMode==='senior'){ viewMode='preg'; }
+  if(viewMode!=='preg'){ viewMode='preg'; }
   viewSegIdx = (segIdx===state.segIdx ? null : segIdx);
   render();
   const el = document.getElementById('item-'+itemId);
@@ -447,5 +464,6 @@ function reportRegion(){
   toast('제보 감사해요! 확인 후 정보를 갱신할게요 🌟');
 }
 
+reconcileSheetLinks();
 render();
 initRegionSelect();
