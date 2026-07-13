@@ -474,8 +474,9 @@ function renderSheetItem(it,ci,ii){
     e.stopPropagation();
     sheetChecked.has(id)?sheetChecked.delete(id):sheetChecked.add(id);
     el.classList.toggle('checked');
+    const nowChecked = sheetChecked.has(id);
     if(it.link){ // 구간 체크리스트와 상태 동기화
-      sheetChecked.has(id) ? checked.add(it.link) : checked.delete(it.link);
+      nowChecked ? checked.add(it.link) : checked.delete(it.link);
       saveChecked();
     }
     saveSheet();
@@ -483,7 +484,18 @@ function renderSheetItem(it,ci,ii){
     const cc = sheetCatCount(ci);
     const gp = document.getElementById('shp-'+ci);
     if(gp) gp.textContent = cc.done+'/'+cc.total;
+    // 별똥별 + "다시 산다면?" 판정 노출
+    if(nowChecked){
+      earnStars(5, '준비물 체크', 'chk-'+(it.link||id));
+      if(!el.querySelector('.judge-row')) el.appendChild(judgeRowEl(id));
+    }else if(!myVerdicts[id]){
+      const jr = el.querySelector('.judge-row');
+      if(jr) jr.remove();
+    }
   });
+  // 체크한(=산) 항목엔 "다시 산다면?" 1탭 판정
+  if(sheetChecked.has(id) || myVerdicts[id]) el.appendChild(judgeRowEl(id));
+
   el.querySelectorAll('[data-link]').forEach(b=> b.addEventListener('click',e=>{
     e.stopPropagation();
     gotoItem(+b.dataset.seg, b.dataset.link);

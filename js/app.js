@@ -50,7 +50,7 @@ function addComment(e,id){
   document.getElementById('cl-'+id).innerHTML = cmts.map(c=>`<div class="cmt"><div class="who">${c.who}<span class="when">${c.when||'샘플'}</span></div><div class="txt">${c.txt}</div></div>`).join('');
   const lbl = document.querySelector('#cl-'+id).parentElement.querySelector('.detail-label');
   lbl.textContent = `💬 선배맘 한마디 (${cmts.length})`;
-  toast('한마디가 등록됐어요 🌟');
+  earnStars(20, '선배맘 한마디');
 }
 let debateVoted = false;
 const celebratedSegs = new Set();
@@ -293,6 +293,7 @@ function renderItem(it){
     saveChecked();
     updateProgress();
     refreshChips();
+    if(checked.has(it.id)) earnStars(5, '아이템 체크', 'chk-'+it.id);
   });
   el.querySelector('.item-main').addEventListener('click',()=>{
     if(!el.querySelector('.item-detail'))return;
@@ -342,6 +343,7 @@ function updateProgress(){
     celebratedSegs.add(seg.id);
     document.getElementById('cel-title').textContent = `${seg.name} 준비, 전부 끝!`;
     document.getElementById('cel-desc').textContent = `${total}개 항목을 빠짐없이 준비하셨어요.`;
+    earnStars(500, '구간 준비 전부 완료', 'seg-'+seg.id);
     setTimeout(()=>openModal('complete-modal'), 400);
   }
 }
@@ -352,12 +354,13 @@ function voteDebate(e,id){
   document.getElementById('da-'+id).style.display='none';
   document.getElementById('dd-'+id).style.display='block';
   document.getElementById('dm-'+id).textContent = `${(DEBATE.count+1).toLocaleString()} / ${DEBATE.goal.toLocaleString()}명 참여 · ${DEBATE.goal.toLocaleString()}명 도달 시 결과 공개`;
-  toast('판정이 반영됐어요 🌟');
+  earnStars(30, '논쟁템 투표', 'debate-vote');
 }
 
 function requestProduct(e,nm){
   e.stopPropagation();
   toast(`"${nm}" 제품 등록 요청이 접수됐어요`);
+  earnStars(10, '제품 등록 요청', 'req-'+nm);
 }
 
 function setView(v){ if(viewMode===v) return; viewMode=v; viewSegIdx=null; render(); }
@@ -463,9 +466,11 @@ function renderRegionSheet(){
 }
 
 function reportRegion(){
-  toast('제보 감사해요! 확인 후 정보를 갱신할게요 🌟');
+  toast('제보 감사해요! 확인 후 정보를 갱신할게요');
+  earnStars(20, '달라진 지역정보 제보', 'region-report');
 }
 
 reconcileSheetLinks();
 render();
 initRegionSelect();
+updateStarChip();

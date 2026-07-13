@@ -16,6 +16,7 @@
     <div class="hero-top">
       <span class="app">소행성 · 육아플래너</span>
       <div class="hero-right">
+        <button class="star-chip" id="star-chip" onclick="openStarModal()">⭐ 0</button>
         <span class="dday" id="hero-dday"></span>
         <div class="view-switch">
           <button id="vs-sheet" class="on" onclick="setView('sheet')">준비물</button>
@@ -38,6 +39,15 @@
     <div class="search-results" id="search-results"></div>
   </div>
   <div class="body-area" id="body-area"></div>
+
+  <!-- 별똥별 지갑 -->
+  <div class="modal-veil" id="star-modal">
+    <div class="modal">
+      <span class="m-label">⭐ 별똥별</span>
+      <div id="star-body"></div>
+      <button class="m-close2" onclick="closeModal('star-modal')">닫기</button>
+    </div>
+  </div>
 
   <!-- 지역혜택 시트 -->
   <div class="modal-veil" id="region-modal">
@@ -72,6 +82,7 @@
 <script src="js/data.js"></script>
 <script src="js/bigdata.js"></script>
 <script src="js/sheet.js"></script>
+<script src="js/stars.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
