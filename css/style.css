@@ -331,6 +331,8 @@
   .brand-chip.other.on{background:var(--brown);border-color:var(--brown);color:#fff;}
   .brand-suggest{display:flex;flex-wrap:wrap;gap:6px;}
   .brand-chip.sug{border-color:var(--brown);color:var(--brown-deep);background:#FBF7EE;}
+  .brand-chip.reg{border-style:dashed;border-color:var(--gold);color:#9A7B2E;background:#FDF9EE;}
+  .buy-ch.req{background:#FBF3DF;color:#9A7B2E;margin-left:4px;}
   .buy-inp.price{border-color:var(--line);}
   .buy-inp.price:focus{border-color:var(--brown);}
   .buy-ctrl{display:flex;gap:7px;}

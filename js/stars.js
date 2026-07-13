@@ -60,7 +60,7 @@ const STAR_RULES = [
   ['준비물 · 아이템 체크', 5],
   ['뭘로 샀는지 기록', 15],
   ['리스트 플랜 완성 (리스트당)', 300],
-  ['제품 등록 요청', 10],
+  ['새 브랜드 · 제품 등록 요청', 10],
   ['선배맘 한마디 남기기', 20],
   ['달라진 지역정보 제보', 20],
   ['논쟁템 투표', 30],
@@ -113,11 +113,34 @@ function judgeRowEl(id){
 // 가격은 시세 가이드의 원천 데이터가 된다.
 const BUY_CHANNELS = ['새것', '당근(중고)', '선물받음', '물려받음'];
 
-// 전 리스트에서 관측된 브랜드 사전 (자동완성용)
+// ---- 등록 브랜드 사전 ----
+// 오타로 집계가 깨지지 않도록, 구매 기록은 등록된 브랜드에서 '선택'한다.
+// 없는 브랜드는 '등록 요청'으로 저장 → 운영 확인 후 정식 등록되는 흐름.
+const BRAND_REGISTRY = [
+  // 수유 · 젖병
+  '더블하트','헤겐','닥터브라운','모윰','레이퀸','엘리','로열세브르','베베그로우','필립스아벤트','토미티피','유미','마더케이',
+  '유팡','픽셀','베이비브레짜','해님','릴리브','보르르','오쿠','보아르','비앤비','프랭클린','스와비넥스','누크','아벤트',
+  // 분유 · 이유식
+  '압타밀','남양','매일유업','일동후디스','앱솔루트','아이배냇','베베쿡','에디슨','이지피지','마미포포','그라비','락앤락','리치밀','먼치킨','리첼','비앤디','써모스',
+  // 스킨 · 위생
+  '몽디에스','쁘리마쥬','아토팜','킨더프리제','궁중비책','비판텐','그린핑거','퓨어닷','베베숲','순둥이','브라운','유한킴벌리','노시부','한일','휴비딕','좋은느낌','예지미인','라시놀','멀티맘','메델라','스펙트라','시밀레',
+  // 기저귀
+  '하기스','팸퍼스','마미포코','군기저귀','페넬로페','매직캔','소베맘','도노도노','코코맘',
+  // 목욕
+  '슈너글','온다베이비','OK베이비','니스툴그로우','말랑하니','말랑허니','대림바스','힙비','포프베베','밤부베베','무루','한스네이쳐',
+  // 침구 · 가구
+  '이케아','리안','스토케','뉴나','포몽드','아뜰리에슈','라비킷','쁘리엘르','로토토','엔젤앤비','알프레미오','더스베이비','마더스베이비','소유','포래즈','마리마리','쁘띠라뺑','크래들스윙','포맘스',
+  // 이동 · 외출
+  '브라이텍스','다이치','맥시코시','조이','싸이벡스','오이스터','에그','오르빗','부가부','잉글레시나','와이업','폴레드','에르고베이비','베이비뵨','포그내','코니','아이엔젤','타보','리틀라이프',
+  // 의류 · 잡화
+  '유니클로','스칸디맘','러브투드림','위드오가닉','다이소','알리익스프레스','무신사키즈','자라키즈','H&M키즈','마리데','뚜띠뚜띠','알파베베','크록스','나이키','뉴발란스','아기짱','스케이터','일꼬르소','파스텔풍선','스티커팜','오뜨','마이비네임','마이비','사바트','아가짱',
+  // 가전 · 기타
+  '티피링크','헤이홈','샤오미','벨킨','삼성','LG','발뮤다','휘슬러','해피콜','휴롬','리앙','타이니러브','프롬식스','아카시아봉봉','커틀앤카이드','레드루트','올스테인리스','크리넥스','위닉스','블루에어',
+];
 let _brandDict = null;
 function brandDict(){
   if(_brandDict) return _brandDict;
-  const set = new Set();
+  const set = new Set(BRAND_REGISTRY);
   [typeof SHEET_CATEGORIES!=='undefined' && SHEET_CATEGORIES,
    typeof POSTPARTUM_CATEGORIES!=='undefined' && POSTPARTUM_CATEGORIES,
    typeof DAYCARE_CATEGORIES!=='undefined' && DAYCARE_CATEGORIES,
@@ -125,7 +148,7 @@ function brandDict(){
   ].filter(Boolean).forEach(cats=> cats.forEach(c=> c.items.forEach(it=>{
     sheetBrandCandidates(it).forEach(b=> set.add(b));
   })));
-  Object.values(myBuys).forEach(r=>{ if(r.b) set.add(r.b); }); // 내가 입력한 것도 학습
+  Object.values(myBuys).forEach(r=>{ if(r.b) set.add(r.b); }); // 등록 요청한 브랜드도 노출
   _brandDict = [...set];
   return _brandDict;
 }
@@ -137,7 +160,8 @@ function purchaseRowEl(id, candidates){
   const rec = myBuys[id];
   if(rec){
     const price = rec.p ? ' · ' + rec.p.toLocaleString() + '원' : '';
-    div.innerHTML = `내 구매 · <b class="jy">${rec.b}</b><span class="buy-ch">${rec.ch}${price}</span> — 시세·순위 데이터에 반영돼요`;
+    const reqTag = rec.req ? '<span class="buy-ch req">등록 확인 중</span>' : '';
+    div.innerHTML = `내 구매 · <b class="jy">${rec.b}</b><span class="buy-ch">${rec.ch}${price}</span>${reqTag} — 시세·순위 데이터에 반영돼요`;
     return div;
   }
 
@@ -152,37 +176,49 @@ function purchaseRowEl(id, candidates){
 
   const inp = document.createElement('input');
   inp.className = 'buy-inp';
-  inp.placeholder = '브랜드 앞 글자만 쳐보세요';
+  inp.placeholder = '브랜드 검색 — 앞 글자만 치면 나와요';
   inp.maxLength = 40;
   inp.style.display = 'none';
   inp.addEventListener('click', e=>e.stopPropagation());
 
-  // 자동완성 — 깜빡해도 앞 글자만 치면 후보가 나온다
+  // 검색 → 등록된 브랜드에서 선택 (오타 방지: 선택해야 저장돼요)
+  let regReq = false; // 미등록 브랜드 등록 요청 여부
   const suggest = document.createElement('div');
   suggest.className = 'brand-suggest';
   suggest.style.display = 'none';
   inp.addEventListener('input', ()=>{
     const v = inp.value.trim();
-    chosen = null;
-    if(!v){ suggest.style.display='none'; suggest.innerHTML=''; return; }
-    const hits = brandDict()
-      .filter(b=> b!==v && (b.startsWith(v) || b.includes(v)))
+    chosen = null; regReq = false;
+    suggest.innerHTML='';
+    if(!v){ suggest.style.display='none'; return; }
+    const dict = brandDict();
+    const hits = dict
+      .filter(b=> b.startsWith(v) || b.includes(v))
       .sort((a,b)=> (b.startsWith(v)?1:0)-(a.startsWith(v)?1:0))
       .slice(0,6);
-    if(!hits.length){ suggest.style.display='none'; suggest.innerHTML=''; return; }
-    suggest.innerHTML='';
     hits.forEach(name=>{
       const c = document.createElement('button');
       c.className = 'brand-chip sug';
       c.textContent = name;
       c.addEventListener('click', e=>{
         e.stopPropagation();
-        inp.value = name; chosen = name;
+        inp.value = name; chosen = name; regReq = false;
         suggest.style.display='none'; suggest.innerHTML='';
       });
       suggest.appendChild(c);
     });
-    suggest.style.display='flex';
+    if(v.length>=2 && !dict.includes(v)){ // 등록 안 된 브랜드 → 등록 요청 경로
+      const reg = document.createElement('button');
+      reg.className = 'brand-chip reg';
+      reg.textContent = `“${v}” 새 브랜드 등록 요청`;
+      reg.addEventListener('click', e=>{
+        e.stopPropagation();
+        chosen = v; regReq = true;
+        suggest.style.display='none'; suggest.innerHTML='';
+      });
+      suggest.appendChild(reg);
+    }
+    suggest.style.display = suggest.children.length ? 'flex' : 'none';
   });
 
   function clearSel(){ chips.querySelectorAll('.brand-chip').forEach(x=>x.classList.remove('on')); }
@@ -233,14 +269,23 @@ function purchaseRowEl(id, candidates){
   btn.textContent = '남기기';
   btn.addEventListener('click', e=>{
     e.stopPropagation();
-    const b = chosen || inp.value.trim();
-    if(!b){ toast('브랜드를 고르거나 적어주세요'); return; }
+    let b = chosen;
+    if(!b){ // 타이핑만 하고 선택 안 한 경우 — 정확히 일치하면 인정
+      const typed = inp.value.trim();
+      if(typed && brandDict().includes(typed)) b = typed;
+    }
+    if(!b){
+      toast(inp.value.trim() ? '목록에서 브랜드를 골라주세요 — 없으면 "등록 요청"을 눌러요' : '브랜드를 골라주세요');
+      return;
+    }
     const digits = priceInp.value.replace(/[^\d]/g,'');
     const rec = {b, ch: sel.value};
     if(digits) rec.p = +digits;
+    if(regReq) rec.req = true;
     myBuys[id] = rec;
-    _brandDict = null; // 사전에 새 브랜드 반영
+    _brandDict = null; // 등록 요청 브랜드도 사전에 노출
     saveStars();
+    if(regReq) earnStars(10, '새 브랜드 등록 요청', 'breq-'+b);
     earnStars(15, '구매 기록 (뭘로 · 얼마에)', 'buy-'+id);
     div.replaceWith(purchaseRowEl(id, candidates));
   });
