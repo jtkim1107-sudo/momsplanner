@@ -653,8 +653,7 @@ function renderSheetItem(it,ci,ii){
       <div class="item-info">
         <div class="item-name">${it.nm}</div>
         ${badges?`<div class="item-badges">${badges}</div>`:''}
-        ${it.how?`<div class="how">👉 ${it.how}</div>`:''}
-        ${opsHtml(it, id, 1, true)}
+        ${it.how?`<div class="how">👉 ${it.how}</div>`:opsHtml(it, id, 1, true)}
       </div>
       ${hasMore?'<span class="item-caret">﹀</span>':''}
     </div>
