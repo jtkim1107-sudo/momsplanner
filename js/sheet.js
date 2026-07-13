@@ -573,6 +573,12 @@ function renderSheetItem(it,ci,ii){
   }
 
   const showChk = sheetMode==='mine'; // 체크(샀어요)는 내 리스트에서
+  // 스탠다드엔 '보통 얼마에 사는지' 시세 한 줄
+  let priceMini = '';
+  if(sheetMode==='std'){
+    const pi = priceIntel(it, id);
+    if(pi) priceMini = `<div class="price-mini">💰 보통 ${won(pi.base)} · <b>${won(pi.dealAt)} 이하면 득템</b></div>`;
+  }
   el.innerHTML = `
     <div class="item-main" style="align-items:center;">
       ${showChk?'<div class="chk"></div>':''}
@@ -580,6 +586,7 @@ function renderSheetItem(it,ci,ii){
         <div class="item-name">${it.nm}</div>
         ${it.how?`<div class="how">👉 ${it.how}</div>`:''}
         ${opsHtml(it, id)}
+        ${priceMini}
         ${badges?`<div class="item-badges">${badges}</div>`:''}
       </div>
     </div>
@@ -600,23 +607,17 @@ function renderSheetItem(it,ci,ii){
     const cc = sheetCatCount(ci);
     const gp = document.getElementById('shp-'+ci);
     if(gp) gp.textContent = cc.done+'/'+cc.total;
-    // 별똥별 + "뭘로 샀어요?" 기록 노출
-    if(nowChecked){
-      earnStars(5, '준비물 체크', 'chk-'+(it.link||id));
-      if(!el.querySelector('.buy-row')) el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
-    }else{
-      if(!myBuys[id]){ const br = el.querySelector('.buy-row'); if(br) br.remove(); }
-    }
+    if(nowChecked) earnStars(5, '준비물 체크', 'chk-'+(it.link||id));
   });
-  // 내 리스트에선 시세 가이드 먼저
-  if(sheetMode==='mine') el.appendChild(priceRowEl(it, id));
+  // 내 리스트에선 시세 가이드 + 내가 채우는 구매 기록 빈칸
+  if(sheetMode==='mine'){
+    el.appendChild(priceRowEl(it, id));
+    el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
+  }
 
   // 살 것 / 당근 / 패스 선택
   if(myPlans[id]==='pass') el.classList.add('passed');
   el.appendChild(planRowEl(id, 'sheet'));
-
-  // 체크한(=산) 항목엔 "뭘로 샀어요?" 기록
-  if(sheetChecked.has(id) || myBuys[id]) el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
 
   el.querySelectorAll('[data-link]').forEach(b=> b.addEventListener('click',e=>{
     e.stopPropagation();
