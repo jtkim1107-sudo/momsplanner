@@ -52,7 +52,7 @@ function openReport(){
   const d = reportData();
   const total = d.bought.length + d.toBuy.length + d.carrot.length + d.hand.length;
   if(!total && !d.passed.length){
-    toast('스탠다드에서 새제품 구매·당근으로·물려받기를 먼저 골라보세요!');
+    toast('스탠다드에서 새제품으로 살지, 중고로 살지 먼저 골라보세요!');
     return;
   }
   const items = planListItems('sheet');

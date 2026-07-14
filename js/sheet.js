@@ -331,7 +331,21 @@ function sheetMine(id){
 }
 // 표준 구성 = 미니멀 필수(min) + 공통 필수(std) — 나머지는 '선택템'으로 접어둠
 function isStd(it){ return !!(it.min || it.std); }
-function sheetVisible(it, id){ return sheetMode==='mine' ? sheetMine(id) : isStd(it); }
+// 스탠다드에 올라가는 것 = 사야 하는 것만. 판정상 장롱템·사지마세요는 아예 안 올림
+function stdListed(it){
+  if(!isStd(it)) return false;
+  const c = sheetConclusion(it);
+  return !(c && (c.k==='no' || c.k==='closet'));
+}
+// 스탠다드 표시용 결론은 딱 두 개 — 무조건 사세요 / 하나만 사보세요
+// (당근이 이득이란 정보는 '판정 결과' 줄이 당근 시세로 말해준다)
+function displayConclusion(it){
+  const c = sheetConclusion(it);
+  if(!c) return null;
+  if(c.k==='carrot') return {k:'yes', label:'무조건 사세요'};
+  return c;
+}
+function sheetVisible(it, id){ return sheetMode==='mine' ? sheetMine(id) : stdListed(it); }
 
 function sheetItemId(ci, ii){ return 'sh' + ci + '-' + ii; }
 
@@ -554,7 +568,7 @@ function sheetTotals(){
 function sheetCountAll(){
   let mine=0, std=0;
   SHEET_CATEGORIES.forEach((c,ci)=> c.items.forEach((it,ii)=>{
-    if(isStd(it)) std++;
+    if(stdListed(it)) std++;
     if(sheetMine(sheetItemId(ci,ii))) mine++;
   }));
   return {mine, std};
@@ -592,7 +606,7 @@ function renderSheet(){
       <span class="ss-star">🌠</span>
       <div class="ss-over">SOHAENGSEONG STANDARD</div>
       <h3>소행성 스탠다드</h3>
-      <p>선배맘들의 리스트에서 <b>공통 필수만 추린 공식 기준표</b>예요.<br>새제품 구매 · 당근으로 · 물려받기 · 패스만 고르면 내 리스트 완성!</p>
+      <p>선배맘들의 리스트에서 <b>공통 필수만 추린 공식 기준표</b>예요.<br>여기 있는 건 다 사는 것 — <b>새것으로 살지, 중고로 구할지</b>만 고르면 돼요!</p>
       <div class="ss-chips"><span>공통 필수 ${cnt.std}</span><span>선배맘 4명 검증</span><span>판정 데이터 기반</span></div>
     `;
   }else{
@@ -601,7 +615,7 @@ function renderSheet(){
     intro.innerHTML = `
       <span class="ri">✨</span>
       <div class="rc"><h3>내가 고른 리스트</h3>
-      <p>새제품 구매 · 당근으로 · 물려받기로 담은 것들이에요. <b>시세 가이드 밑으로 보이면 사세요!</b> 준비되면 체크 — 기록까지 남기면 별똥별이 쌓여요.</p>
+      <p>새제품·중고로 사기로 한 것들이에요. <b>시세 가이드 밑으로 보이면 사세요!</b> 준비되면 체크, 기록까지 남기면 별똥별 — 생각이 바뀐 건 여기서 패스.</p>
       <button class="rp-open" onclick="openReport()">📄 내 똑똑한 리스트 만들기 — 친구 공유용</button></div>
     `;
   }
@@ -631,7 +645,8 @@ function renderSheet(){
       const iid = sheetItemId(ci,ii);
       if(sheetFilter && sheetItemDone(it, iid)) return; // 끝낸 건 치우기
       if(sheetMode==='mine'){ if(sheetMine(iid)) main.push([it,ii]); }
-      else { (isStd(it) ? main : extra).push([it,ii]); }
+      else if(stdListed(it)){ main.push([it,ii]); }
+      else if(!isStd(it)){ extra.push([it,ii]); } // 판정상 패스템은 아예 안 올림
     });
     if(!main.length && !extra.length) return;
     const {total, done} = sheetCatCount(ci);
@@ -661,7 +676,7 @@ function renderSheet(){
   if(!shownCats){
     const empty = document.createElement('div');
     empty.className='collect-box';
-    empty.innerHTML='<b>아직 내 리스트가 비어 있어요</b>소행성 스탠다드에서 "새제품 구매" · "당근으로" · "물려받기"를 고르면 여기 모여요.';
+    empty.innerHTML='<b>아직 내 리스트가 비어 있어요</b>소행성 스탠다드에서 "새제품 구매"나 "중고로"를 고르면 여기 모여요.';
     area.appendChild(empty);
   }
   updateSheetProgress();
@@ -675,7 +690,8 @@ function renderSheetItem(it,ci,ii){
   // 배지는 핵심만: 결론 + 판정 규모 (+ 개수는 가이드 없을 때만, 월령 점프)
   // 브랜드·핫딜가·당근추천·미니멀 배지는 의견/시세/결론과 중복이라 제거
   let badges='';
-  const concl = sheetConclusion(it);
+  const rawC = sheetConclusion(it);     // 원본 결론 (당근 판별용)
+  const concl = displayConclusion(it);  // 표시용 — 무조건 사세요 / 하나만 사보세요
   if(concl) badges += `<span class="badge concl ${concl.k}">${concl.label}</span>`;
   badges += verdictBadge(it, id);
   if(!it.how && it.need) badges += `<span class="badge need">${it.need}</span>`;
@@ -688,16 +704,16 @@ function renderSheetItem(it,ci,ii){
 
   // ⚖️ 판정 결과 한 줄 — "뭘로 · 대략 얼마에" (판정 1등 브랜드 + 집계 가격이 말한다)
   let answer = '';
-  if(sheetMode==='std' && concl){
+  if(sheetMode==='std' && rawC){
     const pi = priceIntel(it, id);
     const f = (typeof verdictFeedFor==='function') ? verdictFeedFor(it) : null;
     const brand = (f && f.n>=30 && f.brands && f.brands[0]) ? f.brands[0].nm : sheetBrandCandidates(it)[0];
     let verdictLine = '';
-    if(concl.k==='yes' && pi)
+    if(rawC.k==='yes' && pi)
       verdictLine = `<b>${brand?brand+' · ':''}${won(pi.dealAt)} 이하</b>로 사세요`;
-    else if(concl.k==='carrot' && pi)
+    else if(rawC.k==='carrot' && pi)
       verdictLine = `<b>${brand?brand+' · ':''}당근 ${won(pi.carrotLo)}~${won(pi.carrotHi)}</b>에 사세요`;
-    else if(concl.k==='try' && pi)
+    else if(rawC.k==='try' && pi)
       verdictLine = `하나만 사보세요 — <b>${won(pi.dealAt)} 이하</b>`;
     if(verdictLine) answer = `<span class="ans-k">⚖️ 판정 결과</span>${verdictLine}`;
   }
@@ -765,9 +781,9 @@ function renderSheetItem(it,ci,ii){
     el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
   }
 
-  // 살 것 / 당근 / 패스 선택
+  // 새제품/중고 선택 — 패스는 내 리스트에서만
   if(myPlans[id]==='pass') el.classList.add('passed');
-  el.appendChild(planRowEl(id, 'sheet'));
+  el.appendChild(planRowEl(id, 'sheet', sheetMode==='std' ? ['buy','carrot'] : null));
 
   el.querySelectorAll('[data-link]').forEach(b=> b.addEventListener('click',e=>{
     e.stopPropagation();

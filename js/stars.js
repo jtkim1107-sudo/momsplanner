@@ -307,13 +307,12 @@ function purchaseRowEl(id, candidates){
 // ---- 살 것 / 당근 / 패스 — 항목별 내 결정 ----
 // 리스트의 모든 항목을 정하면(플랜 완성) 리스트당 별똥별 +300.
 const PLAN_META = [
-  {k:'buy',    label:'새제품 구매', cls:'p-buy'},
-  {k:'carrot', label:'당근으로', cls:'p-carrot'},
-  {k:'hand',   label:'물려받기', cls:'p-hand'},
-  {k:'pass',   label:'패스',    cls:'p-pass'},
+  {k:'buy',    label:'새제품 구매',   cls:'p-buy'},
+  {k:'carrot', label:'중고로 (당근)', cls:'p-carrot'},
+  {k:'pass',   label:'패스',          cls:'p-pass'}, // 스탠다드에선 숨김 — 패스는 내 리스트에서
 ];
 const PLAN_SOURCES = [
-  {key:'sheet',      label:'출산',     cats:()=>SHEET_CATEGORIES,      idFn:(ci,ii)=>sheetItemId(ci,ii), keep:it=>isStd(it)},
+  {key:'sheet',      label:'출산',     cats:()=>SHEET_CATEGORIES,      idFn:(ci,ii)=>sheetItemId(ci,ii), keep:it=>stdListed(it)},
   {key:'postpartum', label:'조리원',   cats:()=>POSTPARTUM_CATEGORIES, idFn:(ci,ii)=>ppItemId(ci,ii)},
   {key:'daycare',    label:'어린이집', cats:()=>DAYCARE_CATEGORIES,    idFn:(ci,ii)=>dcItemId(ci,ii)},
   {key:'babyfood',   label:'이유식',   cats:()=>BABYFOOD_CATEGORIES,   idFn:(ci,ii)=>bfItemId(ci,ii)},
@@ -347,14 +346,14 @@ function babySurprise(occasion, onceKey, amount, delay){
   document.getElementById('baby-reward').textContent = `🌟 별똥별 ${amount}개`;
   setTimeout(()=> document.getElementById('baby-modal').classList.add('on'), delay||600);
 }
-function planRowEl(id, listKey){
+function planRowEl(id, listKey, allowed){
   const div = document.createElement('div');
   div.className = 'plan-row';
   const q = document.createElement('span');
   q.className = 'plan-q';
-  q.textContent = '어떻게 할까?';
+  q.textContent = '어떻게 살까?';
   div.appendChild(q);
-  PLAN_META.forEach(m=>{
+  PLAN_META.filter(m=> !allowed || allowed.includes(m.k)).forEach(m=>{
     const b = document.createElement('button');
     b.className = 'plan-chip '+m.cls + (myPlans[id]===m.k?' on':'');
     b.textContent = m.label;
