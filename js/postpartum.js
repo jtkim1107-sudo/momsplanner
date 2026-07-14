@@ -237,7 +237,7 @@ function renderPostpartumItem(it,ci,ii){
   // 투뎁스 — 겉면: 대표 의견 1개 / 상세(탭): 본체 판정 결과 + 의견 전체
   const ops = it.ops||[];
   const ppFeed = (typeof verdictFeedFor==='function') ? verdictFeedFor(it) : null;
-  const hasMore = ops.length>1 || !!ppFeed;
+  const hasMore = ops.length>1 || !!ppFeed || !!brandRankFor(it, id);
   el.innerHTML = `
     <div class="item-main" style="align-items:center;">
       <div class="chk"></div>
@@ -257,6 +257,7 @@ function renderPostpartumItem(it,ci,ii){
       if(open && !moreEl.dataset.filled){
         moreEl.dataset.filled = '1';
         if(ppFeed) moreEl.insertAdjacentHTML('beforeend', feedDetailHtml(ppFeed));
+        else moreEl.insertAdjacentHTML('beforeend', brandRankHtml(it, id));
         if(ops.length){
           const od = document.createElement('div');
           od.className = 'more-ops';

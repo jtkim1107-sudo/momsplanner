@@ -454,9 +454,43 @@ function sheetBrandCandidates(it){
     const f = verdictFeedFor(it);
     if(f && f.n>=30 && f.brands) f.brands.forEach(b=> push(b.nm));
   }
+  // 추천 판정을 받은 브랜드부터 — "어떤 브랜드를 사야 하는지"의 근거
+  (it.ops||[]).forEach(o=>{ if(o.verdict==='추천' && o.buy) push(o.buy.split('·')[0].split(' ')[0]); });
   if(it.brands) it.brands.split('·').forEach(push);         // 참고 브랜드 필드
   (it.ops||[]).forEach(o=>{ if(o.buy) push(o.buy.split('·')[0].split(' ')[0]); }); // 선배맘이 산 브랜드
   return out;
+}
+
+// ---- 브랜드 순위 — 전 품목 "어떤 브랜드를 사야 하는지" ----
+// 판정 연동 항목은 실제 판정 브랜드 순위, 나머지는 관측 브랜드(추천 우선)에
+// 시드 고정 점유율을 붙여 재현. 실서비스에선 판정 집계로 대체.
+function brandRankFor(it, id){
+  if(typeof verdictFeedFor==='function'){
+    const f = verdictFeedFor(it);
+    if(f){
+      if(f.n>=30 && f.brands) return {rows:f.brands, real:true};
+      return null; // 판정 진행 중 — 순위 비공개
+    }
+  }
+  const cands = sheetBrandCandidates(it);
+  if(!cands.length) return null;
+  const r = bdRng(bdSeed('brk-'+id));
+  const p1 = Math.round(24 + r()*22);
+  const p2 = Math.round(p1*(0.45 + r()*0.3));
+  const p3 = Math.round(p2*(0.4 + r()*0.4));
+  return {rows: cands.slice(0,3).map((nm,i)=>({nm, p:[p1,p2,p3][i]})), real:false};
+}
+function brandRankHtml(it, id){
+  const rk = brandRankFor(it, id);
+  if(!rk || rk.real) return ''; // 판정 연동 항목은 feedDetailHtml이 그린다
+  const medals = ['🥇','🥈','🥉'];
+  return `<div class="vf sim">
+    <div class="vf-rank">
+      <span class="vf-rank-head">🏆 브랜드 순위 · 선배맘 관측</span>
+      ${rk.rows.map((b,i)=>`<div class="vf-rk"><span class="rk-medal">${medals[i]}</span><span class="rk-nm">${b.nm} <b>${b.p}%</b></span></div>`).join('')}
+      <span class="rk-note">구매 기록 기반 관측치 · 판정이 쌓이면 정확해져요</span>
+    </div>
+  </div>`;
 }
 
 // ---- 시세 가이드 — 내 리스트 전용 ----
@@ -721,7 +755,7 @@ function renderSheetItem(it,ci,ii){
   // 투뎁스 — 겉면: 이름 · 결론 · 정답 한 줄 · 따라하기 · 대표 의견 1개
   //          상세(탭): 시세 숫자 전체 · 선배맘 의견 전체
   const ops = it.ops||[];
-  const hasMore = !!(priceIntel(it, id) || ops.length);
+  const hasMore = !!(priceIntel(it, id) || ops.length || brandRankFor(it, id));
   el.innerHTML = `
     <div class="item-main" style="align-items:center;">
       ${showChk?'<div class="chk"></div>':''}
@@ -744,6 +778,7 @@ function renderSheetItem(it,ci,ii){
         moreEl.dataset.filled = '1';
         const f = (typeof verdictFeedFor==='function') ? verdictFeedFor(it) : null;
         if(f) moreEl.insertAdjacentHTML('beforeend', feedDetailHtml(f)); // 본체 판정 결과가 맨 위
+        else moreEl.insertAdjacentHTML('beforeend', brandRankHtml(it, id)); // 관측 브랜드 순위
         moreEl.appendChild(priceRowEl(it, id));
         if(ops.length){
           const od = document.createElement('div');
