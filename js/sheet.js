@@ -886,7 +886,12 @@ function onBuyRecordSaved(){ checkSmartListComplete(); updateFocusBar(); }
 
 // 플랜을 고르면 스탠다드 진행률·카테고리 카운트·집중 필터 라벨 즉시 갱신
 function onPlanChanged(listKey){
-  if(listKey!=='sheet' || typeof viewMode==='undefined' || viewMode!=='sheet') return;
+  if(typeof viewMode==='undefined') return;
+  if(listKey==='postpartum' && viewMode==='postpartum'){ // 조리원도 동일 갱신
+    if(typeof ppRefreshHeads==='function') ppRefreshHeads();
+    return;
+  }
+  if(listKey!=='sheet' || viewMode!=='sheet') return;
   updateSheetProgress();
   SHEET_CATEGORIES.forEach((c,ci)=>{
     const gp = document.getElementById('shp-'+ci);

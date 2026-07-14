@@ -162,6 +162,7 @@ const POSTPARTUM_CATEGORIES = [
 // ---- 상태 ----
 const PP_CHK_KEY = 'sohaengseong-postpartum-checked';
 const PP_QTY_KEY = 'sohaengseong-postpartum-qty';
+const PP_MODE_KEY = 'sohaengseong-pp-mode';
 function ppItemId(ci, ii){ return 'pp' + ci + '-' + ii; }
 
 let ppChecked = new Set();
@@ -177,16 +178,40 @@ function savePostpartum(){
   }catch(e){}
 }
 
+// 출산 리스트와 동일한 구조 — 🏨 스탠다드(담기) ↔ 내 리스트(체크·기록)
+let ppMode = 'std';
+try{
+  const m = localStorage.getItem(PP_MODE_KEY);
+  if(m==='std'||m==='mine') ppMode = m;
+}catch(e){}
+function setPpMode(m){
+  if(ppMode===m) return;
+  ppMode = m; ppFilter = false;
+  try{ localStorage.setItem(PP_MODE_KEY, m); }catch(e){}
+  renderPostpartum();
+}
+let ppFilter = false;
+function togglePpFilter(){ ppFilter = !ppFilter; renderPostpartum(); }
+function ppMine(id){ return ppChecked.has(id) || myPlans[id]==='buy' || myPlans[id]==='carrot'; }
+function ppItemDone(id){ return ppMode==='std' ? !!myPlans[id] : ppChecked.has(id); }
+
 function ppTotals(){
-  let total=0, done=0;
+  let total=0, done=0, mine=0;
   POSTPARTUM_CATEGORIES.forEach((c,ci)=> c.items.forEach((it,ii)=>{
-    total++; if(ppChecked.has(ppItemId(ci,ii))) done++;
+    const id = ppItemId(ci,ii);
+    if(ppMine(id)) mine++;
+    if(ppMode==='mine' && !ppMine(id)) return;
+    total++; if(ppItemDone(id)) done++;
   }));
-  return {total, done};
+  return {total, done, mine};
 }
 function ppCatCount(ci){
   let total=0, done=0;
-  POSTPARTUM_CATEGORIES[ci].items.forEach((it,ii)=>{ total++; if(ppChecked.has(ppItemId(ci,ii))) done++; });
+  POSTPARTUM_CATEGORIES[ci].items.forEach((it,ii)=>{
+    const id = ppItemId(ci,ii);
+    if(ppMode==='mine' && !ppMine(id)) return;
+    total++; if(ppItemDone(id)) done++;
+  });
   return {total, done};
 }
 
@@ -195,20 +220,69 @@ function renderPostpartum(){
   area.innerHTML='';
 
   const cnt = ppTotals();
-  const intro = document.createElement('div');
-  intro.className='region-card';
-  intro.style.cursor='default';
-  intro.innerHTML = `
-    <span class="ri">🏨</span>
-    <div class="rc"><h3>조리원 · 출산가방 ${cnt.total}가지</h3>
-    <p>선배맘들이 실제로 싼 <b>출산 가방 리스트 3종을 병합</b>했어요. 조리원마다 제공 품목이 달라요 — "제공 확인" 항목은 예약한 곳에 먼저 물어보세요!</p></div>
+  const totalAll = POSTPARTUM_CATEGORIES.reduce((a,c)=>a+c.items.length,0);
+
+  // 스탠다드 ↔ 내 리스트 토글
+  const mt = document.createElement('div');
+  mt.className='sheet-mode';
+  mt.innerHTML = `
+    <button class="ss ${ppMode==='std'?'on':''}" onclick="setPpMode('std')">🏨 조리원 스탠다드 · ${totalAll}</button>
+    <button class="${ppMode==='mine'?'on':''}" onclick="setPpMode('mine')">내 리스트 · ${cnt.mine}</button>
   `;
+  area.appendChild(mt);
+
+  const intro = document.createElement('div');
+  if(ppMode==='std'){
+    intro.className='ss-card';
+    intro.innerHTML = `
+      <span class="ss-star">🏨</span>
+      <div class="ss-over">SOHAENGSEONG STANDARD</div>
+      <h3>조리원 · 출산가방</h3>
+      <p>선배맘들이 실제로 싼 <b>출산 가방 리스트 3종 병합</b> 기준표예요.<br>판정 결과 확인하고 <b>담기만 누르면</b> 내 가방 리스트 완성!</p>
+      <div class="ss-chips"><span>가방 필수 ${totalAll}</span><span>실제 가방 3종 검증</span><span>제공 품목은 조리원 확인</span></div>
+    `;
+  }else{
+    intro.className='region-card';
+    intro.style.cursor='default';
+    intro.innerHTML = `
+      <span class="ri">🧳</span>
+      <div class="rc"><h3>내 출산가방</h3>
+      <p>담은 것들이에요. <b>가방에 넣으면 체크</b>, 산 건 기록까지 — 생각이 바뀐 건 여기서 패스. "제공 확인" 항목은 조리원에 먼저 물어보세요!</p></div>
+    `;
+  }
   area.appendChild(intro);
 
+  // 🎯 남은 것만 보기 + 오늘의 3개 — 하나씩 준비하는 분들용
+  const todos = [];
+  POSTPARTUM_CATEGORIES.forEach((c,ci)=> c.items.forEach((it,ii)=>{
+    const id = ppItemId(ci,ii);
+    if(ppMode==='mine' && !ppMine(id)) return;
+    if(!ppItemDone(id)) todos.push(it.nm);
+  }));
+  if(todos.length){
+    const fb = document.createElement('div');
+    fb.className = 'focus-bar';
+    fb.innerHTML = `
+      <button class="sheet-filter ${ppFilter?'on':''}" onclick="togglePpFilter()">🎯 ${ppMode==='std'?'안 담은 것만':'남은 것만'} 보기 · ${todos.length}</button>
+      ${!ppFilter && todos.length>3 ? `<span class="nudge">오늘은 딱 3개만 담아볼까요 — ${todos.slice(0,3).join(', ')}</span>`:''}
+    `;
+    area.appendChild(fb);
+  }else if(ppFilter){ ppFilter = false; }
+
+  let shown = 0;
   POSTPARTUM_CATEGORIES.forEach((cat,ci)=>{
+    const list = [];
+    cat.items.forEach((it,ii)=>{
+      const id = ppItemId(ci,ii);
+      if(ppFilter && ppItemDone(id)) return;
+      if(ppMode==='mine' && !ppMine(id)) return;
+      list.push([it,ii]);
+    });
+    if(!list.length) return;
+    shown++;
     const {total, done} = ppCatCount(ci);
     const gEl = document.createElement('div'); gEl.className='group';
-    const chip = done===total
+    const chip = (total>0 && done===total)
       ? '<span class="deadline done">완료 ✓</span>'
       : '<span class="deadline info">준비 중</span>';
     gEl.innerHTML = `
@@ -216,9 +290,15 @@ function renderPostpartum(){
       <div class="group-items" id="ppi-${ci}"></div>
     `;
     const holder = gEl.querySelector('#ppi-'+ci);
-    cat.items.forEach((it,ii)=> holder.appendChild(renderPostpartumItem(it,ci,ii)));
+    list.forEach(([it,ii])=> holder.appendChild(renderPostpartumItem(it,ci,ii)));
     area.appendChild(gEl);
   });
+  if(!shown && ppMode==='mine'){
+    const empty = document.createElement('div');
+    empty.className='collect-box';
+    empty.innerHTML='<b>아직 출산가방이 비어 있어요</b>조리원 스탠다드에서 담기를 누르면 여기 모여요.';
+    area.appendChild(empty);
+  }
   updatePostpartumProgress();
 }
 
@@ -227,20 +307,23 @@ function renderPostpartumItem(it,ci,ii){
   const el = document.createElement('div');
   el.className = 'item' + (ppChecked.has(id)?' checked':'');
 
-  // 배지는 결론 + 판정 규모 + 개수만 — 브랜드·당근추천은 의견/결론과 중복
+  // 배지는 결론(2종) + 판정 규모 + 개수만
   let badges='';
-  const concl = sheetConclusion(it);
+  const rawC = sheetConclusion(it);
+  const concl = displayConclusion(it);
   if(concl) badges += `<span class="badge concl ${concl.k}">${concl.label}</span>`;
   badges += verdictBadge(it, id);
   if(it.need) badges += `<span class="badge need">${it.need}</span>`;
 
-  // 투뎁스 — 겉면: 대표 의견 1개 / 상세(탭): 본체 판정 결과 + 의견 전체
+  const showChk = ppMode==='mine';
+
+  // 투뎁스 — 겉면: 대표 의견 1개 / 상세(탭): 판정 결과 + 브랜드 순위 + 의견 전체
   const ops = it.ops||[];
   const ppFeed = (typeof verdictFeedFor==='function') ? verdictFeedFor(it) : null;
   const hasMore = ops.length>1 || !!ppFeed || !!brandRankFor(it, id);
   el.innerHTML = `
     <div class="item-main" style="align-items:center;">
-      <div class="chk"></div>
+      ${showChk?'<div class="chk"></div>':''}
       <div class="item-info">
         <div class="item-name">${it.nm}</div>
         ${badges?`<div class="item-badges">${badges}</div>`:''}
@@ -268,33 +351,74 @@ function renderPostpartumItem(it,ci,ii){
     });
   }
 
-  if(myPlans[id]==='pass') el.classList.add('passed');
-  el.appendChild(planRowEl(id, 'postpartum'));
-  if(ppChecked.has(id) || myBuys[id]) el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
-
-  el.querySelector('.chk').addEventListener('click',e=>{
-    e.stopPropagation();
-    const now = !ppChecked.has(id);
-    now ? ppChecked.add(id) : ppChecked.delete(id);
-    el.classList.toggle('checked');
-    savePostpartum();
-    updatePostpartumProgress();
-    const cc = ppCatCount(ci);
-    const gp = document.getElementById('ppp-'+ci);
-    if(gp) gp.textContent = cc.done+'/'+cc.total;
-    if(now){
-      earnStars(5, '조리원 준비물 체크', 'chk-'+id);
-      if(!el.querySelector('.buy-row')) el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
-    }else{
-      if(!myBuys[id]){ const br = el.querySelector('.buy-row'); if(br) br.remove(); }
-    }
-  });
+  if(ppMode==='std'){
+    // 스탠다드: 담기 원버튼 — 판정 추천 방식이 자동 플랜
+    const addBtn = document.createElement('button');
+    const label = ()=> myPlans[id] ? '✓ 가방에 담겼어요' : '🧳 내 가방에 담기';
+    addBtn.className = 'add-mine' + (myPlans[id]?' on':'');
+    addBtn.textContent = label();
+    addBtn.addEventListener('click', e=>{
+      e.stopPropagation();
+      if(myPlans[id]) delete myPlans[id];
+      else myPlans[id] = (rawC && rawC.k==='carrot') ? 'carrot' : 'buy';
+      saveStars();
+      addBtn.classList.toggle('on', !!myPlans[id]);
+      addBtn.textContent = label();
+      checkPlanComplete('postpartum');
+      ppRefreshHeads();
+    });
+    el.appendChild(addBtn);
+  }else{
+    // 내 리스트: 체크 + 새것/중고/패스 + 구매 기록
+    if(myPlans[id]==='pass') el.classList.add('passed');
+    el.appendChild(planRowEl(id, 'postpartum'));
+    el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
+    const chkEl = el.querySelector('.chk');
+    if(chkEl) chkEl.addEventListener('click',e=>{
+      e.stopPropagation();
+      const now = !ppChecked.has(id);
+      now ? ppChecked.add(id) : ppChecked.delete(id);
+      el.classList.toggle('checked');
+      savePostpartum();
+      if(now) earnStars(5, '조리원 준비물 체크', 'chk-'+id);
+      ppRefreshHeads(ci);
+    });
+  }
   return el;
+}
+
+// 진행률 · 카테고리 카운트 · 집중 필터 라벨 갱신
+function ppRefreshHeads(){
+  updatePostpartumProgress();
+  POSTPARTUM_CATEGORIES.forEach((c,ci)=>{
+    const gp = document.getElementById('ppp-'+ci);
+    if(gp){ const cc = ppCatCount(ci); gp.textContent = cc.done+'/'+cc.total; }
+  });
+  const btn = document.querySelector('.sheet-filter');
+  if(!btn) return;
+  const todos = [];
+  POSTPARTUM_CATEGORIES.forEach((c,ci)=> c.items.forEach((it,ii)=>{
+    const id = ppItemId(ci,ii);
+    if(ppMode==='mine' && !ppMine(id)) return;
+    if(!ppItemDone(id)) todos.push(it.nm);
+  }));
+  btn.textContent = `🎯 ${ppMode==='std'?'안 담은 것만':'남은 것만'} 보기 · ${todos.length}`;
+  const nd = document.querySelector('.nudge');
+  if(nd){
+    if(todos.length>3) nd.textContent = `오늘은 딱 3개만 담아볼까요 — ${todos.slice(0,3).join(', ')}`;
+    else nd.remove();
+  }
+  if(!todos.length){ const fb = document.querySelector('.focus-bar'); if(fb) fb.remove(); }
 }
 
 function updatePostpartumProgress(){
   const {total, done} = ppTotals();
-  document.getElementById('prog-name').textContent = '조리원 준비물';
-  document.getElementById('prog-text').textContent = done+' / '+total+' 완료';
-  document.getElementById('prog-fill').style.width = (done/total*100)+'%';
+  if(ppMode==='std'){
+    document.getElementById('prog-name').textContent = '조리원 스탠다드';
+    document.getElementById('prog-text').textContent = done+' / '+total+' 담았어요';
+  }else{
+    document.getElementById('prog-name').textContent = '조리원 · 내 가방';
+    document.getElementById('prog-text').textContent = done+' / '+total+' 완료';
+  }
+  document.getElementById('prog-fill').style.width = (total?done/total*100:0)+'%';
 }
