@@ -303,6 +303,13 @@
   .plan-chip.p-carrot.on{background:#C98757;color:#fff;box-shadow:0 3px 8px rgba(201,135,87,.25);}
   .plan-chip.p-hand.on{background:#7B8FB5;color:#fff;box-shadow:0 3px 8px rgba(123,143,181,.25);}
   .plan-chip.p-pass.on{background:#A29A8C;color:#fff;}
+  .add-mine{
+    display:block;width:calc(100% - 28px);margin:2px 14px 12px;border:1.5px solid #E2D7C3;
+    background:#fff;color:#8A7357;font-family:inherit;font-size:12.5px;font-weight:800;
+    border-radius:20px;padding:9px 0;cursor:pointer;transition:background .15s,color .15s,transform .1s;
+  }
+  .add-mine:active{transform:scale(.98);}
+  .add-mine.on{background:var(--brown);border-color:var(--brown);color:#fff;}
   .item.passed{opacity:.5;}
   .item.passed .item-name{text-decoration:line-through;color:var(--sub);}
 

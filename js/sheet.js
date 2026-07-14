@@ -645,7 +645,7 @@ function renderSheet(){
       <span class="ss-star">🌠</span>
       <div class="ss-over">SOHAENGSEONG STANDARD</div>
       <h3>소행성 스탠다드</h3>
-      <p>선배맘들의 리스트에서 <b>공통 필수만 추린 공식 기준표</b>예요.<br>여기 있는 건 다 사는 것 — <b>새것으로 살지, 중고로 구할지</b>만 고르면 돼요!</p>
+      <p>선배맘들의 리스트에서 <b>공통 필수만 추린 공식 기준표</b>예요.<br>판정 결과 확인하고 <b>담기만 누르면</b> 내 리스트 완성!</p>
       <div class="ss-chips"><span>공통 필수 ${cnt.std}</span><span>선배맘 4명 검증</span><span>판정 데이터 기반</span></div>
     `;
   }else{
@@ -671,8 +671,8 @@ function renderSheet(){
     const fb = document.createElement('div');
     fb.className = 'focus-bar';
     fb.innerHTML = `
-      <button class="sheet-filter ${sheetFilter?'on':''}" onclick="toggleSheetFilter()">🎯 ${sheetMode==='std'?'안 정한 것만':'남은 것만'} 보기 · ${todos.length}</button>
-      ${!sheetFilter && todos.length>3 ? `<span class="nudge">오늘은 딱 3개만 — ${todos.slice(0,3).join(', ')}</span>`:''}
+      <button class="sheet-filter ${sheetFilter?'on':''}" onclick="toggleSheetFilter()">🎯 ${sheetMode==='std'?'안 담은 것만':'남은 것만'} 보기 · ${todos.length}</button>
+      ${!sheetFilter && todos.length>3 ? `<span class="nudge">오늘은 딱 3개만 담아볼까요 — ${todos.slice(0,3).join(', ')}</span>`:''}
     `;
     area.appendChild(fb);
   }else if(sheetFilter){ sheetFilter = false; }
@@ -715,7 +715,7 @@ function renderSheet(){
   if(!shownCats){
     const empty = document.createElement('div');
     empty.className='collect-box';
-    empty.innerHTML='<b>아직 내 리스트가 비어 있어요</b>소행성 스탠다드에서 "새제품 구매"나 "중고로"를 고르면 여기 모여요.';
+    empty.innerHTML='<b>아직 내 리스트가 비어 있어요</b>소행성 스탠다드에서 담기를 누르면 여기 모여요.';
     area.appendChild(empty);
   }
   updateSheetProgress();
@@ -821,9 +821,28 @@ function renderSheetItem(it,ci,ii){
     el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
   }
 
-  // 새제품/중고 선택 — 패스는 내 리스트에서만 (스탠다드엔 지워진 템이 없어야 한다)
-  if(sheetMode==='mine' && myPlans[id]==='pass') el.classList.add('passed');
-  el.appendChild(planRowEl(id, 'sheet', sheetMode==='std' ? ['buy','carrot'] : null));
+  // 스탠다드: "어떻게 살까"는 판정이 이미 답했다 — 액션은 담기 하나
+  // (담으면 판정 추천 방식(새것/당근)이 자동 플랜으로, 내 리스트에서 변경 가능)
+  if(sheetMode==='std'){
+    const addBtn = document.createElement('button');
+    const label = ()=> myPlans[id] ? '✓ 내 리스트에 담겼어요' : '🛒 내 리스트에 담기';
+    addBtn.className = 'add-mine' + (myPlans[id]?' on':'');
+    addBtn.textContent = label();
+    addBtn.addEventListener('click', e=>{
+      e.stopPropagation();
+      if(myPlans[id]) delete myPlans[id];
+      else myPlans[id] = (rawC && rawC.k==='carrot') ? 'carrot' : 'buy';
+      saveStars();
+      addBtn.classList.toggle('on', !!myPlans[id]);
+      addBtn.textContent = label();
+      checkPlanComplete('sheet');
+      if(typeof onPlanChanged==='function') onPlanChanged('sheet');
+    });
+    el.appendChild(addBtn);
+  }else{
+    if(myPlans[id]==='pass') el.classList.add('passed');
+    el.appendChild(planRowEl(id, 'sheet'));
+  }
 
   el.querySelectorAll('[data-link]').forEach(b=> b.addEventListener('click',e=>{
     e.stopPropagation();
@@ -837,7 +856,7 @@ function updateSheetProgress(){
     const items = planListItems('sheet');
     const decided = items.filter(x=>myPlans[x.id]).length;
     document.getElementById('prog-name').textContent = '소행성 스탠다드';
-    document.getElementById('prog-text').textContent = decided+' / '+items.length+' 정했어요';
+    document.getElementById('prog-text').textContent = decided+' / '+items.length+' 담았어요';
     document.getElementById('prog-fill').style.width = (items.length?decided/items.length*100:0)+'%';
   }else{
     const {total, done} = sheetTotals();
@@ -885,10 +904,10 @@ function updateFocusBar(){
     if(!sheetVisible(it, id)) return;
     if(!sheetItemDone(it, id)) todos.push(it.nm);
   }));
-  btn.textContent = `🎯 ${sheetMode==='std'?'안 정한 것만':'남은 것만'} 보기 · ${todos.length}`;
+  btn.textContent = `🎯 ${sheetMode==='std'?'안 담은 것만':'남은 것만'} 보기 · ${todos.length}`;
   const nd = document.querySelector('.nudge');
   if(nd){
-    if(todos.length>3) nd.textContent = `오늘은 딱 3개만 — ${todos.slice(0,3).join(', ')}`;
+    if(todos.length>3) nd.textContent = `오늘은 딱 3개만 담아볼까요 — ${todos.slice(0,3).join(', ')}`;
     else nd.remove();
   }
   if(!todos.length){ const fb = document.querySelector('.focus-bar'); if(fb) fb.remove(); }
