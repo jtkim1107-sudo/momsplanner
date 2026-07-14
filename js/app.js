@@ -123,7 +123,7 @@ function render(){
   if(viewMode==='postpartum'){
     document.getElementById('hero-title').textContent = '조리원 준비물';
     document.getElementById('hero-dday').textContent = `출산예정일 D-${state.dday}`;
-    document.getElementById('demo-note').textContent = '선배맘 실제 출산가방 3종 병합 · 제공 품목은 조리원에 먼저 확인!';
+    document.getElementById('demo-note').textContent = '선배맘 판정으로 만든 출산가방 판정템 · 제공 품목은 조리원에 먼저 확인!';
     document.getElementById('preview-note').style.display='none';
     renderPostpartum();
     return;
