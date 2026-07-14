@@ -623,6 +623,11 @@ function renderSheet(){
   const area = document.getElementById('body-area');
   area.innerHTML='';
 
+  // 마이그레이션 — 물려받기 버튼 제거 이전에 저장된 플랜은 중고로 흡수 (유령 상태 방지)
+  let migrated = false;
+  Object.keys(myPlans).forEach(k=>{ if(myPlans[k]==='hand'){ myPlans[k]='carrot'; migrated = true; } });
+  if(migrated) saveStars();
+
   // 표준 리스트 / 내 리스트 토글 — 남들 표준과 내가 고른 것 비교
   const cnt = sheetCountAll();
   const mt = document.createElement('div');
@@ -816,8 +821,8 @@ function renderSheetItem(it,ci,ii){
     el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
   }
 
-  // 새제품/중고 선택 — 패스는 내 리스트에서만
-  if(myPlans[id]==='pass') el.classList.add('passed');
+  // 새제품/중고 선택 — 패스는 내 리스트에서만 (스탠다드엔 지워진 템이 없어야 한다)
+  if(sheetMode==='mine' && myPlans[id]==='pass') el.classList.add('passed');
   el.appendChild(planRowEl(id, 'sheet', sheetMode==='std' ? ['buy','carrot'] : null));
 
   el.querySelectorAll('[data-link]').forEach(b=> b.addEventListener('click',e=>{
