@@ -632,6 +632,14 @@
     font-size:11px;font-weight:800;color:#8A7357;background:#fff;
     border:1px solid #E8DCC2;border-radius:12px;padding:4px 10px;
   }
+  .rp-sum span.hl{background:#FDF6E3;border-color:#EAD9A8;color:#8A6D1F;}
+  .rp-stats{display:flex;gap:8px;margin-top:12px;}
+  .rp-stat{
+    flex:1;background:#fff;border:1px solid var(--line);border-radius:14px;
+    padding:12px 6px 10px;text-align:center;box-shadow:var(--sh-sm);
+  }
+  .rp-stat b{display:block;font-size:17px;font-weight:900;color:#5E4C3A;letter-spacing:-.02em;}
+  .rp-stat span{font-size:9.5px;font-weight:700;color:var(--sub);}
   .rp-money{
     background:#fff;border:1.5px solid #E5DAC4;border-radius:14px;padding:15px 16px;margin-top:12px;
   }

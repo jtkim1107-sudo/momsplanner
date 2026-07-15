@@ -18,7 +18,13 @@ function reportData(){
 
     const pi = priceIntel(it, id);
     const rec = myBuys[id];
-    const row = { nm:it.nm, cat:c.nm, brand: rec?rec.b:null, paid: rec&&rec.p?rec.p:null, pi };
+    // 🥇 판정 1등 브랜드로 샀는지 — "똑똑하게 샀다"의 근거
+    let top = false;
+    if(rec && rec.b && typeof brandRankFor==='function'){
+      const rk = brandRankFor(it, id);
+      top = !!(rk && rk.rows[0] && rec.b.startsWith(rk.rows[0].nm));
+    }
+    const row = { nm:it.nm, cat:c.nm, brand: rec?rec.b:null, paid: rec&&rec.p?rec.p:null, pi, top };
 
     if(sheetChecked.has(id)){ bought.push(row); }
     else if(plan==='carrot'){ carrot.push(row); }
@@ -62,7 +68,7 @@ function openReport(){
   const dateStr = `${today.getFullYear()}.${today.getMonth()+1}.${today.getDate()}`;
 
   const li = (row, kind) => {
-    const brand = row.brand ? `<b>${row.brand}</b>` : '';
+    const brand = row.brand ? `<b>${row.top?'🥇 ':''}${row.brand}</b>` : '';
     let price = '';
     if(kind==='bought') price = row.paid ? row.paid.toLocaleString()+'원' : '';
     else if(kind==='carrot') price = row.pi ? `${won(row.pi.carrotLo)}~${won(row.pi.carrotHi)}` : '';
@@ -74,22 +80,33 @@ function openReport(){
   const complete = d.toBuy.length===0 && d.carrot.length===0 && d.hand.length===0 && d.bought.length>0 && d.bought.every(r=>r.brand);
   const smartSave = d.paidBase - d.paidSum;
 
+  const prepRate = items.length ? Math.round(decided/items.length*100) : 0;
+  const topPicks = d.bought.filter(r=>r.top).length;
+  const dday = (typeof state!=='undefined' && state.dday>0) ? state.dday : null;
+
   const body = document.getElementById('report-body');
   body.innerHTML = `
     <div class="rp-hero">
       <div class="ss-over">SOHAENGSEONG SMART LIST</div>
       <h2>🌠 ${PROFILE.nick}의<br>똑똑한 리스트</h2>
-      <p>${dateStr} · 소행성 스탠다드 ${decided}/${items.length}${decided<items.length?' 진행 중':' 완성'}</p>
+      <p>${dateStr}${dday?` · 출산 D-${dday}`:''} · 판정 데이터로 만든 준비물 플랜</p>
       ${complete?'<div class="rp-medal">🏅 리스트 100% 완성 — 전부 사고 전부 기록했어요</div>':''}
       <div class="rp-sum">
-        <span>🛍️ 살 것 ${d.toBuy.length}</span><span>🥕 당근 ${d.carrot.length}</span>${d.hand.length?`<span>🎁 물려 ${d.hand.length}</span>`:''}<span>✅ 샀어요 ${d.bought.length}</span><span>🚫 패스 ${d.passed.length}</span>
+        ${topPicks?`<span class="hl">🥇 판정 1등픽 ${topPicks}</span>`:''}
+        <span>🛍️ 살 것 ${d.toBuy.length}</span><span>🥕 당근 ${d.carrot.length}</span>${d.hand.length?`<span>🎁 물려 ${d.hand.length}</span>`:''}<span>✅ 샀어요 ${d.bought.length}</span>${d.passed.length?`<span>🚫 패스 ${d.passed.length}</span>`:''}
       </div>
+    </div>
+
+    <div class="rp-stats">
+      <div class="rp-stat"><b>${prepRate}%</b><span>플랜 진행률</span></div>
+      <div class="rp-stat"><b>${save>0?manwon(save):'0원'}</b><span>새것 대비 절약</span></div>
+      <div class="rp-stat"><b>${(smartSave>0&&d.paidSum)?manwon(smartSave):(d.recCount+'건')}</b><span>${(smartSave>0&&d.paidSum)?'시세보다 아낌':'구매 기록'}</span></div>
     </div>
 
     ${d.recCount?`
     <div class="rp-brain">
       <h3>🧠 똑똑 지수</h3>
-      <div class="rp-money-row"><span>구매 기록</span><b>${d.recCount}건</b></div>
+      <div class="rp-money-row"><span>구매 기록</span><b>${d.recCount}건${topPicks?` · 판정 1등 브랜드 ${topPicks}개`:''}</b></div>
       ${d.paidSum?`<div class="rp-money-row"><span>실제로 쓴 돈</span><b>${manwon(d.paidSum)}</b></div>`:''}
       ${smartSave>0?`<div class="rp-save">💡 시세보다 ${manwon(smartSave)} 똑똑하게 샀어요!</div>`
         : d.paidSum?`<div class="rp-money-row"><span>시세 대비</span><b>딱 시세에 샀어요</b></div>`:''}
@@ -110,7 +127,7 @@ function openReport(){
 
     <div class="rp-footer">
       <div class="rp-logo">🌠 소행성 육아플래너</div>
-      <p>선배맘 데이터로 3분 만에 만든 준비물 플랜<br>나도 만들기 → <b>jtkim1107-sudo.github.io/momsplanner</b></p>
+      <p>수천 명의 판정이 고른 것만, 브랜드와 적정가까지<br>나도 만들기 → <b>jtkim1107-sudo.github.io/momsplanner</b></p>
     </div>
 
     <div class="rp-actions">
@@ -129,9 +146,14 @@ function closeReport(){
 function shareReport(){
   const d = reportData();
   const save = d.baseSum - d.carrotSum;
-  const text = `🌠 ${PROFILE.nick}의 출산 준비 리포트\n`
-    + `🛍️ 살 것 ${d.toBuy.length} · 🥕 당근 ${d.carrot.length}${d.hand.length?` · 🎁 물려받기 ${d.hand.length}`:''} · ✅ 샀어요 ${d.bought.length} · 🚫 패스 ${d.passed.length}\n`
-    + `💰 새것 ${manwon(d.baseSum)} → 당근 활용 ${manwon(d.carrotSum)}${save>0?` (${manwon(save)} 절약!)`:''}\n`
+  const items = planListItems('sheet');
+  const decided = items.filter(x=>myPlans[x.id]).length;
+  const prepRate = items.length ? Math.round(decided/items.length*100) : 0;
+  const topPicks = d.bought.filter(r=>r.top).length;
+  const dday = (typeof state!=='undefined' && state.dday>0) ? ` (D-${state.dday})` : '';
+  const text = `🌠 ${PROFILE.nick}의 똑똑한 출산준비 리포트${dday}\n`
+    + `플랜 ${prepRate}%${topPicks?` · 🥇 판정 1등 브랜드 ${topPicks}개`:''} · ✅ 샀어요 ${d.bought.length}\n`
+    + `💰 새것 ${manwon(d.baseSum)} → 내 플랜 ${manwon(d.carrotSum)}${save>0?` (${manwon(save)} 절약!)`:''}\n`
     + `나도 만들기 → https://jtkim1107-sudo.github.io/momsplanner/`;
   if(navigator.share){
     navigator.share({title:'소행성 출산 준비 리포트', text}).catch(()=>{});
