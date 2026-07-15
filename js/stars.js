@@ -367,6 +367,7 @@ function planRowEl(id, listKey, allowed){
       const item = div.closest('.item');
       if(item) item.classList.toggle('passed', myPlans[id]==='pass');
       checkPlanComplete(listKey);
+      if(typeof onPlanSet==='function') onPlanSet(id, myPlans[id]||null, listKey, item);
       if(typeof onPlanChanged==='function') onPlanChanged(listKey);
     });
     div.appendChild(b);

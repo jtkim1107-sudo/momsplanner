@@ -887,6 +887,25 @@ function checkSmartListComplete(){
 }
 function onBuyRecordSaved(){ checkSmartListComplete(); updateFocusBar(); }
 
+// 패스 = 내 리스트에서 뺀다 — 체크 해제하고 카드가 바로 사라진다 (유령 취소선 방지)
+function onPlanSet(id, plan, listKey, itemEl){
+  if(plan!=='pass') return;
+  if(listKey==='sheet'){
+    if(sheetChecked.has(id)){ sheetChecked.delete(id); saveSheet(); }
+  }else if(listKey==='postpartum' && typeof ppChecked!=='undefined'){
+    if(ppChecked.has(id)){ ppChecked.delete(id); savePostpartum(); }
+  }else{
+    return; // 다른 리스트는 기존 동작 유지
+  }
+  toast('패스 — 내 리스트에서 뺐어요. 스탠다드에서 다시 담을 수 있어요');
+  if(itemEl){
+    itemEl.style.transition = 'opacity .25s ease, transform .25s ease';
+    itemEl.style.opacity = '0';
+    itemEl.style.transform = 'scale(.97)';
+    setTimeout(()=> itemEl.remove(), 260);
+  }
+}
+
 // 플랜을 고르면 스탠다드 진행률·카테고리 카운트·집중 필터 라벨 즉시 갱신
 function onPlanChanged(listKey){
   if(typeof viewMode==='undefined') return;
