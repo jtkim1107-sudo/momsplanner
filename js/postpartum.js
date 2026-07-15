@@ -224,13 +224,11 @@ function renderPostpartum(){
   const cnt = ppTotals();
   const totalAll = POSTPARTUM_CATEGORIES.reduce((a,c)=>a+c.items.length,0);
 
-  // 스탠다드 ↔ 내 리스트 토글
+  // 여정 스텝바 — 담기 → 챙기기 (토글 대체)
   const mt = document.createElement('div');
-  mt.className='sheet-mode';
-  mt.innerHTML = `
-    <button class="ss ${ppMode==='std'?'on':''}" onclick="setPpMode('std')">🏨 조리원 스탠다드 · ${totalAll}</button>
-    <button class="${ppMode==='mine'?'on':''}" onclick="setPpMode('mine')">내 리스트 · ${cnt.mine}</button>
-  `;
+  mt.className='journey';
+  mt.id='journey';
+  mt.innerHTML = journeyHtml(ppJourney());
   area.appendChild(mt);
 
   const intro = document.createElement('div');
@@ -386,6 +384,22 @@ function renderPostpartumItem(it,ci,ii){
   return el;
 }
 
+// 🧭 여정 (조리원) — 담기 → 챙기기
+function ppJourney(){
+  let total=0, planned=0;
+  const ids=[];
+  POSTPARTUM_CATEGORIES.forEach((c,ci)=> c.items.forEach((it,ii)=>{
+    const id = ppItemId(ci,ii);
+    total++; if(myPlans[id]) planned++;
+    if(ppMine(id)) ids.push(id);
+  }));
+  const unchecked = ids.filter(id=>!ppChecked.has(id)).length;
+  const s1 = total>0 && planned===total;
+  const s2 = s1 && ids.length>0 && unchecked===0;
+  const cur = !s1 ? 1 : unchecked>0 ? 2 : 2;
+  return {steps:[{n:1,ic:'🧳',t:'담기'},{n:2,ic:'✅',t:'챙기기'}], done:[s1,s2], cur};
+}
+
 // 👉 다음 할 일 계산 (조리원)
 function ppNextInfo(){
   if(ppMode==='std'){
@@ -424,10 +438,13 @@ function ppRefreshHeads(){
     if(gp){ const cc = ppCatCount(ci); gp.textContent = cc.done+'/'+cc.total; }
   });
   const fb = document.getElementById('next-card');
-  if(!fb) return;
-  const nx = ppNextInfo();
-  if(nx) fb.innerHTML = nextCardHtml(nx);
-  else fb.remove();
+  if(fb){
+    const nx = ppNextInfo();
+    if(nx) fb.innerHTML = nextCardHtml(nx);
+    else fb.remove();
+  }
+  const jn = document.getElementById('journey');
+  if(jn) jn.innerHTML = journeyHtml(ppJourney());
 }
 
 function updatePostpartumProgress(){

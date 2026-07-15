@@ -240,6 +240,19 @@
     cursor:pointer;box-shadow:0 3px 10px rgba(172,142,110,.3);transition:transform .1s;white-space:nowrap;
   }
   .nx-btn:active{transform:scale(.95);}
+  /* 🧭 여정 스텝바 — 담기 › 사기 › 기록 › 자랑 */
+  .journey{display:flex;align-items:center;gap:4px;margin-bottom:14px;}
+  .j-step{
+    flex:1;border:none;background:var(--card);color:#8A7B66;box-shadow:var(--sh-sm);
+    font-family:inherit;border-radius:16px;padding:10px 0 9px;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:2px;transition:transform .1s;
+  }
+  .j-step:active{transform:scale(.95);}
+  .j-step .ji{font-size:17px;line-height:1;}
+  .j-step .jt{font-size:11px;font-weight:800;}
+  .j-step.cur{background:var(--brown);color:#fff;box-shadow:0 3px 10px rgba(172,142,110,.32);}
+  .j-step.done{background:#EFF5EF;color:#476A4E;box-shadow:none;border:1px solid #DCE8DD;}
+  .j-arrow{color:var(--dim);font-weight:900;font-size:13px;flex:0 0 auto;}
   .sheet-mode{
     display:flex;gap:4px;background:var(--card);border:none;box-shadow:var(--sh-sm);
     border-radius:16px;padding:5px;margin-bottom:14px;

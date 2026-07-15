@@ -631,14 +631,12 @@ function renderSheet(){
   Object.keys(myPlans).forEach(k=>{ if(myPlans[k]==='hand'){ myPlans[k]='carrot'; migrated = true; } });
   if(migrated) saveStars();
 
-  // 표준 리스트 / 내 리스트 토글 — 남들 표준과 내가 고른 것 비교
+  // 여정 스텝바 — 담기 → 사기 → 기록 → 자랑 (토글 대체, 탭하면 그 단계로)
   const cnt = sheetCountAll();
   const mt = document.createElement('div');
-  mt.className='sheet-mode';
-  mt.innerHTML = `
-    <button class="ss ${sheetMode==='std'?'on':''}" onclick="setSheetMode('std')">🌠 소행성 스탠다드 · ${cnt.std}</button>
-    <button class="${sheetMode==='mine'?'on':''}" onclick="setSheetMode('mine')">내 리스트 · ${cnt.mine}</button>
-  `;
+  mt.className='journey';
+  mt.id='journey';
+  mt.innerHTML = journeyHtml(sheetJourney());
   area.appendChild(mt);
 
   const intro = document.createElement('div');
@@ -898,6 +896,43 @@ function checkSmartListComplete(){
 }
 function onBuyRecordSaved(){ checkSmartListComplete(); updateFocusBar(); }
 
+// 🧭 여정 — 담기 → 사기 → 기록 → 자랑. 지금 어느 단계인지 한눈에.
+function sheetJourney(){
+  const items = planListItems('sheet');
+  const decided = items.filter(x=>myPlans[x.id]).length;
+  const ids = [];
+  SHEET_CATEGORIES.forEach((c,ci)=> c.items.forEach((it,ii)=>{
+    const id = sheetItemId(ci,ii);
+    if(sheetMine(id)) ids.push(id);
+  }));
+  const unchecked = ids.filter(id=>!sheetChecked.has(id)).length;
+  const norec = ids.filter(id=>sheetChecked.has(id) && !myBuys[id]).length;
+  const s1 = items.length>0 && decided===items.length;
+  const s2 = s1 && ids.length>0 && unchecked===0;
+  const s3 = s2 && norec===0;
+  const cur = !s1 ? 1 : unchecked>0 ? 2 : norec>0 ? 3 : 4;
+  return {
+    steps:[{n:1,ic:'🛒',t:'담기'},{n:2,ic:'🛍️',t:'사기'},{n:3,ic:'✍️',t:'기록'},{n:4,ic:'📄',t:'자랑'}],
+    done:[s1,s2,s3,false], cur,
+  };
+}
+function journeyHtml(j){
+  return j.steps.map((s,i)=>
+    `<button class="j-step ${j.cur===s.n?'cur':''} ${j.done[i]?'done':''}" onclick="journeyGo(${s.n})">
+      <span class="ji">${j.done[i]?'✅':s.ic}</span><span class="jt">${s.t}</span>
+    </button>`
+  ).join('<span class="j-arrow">›</span>');
+}
+function journeyGo(n){
+  if(viewMode==='postpartum'){
+    if(n===1) setPpMode('std'); else setPpMode('mine');
+    return;
+  }
+  if(n===1) setSheetMode('std');
+  else if(n===4) openReport();
+  else setSheetMode('mine');
+}
+
 // 👉 다음 할 일 계산 — 상태에 따라 지금 할 액션 하나를 정확히 알려준다
 function sheetNextInfo(){
   if(sheetMode==='std'){
@@ -980,11 +1015,15 @@ function onPlanChanged(listKey){
   });
   updateFocusBar();
 }
-// 다음 할 일 카드 라이브 갱신
+// 다음 할 일 카드 + 여정 스텝바 라이브 갱신
 function updateFocusBar(){
+  if(typeof viewMode==='undefined' || viewMode!=='sheet') return;
   const fb = document.getElementById('next-card');
-  if(!fb || typeof viewMode==='undefined' || viewMode!=='sheet') return;
-  const nx = sheetNextInfo();
-  if(nx) fb.innerHTML = nextCardHtml(nx);
-  else fb.remove();
+  if(fb){
+    const nx = sheetNextInfo();
+    if(nx) fb.innerHTML = nextCardHtml(nx);
+    else fb.remove();
+  }
+  const jn = document.getElementById('journey');
+  if(jn) jn.innerHTML = journeyHtml(sheetJourney());
 }
