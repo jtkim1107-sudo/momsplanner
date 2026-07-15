@@ -81,28 +81,32 @@ function openStarModal(){
   openModal('star-modal');
 }
 
-// ---- "다시 산다면?" 1탭 판정 — 체크한(=산) 항목에만 노출 ----
+// ---- ⚖️ 1탭 판정 — 기록까지 남긴(=진짜 써본) 항목에만 묻는다 ----
+// 본체 앱 판정 1문항(필요했다/필요없었다)과 같은 축. 여기서 쌓인 판정이
+// 후배맘의 결론 칩이 된다 — 이 앱은 판정의 소비처이자 생산지.
 function judgeRowEl(id){
   const div = document.createElement('div');
-  div.className = 'judge-row';
+  div.className = 'judge-row verdict-ask';
   const v = myVerdicts[id];
   if(v){
-    div.innerHTML = `내 판정 · <b class="${v==='사요'?'jy':'jn'}">${v}</b> 남겼어요. 후배맘들에게 큰 도움!`;
+    const yes = (v==='필요했다' || v==='사요');
+    div.innerHTML = `내 판정 · <b class="${yes?'jy':'jn'}">${yes?'👍 필요했다':'👎 필요없었다'}</b> — 후배맘의 판정 데이터가 됐어요`;
     return div;
   }
   const q = document.createElement('span');
-  q.textContent = '이거, 다시 산다면?';
+  q.textContent = '⚖️ 써보니, 필요했어요?';
   div.appendChild(q);
-  ['사요','마요'].forEach(lab=>{
+  [['필요했다','yes','👍 필요했다'],['필요없었다','no','👎 필요없었다']].forEach(([val,cls,lab])=>{
     const b = document.createElement('button');
-    b.className = 'jbtn ' + (lab==='사요'?'yes':'no');
+    b.className = 'jbtn ' + cls;
     b.textContent = lab;
     b.addEventListener('click', e=>{
       e.stopPropagation();
-      myVerdicts[id] = lab;
+      myVerdicts[id] = val;
       saveStars();
-      earnStars(10, '"다시 산다면?" 판정', 'judge-'+id);
+      earnStars(10, '판정 남기기 (필요했어요?)', 'judge-'+id);
       div.replaceWith(judgeRowEl(id));
+      if(typeof onVerdictSaved==='function') onVerdictSaved(id);
     });
     div.appendChild(b);
   });
@@ -295,7 +299,9 @@ function purchaseRowEl(id, candidates){
     saveStars();
     if(regReq) earnStars(10, '새 브랜드 등록 요청', 'breq-'+b);
     earnStars(15, '구매 기록 (뭘로 · 얼마에)', 'buy-'+id);
-    div.replaceWith(purchaseRowEl(id, candidates));
+    const done = purchaseRowEl(id, candidates);
+    div.replaceWith(done);
+    if(!myVerdicts[id]) done.after(judgeRowEl(id)); // 기록 직후 판정 질문이 바로 이어진다
     if(typeof onBuyRecordSaved==='function') onBuyRecordSaved(id);
   });
   ctrl.append(sel, btn);

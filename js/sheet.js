@@ -326,7 +326,7 @@ let sheetFilter = false;
 function toggleSheetFilter(){ sheetFilter = !sheetFilter; renderSheet(); }
 // 스탠다드: 아직 플랜 안 정한 것 / 내 리스트: 체크·기록이 안 끝난 것
 function sheetItemDone(it, id){
-  return sheetMode==='std' ? !!myPlans[id] : (sheetChecked.has(id) && !!myBuys[id]);
+  return sheetMode==='std' ? !!myPlans[id] : (sheetChecked.has(id) && !!myBuys[id] && !!myVerdicts[id]);
 }
 // 내 리스트 = 체크했거나 새제품 구매/당근으로/물려받기로 정한 항목 (패스만 뺀 나만의 리스트)
 function sheetMine(id){
@@ -829,8 +829,10 @@ function renderSheetItem(it,ci,ii){
     updateFocusBar();
   });
   // 내 리스트에선 내가 채우는 구매 기록 빈칸 (시세 숫자는 상세에서)
+  // 기록이 있으면 ⚖️ 판정 질문이 이어진다 — 여기가 판정 생산지
   if(sheetMode==='mine'){
     el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
+    if(myBuys[id]) el.appendChild(judgeRowEl(id));
   }
 
   // 스탠다드: "어떻게 살까"는 판정이 이미 답했다 — 액션은 담기 하나
@@ -895,6 +897,7 @@ function checkSmartListComplete(){
   }
 }
 function onBuyRecordSaved(){ checkSmartListComplete(); updateFocusBar(); }
+function onVerdictSaved(){ updateFocusBar(); }
 
 // 🧭 여정 — 담기 → 사기 → 기록 → 자랑. 지금 어느 단계인지 한눈에.
 function sheetJourney(){
@@ -907,13 +910,15 @@ function sheetJourney(){
   }));
   const unchecked = ids.filter(id=>!sheetChecked.has(id)).length;
   const norec = ids.filter(id=>sheetChecked.has(id) && !myBuys[id]).length;
+  const pending = ids.filter(id=>myBuys[id] && !myVerdicts[id]).length; // 판정 대기
   const s1 = items.length>0 && decided===items.length;
   const s2 = s1 && ids.length>0 && unchecked===0;
   const s3 = s2 && norec===0;
-  const cur = !s1 ? 1 : unchecked>0 ? 2 : norec>0 ? 3 : 4;
+  const s4 = s3 && pending===0;
+  const cur = !s1 ? 1 : unchecked>0 ? 2 : norec>0 ? 3 : pending>0 ? 4 : 5;
   return {
-    steps:[{n:1,ic:'🛒',t:'담기'},{n:2,ic:'🛍️',t:'사기'},{n:3,ic:'✍️',t:'기록'},{n:4,ic:'📄',t:'자랑'}],
-    done:[s1,s2,s3,false], cur,
+    steps:[{n:1,ic:'🛒',t:'담기'},{n:2,ic:'🛍️',t:'사기'},{n:3,ic:'✍️',t:'기록'},{n:4,ic:'⚖️',t:'판정'},{n:5,ic:'📄',t:'자랑'}],
+    done:[s1,s2,s3,s4,false], cur,
   };
 }
 function journeyHtml(j){
@@ -929,7 +934,7 @@ function journeyGo(n){
     return;
   }
   if(n===1) setSheetMode('std');
-  else if(n===4) openReport();
+  else if(n===5) openReport();
   else setSheetMode('mine');
 }
 
@@ -965,6 +970,11 @@ function sheetNextInfo(){
   };
   if(norec) return {
     title:`구매 기록 <b>${norec}개</b> 남았어요 — 남기면 ⭐15씩`,
+    btn: sheetFilter ? '전체 보기' : '남은 것만', act:'toggleSheetFilter()',
+  };
+  const pending = ids.filter(id=>myBuys[id] && !myVerdicts[id]).length;
+  if(pending) return {
+    title:`⚖️ 판정 <b>${pending}개</b> — "필요했어요?" 한 번만 눌러주세요 (+10⭐)`,
     btn: sheetFilter ? '전체 보기' : '남은 것만', act:'toggleSheetFilter()',
   };
   sheetFilter = false;
