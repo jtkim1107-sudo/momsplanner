@@ -912,13 +912,12 @@ function sheetJourney(){
   const norec = ids.filter(id=>sheetChecked.has(id) && !myBuys[id]).length;
   const pending = ids.filter(id=>myBuys[id] && !myVerdicts[id]).length; // 판정 대기
   const s1 = items.length>0 && decided===items.length;
-  const s2 = s1 && ids.length>0 && unchecked===0;
-  const s3 = s2 && norec===0;
-  const s4 = s3 && pending===0;
-  const cur = !s1 ? 1 : unchecked>0 ? 2 : norec>0 ? 3 : pending>0 ? 4 : 5;
+  // '사기' 단계 = 체크·기록·판정까지 (세부 순서는 다음 할 일 카드가 안내)
+  const s2 = s1 && ids.length>0 && unchecked===0 && norec===0 && pending===0;
+  const cur = !s1 ? 1 : !s2 ? 2 : 3;
   return {
-    steps:[{n:1,ic:'🛒',t:'담기'},{n:2,ic:'🛍️',t:'사기'},{n:3,ic:'✍️',t:'기록'},{n:4,ic:'⚖️',t:'판정'},{n:5,ic:'📄',t:'자랑'}],
-    done:[s1,s2,s3,s4,false], cur,
+    steps:[{n:1,ic:'🛒',t:'담기'},{n:2,ic:'🛍️',t:'사기'},{n:3,ic:'📄',t:'자랑'}],
+    done:[s1,s2,false], cur,
   };
 }
 function journeyHtml(j){
@@ -934,7 +933,7 @@ function journeyGo(n){
     return;
   }
   if(n===1) setSheetMode('std');
-  else if(n===5) openReport();
+  else if(n===3) openReport();
   else setSheetMode('mine');
 }
 
