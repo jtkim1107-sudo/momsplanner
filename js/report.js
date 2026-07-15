@@ -150,11 +150,19 @@ function shareReport(){
   const decided = items.filter(x=>myPlans[x.id]).length;
   const prepRate = items.length ? Math.round(decided/items.length*100) : 0;
   const topPicks = d.bought.filter(r=>r.top).length;
-  const dday = (typeof state!=='undefined' && state.dday>0) ? ` (D-${state.dday})` : '';
-  const text = `🌠 ${PROFILE.nick}의 똑똑한 출산준비 리포트${dday}\n`
-    + `플랜 ${prepRate}%${topPicks?` · 🥇 판정 1등 브랜드 ${topPicks}개`:''} · ✅ 샀어요 ${d.bought.length}\n`
-    + `💰 새것 ${manwon(d.baseSum)} → 내 플랜 ${manwon(d.carrotSum)}${save>0?` (${manwon(save)} 절약!)`:''}\n`
-    + `나도 만들기 → https://jtkim1107-sudo.github.io/momsplanner/`;
+  const dday = (typeof state!=='undefined' && state.dday>0) ? ` · D-${state.dday}` : '';
+  const smartSave = d.paidBase - d.paidSum;
+  // 헤드라인은 제일 큰 숫자(절약액)가 따옴표로 말한다 — 받는 사람이 3초 안에 반응하게
+  const headline = smartSave>0 ? `"시세보다 ${manwon(smartSave)} 아끼고 샀어요"`
+                 : save>0      ? `"새것으로 다 사는 것보다 ${manwon(save)} 아끼는 플랜"`
+                 :               `"판정 데이터로 3분 만에 준비물 정리 끝"`;
+  const text = `🌠 ${PROFILE.nick}의 똑똑한 출산준비${dday}\n`
+    + `${headline}\n`
+    + `━━━━━━━━━━━━━━\n`
+    + `✅ 플랜 ${prepRate}% 완성${topPicks?` · 🥇 판정 1등 브랜드 ${topPicks}개`:''}\n`
+    + `💰 새것 ${manwon(d.baseSum)} → 내 플랜 ${manwon(d.carrotSum)}\n`
+    + `수천 명 선배맘 판정으로 골랐어요\n`
+    + `👉 나도 만들기 https://jtkim1107-sudo.github.io/momsplanner/`;
   if(navigator.share){
     navigator.share({title:'소행성 출산 준비 리포트', text}).catch(()=>{});
   }else if(navigator.clipboard){
