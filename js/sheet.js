@@ -663,22 +663,15 @@ function renderSheet(){
   }
   area.appendChild(intro);
 
-  // 🎯 남은 것만 보기 + 오늘의 3개 넛지 — 하나씩 준비하는 분들용
-  const todos = [];
-  SHEET_CATEGORIES.forEach((c,ci)=> c.items.forEach((it,ii)=>{
-    const id = sheetItemId(ci,ii);
-    if(!sheetVisible(it, id)) return;
-    if(!sheetItemDone(it, id)) todos.push(it.nm);
-  }));
-  if(todos.length){
+  // 👉 다음 할 일 카드 — 지금 해야 할 액션 하나를 크게
+  const nx = sheetNextInfo();
+  if(nx){
     const fb = document.createElement('div');
-    fb.className = 'focus-bar';
-    fb.innerHTML = `
-      <button class="sheet-filter ${sheetFilter?'on':''}" onclick="toggleSheetFilter()">🎯 ${sheetMode==='std'?'안 담은 것만':'남은 것만'} 보기 · ${todos.length}</button>
-      ${!sheetFilter && todos.length>3 ? `<span class="nudge">오늘은 딱 3개만 담아볼까요 — ${todos.slice(0,3).join(', ')}</span>`:''}
-    `;
+    fb.className = 'next-card';
+    fb.id = 'next-card';
+    fb.innerHTML = nextCardHtml(nx);
     area.appendChild(fb);
-  }else if(sheetFilter){ sheetFilter = false; }
+  }
 
   let shownCats = 0;
   SHEET_CATEGORIES.forEach((cat,ci)=>{
@@ -887,6 +880,54 @@ function checkSmartListComplete(){
 }
 function onBuyRecordSaved(){ checkSmartListComplete(); updateFocusBar(); }
 
+// 👉 다음 할 일 계산 — 상태에 따라 지금 할 액션 하나를 정확히 알려준다
+function sheetNextInfo(){
+  if(sheetMode==='std'){
+    const todos = [];
+    SHEET_CATEGORIES.forEach((c,ci)=> c.items.forEach((it,ii)=>{
+      const id = sheetItemId(ci,ii);
+      if(!stdListed(it)) return;
+      if(!myPlans[id]) todos.push(it.nm);
+    }));
+    if(todos.length) return {
+      title:`안 담은 것 <b>${todos.length}개</b> — 판정 보고 담기만 하면 끝`,
+      nudge: todos.length>3 ? todos.slice(0,3) : null,
+      btn: sheetFilter ? '전체 보기' : '모아 보기', act:'toggleSheetFilter()',
+    };
+    sheetFilter = false;
+    return {title:'스탠다드 다 담았어요! 이제 사러 갈 시간 🛍️', btn:'내 리스트로', act:"setSheetMode('mine')"};
+  }
+  // 내 리스트: 체크 → 기록 → 완성 순으로 다음 할 일 안내
+  const ids = [];
+  SHEET_CATEGORIES.forEach((c,ci)=> c.items.forEach((it,ii)=>{
+    const id = sheetItemId(ci,ii);
+    if(sheetMine(id)) ids.push(id);
+  }));
+  if(!ids.length){ sheetFilter = false; return null; }
+  const unchecked = ids.filter(id=>!sheetChecked.has(id)).length;
+  const norec = ids.filter(id=>sheetChecked.has(id) && !myBuys[id]).length;
+  if(unchecked) return {
+    title:`살 것 <b>${unchecked}개</b> — 사면 바로 체크!`,
+    btn: sheetFilter ? '전체 보기' : '남은 것만', act:'toggleSheetFilter()',
+  };
+  if(norec) return {
+    title:`구매 기록 <b>${norec}개</b> 남았어요 — 남기면 ⭐15씩`,
+    btn: sheetFilter ? '전체 보기' : '남은 것만', act:'toggleSheetFilter()',
+  };
+  sheetFilter = false;
+  return {title:'내 리스트 완성! 친구에게 자랑해볼까요 🎉', btn:'📄 리포트 공유', act:'openReport()'};
+}
+function nextCardHtml(nx){
+  return `
+    <div class="nx-body">
+      <span class="nx-k">👉 다음 할 일</span>
+      <div class="nx-t">${nx.title}</div>
+      ${nx.nudge?`<span class="nx-sub">오늘은 딱 3개만 — ${nx.nudge.join(', ')}</span>`:''}
+    </div>
+    ${nx.btn?`<button class="nx-btn" onclick="${nx.act}">${nx.btn}</button>`:''}
+  `;
+}
+
 // 패스 = 내 리스트에서 뺀다 — 체크 해제하고 카드가 바로 사라진다 (유령 취소선 방지)
 function onPlanSet(id, plan, listKey, itemEl){
   if(plan!=='pass') return;
@@ -921,21 +962,11 @@ function onPlanChanged(listKey){
   });
   updateFocusBar();
 }
-// 집중 필터 라벨 + 오늘의 3개 라이브 갱신
+// 다음 할 일 카드 라이브 갱신
 function updateFocusBar(){
-  const btn = document.querySelector('.sheet-filter');
-  if(!btn) return;
-  const todos = [];
-  SHEET_CATEGORIES.forEach((c,ci)=> c.items.forEach((it,ii)=>{
-    const id = sheetItemId(ci,ii);
-    if(!sheetVisible(it, id)) return;
-    if(!sheetItemDone(it, id)) todos.push(it.nm);
-  }));
-  btn.textContent = `🎯 ${sheetMode==='std'?'안 담은 것만':'남은 것만'} 보기 · ${todos.length}`;
-  const nd = document.querySelector('.nudge');
-  if(nd){
-    if(todos.length>3) nd.textContent = `오늘은 딱 3개만 담아볼까요 — ${todos.slice(0,3).join(', ')}`;
-    else nd.remove();
-  }
-  if(!todos.length){ const fb = document.querySelector('.focus-bar'); if(fb) fb.remove(); }
+  const fb = document.getElementById('next-card');
+  if(!fb || typeof viewMode==='undefined' || viewMode!=='sheet') return;
+  const nx = sheetNextInfo();
+  if(nx) fb.innerHTML = nextCardHtml(nx);
+  else fb.remove();
 }

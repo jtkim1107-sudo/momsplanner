@@ -254,22 +254,15 @@ function renderPostpartum(){
   }
   area.appendChild(intro);
 
-  // 🎯 남은 것만 보기 + 오늘의 3개 — 하나씩 준비하는 분들용
-  const todos = [];
-  POSTPARTUM_CATEGORIES.forEach((c,ci)=> c.items.forEach((it,ii)=>{
-    const id = ppItemId(ci,ii);
-    if(ppMode==='mine' && !ppMine(id)) return;
-    if(!ppItemDone(id)) todos.push(it.nm);
-  }));
-  if(todos.length){
+  // 👉 다음 할 일 카드
+  const nx = ppNextInfo();
+  if(nx){
     const fb = document.createElement('div');
-    fb.className = 'focus-bar';
-    fb.innerHTML = `
-      <button class="sheet-filter ${ppFilter?'on':''}" onclick="togglePpFilter()">🎯 ${ppMode==='std'?'안 담은 것만':'남은 것만'} 보기 · ${todos.length}</button>
-      ${!ppFilter && todos.length>3 ? `<span class="nudge">오늘은 딱 3개만 담아볼까요 — ${todos.slice(0,3).join(', ')}</span>`:''}
-    `;
+    fb.className = 'next-card';
+    fb.id = 'next-card';
+    fb.innerHTML = nextCardHtml(nx);
     area.appendChild(fb);
-  }else if(ppFilter){ ppFilter = false; }
+  }
 
   let shown = 0;
   POSTPARTUM_CATEGORIES.forEach((cat,ci)=>{
@@ -389,28 +382,48 @@ function renderPostpartumItem(it,ci,ii){
   return el;
 }
 
-// 진행률 · 카테고리 카운트 · 집중 필터 라벨 갱신
+// 👉 다음 할 일 계산 (조리원)
+function ppNextInfo(){
+  if(ppMode==='std'){
+    const todos = [];
+    POSTPARTUM_CATEGORIES.forEach((c,ci)=> c.items.forEach((it,ii)=>{
+      if(!myPlans[ppItemId(ci,ii)]) todos.push(it.nm);
+    }));
+    if(todos.length) return {
+      title:`안 담은 것 <b>${todos.length}개</b> — 판정 보고 담기만 하면 끝`,
+      nudge: todos.length>3 ? todos.slice(0,3) : null,
+      btn: ppFilter ? '전체 보기' : '모아 보기', act:'togglePpFilter()',
+    };
+    ppFilter = false;
+    return {title:'가방 리스트 완성! 이제 하나씩 챙겨요 🧳', btn:'내 가방으로', act:"setPpMode('mine')"};
+  }
+  const ids = [];
+  POSTPARTUM_CATEGORIES.forEach((c,ci)=> c.items.forEach((it,ii)=>{
+    const id = ppItemId(ci,ii);
+    if(ppMine(id)) ids.push(id);
+  }));
+  if(!ids.length){ ppFilter = false; return null; }
+  const unchecked = ids.filter(id=>!ppChecked.has(id)).length;
+  if(unchecked) return {
+    title:`가방에 넣을 것 <b>${unchecked}개</b> — 챙기면 바로 체크!`,
+    btn: ppFilter ? '전체 보기' : '남은 것만', act:'togglePpFilter()',
+  };
+  ppFilter = false;
+  return {title:'출산가방 완성! 이제 몸만 가면 돼요 🎉', btn:null};
+}
+
+// 진행률 · 카테고리 카운트 · 다음 할 일 카드 갱신
 function ppRefreshHeads(){
   updatePostpartumProgress();
   POSTPARTUM_CATEGORIES.forEach((c,ci)=>{
     const gp = document.getElementById('ppp-'+ci);
     if(gp){ const cc = ppCatCount(ci); gp.textContent = cc.done+'/'+cc.total; }
   });
-  const btn = document.querySelector('.sheet-filter');
-  if(!btn) return;
-  const todos = [];
-  POSTPARTUM_CATEGORIES.forEach((c,ci)=> c.items.forEach((it,ii)=>{
-    const id = ppItemId(ci,ii);
-    if(ppMode==='mine' && !ppMine(id)) return;
-    if(!ppItemDone(id)) todos.push(it.nm);
-  }));
-  btn.textContent = `🎯 ${ppMode==='std'?'안 담은 것만':'남은 것만'} 보기 · ${todos.length}`;
-  const nd = document.querySelector('.nudge');
-  if(nd){
-    if(todos.length>3) nd.textContent = `오늘은 딱 3개만 담아볼까요 — ${todos.slice(0,3).join(', ')}`;
-    else nd.remove();
-  }
-  if(!todos.length){ const fb = document.querySelector('.focus-bar'); if(fb) fb.remove(); }
+  const fb = document.getElementById('next-card');
+  if(!fb) return;
+  const nx = ppNextInfo();
+  if(nx) fb.innerHTML = nextCardHtml(nx);
+  else fb.remove();
 }
 
 function updatePostpartumProgress(){
