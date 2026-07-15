@@ -642,6 +642,10 @@
     border:1px solid #E8DCC2;border-radius:12px;padding:4px 10px;
   }
   .rp-sum span.hl{background:#FDF6E3;border-color:#EAD9A8;color:#8A6D1F;}
+  .mine-stats{display:flex;gap:6px;margin-top:11px;}
+  .mine-stats div{flex:1;background:#fff;border:1px solid #DCE4F0;border-radius:12px;padding:9px 4px;text-align:center;}
+  .mine-stats b{display:block;font-size:15px;font-weight:900;color:#42557E;letter-spacing:-.02em;}
+  .mine-stats span{font-size:9px;font-weight:700;color:#8CA0BC;}
   .rp-stats{display:flex;gap:8px;margin-top:12px;}
   .rp-stat{
     flex:1;background:#fff;border:1px solid var(--line);border-radius:14px;

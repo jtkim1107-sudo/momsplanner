@@ -43,8 +43,8 @@ function feedConclusion(f){
   if(f.need < 25)  return {k:'no',     label:'절대 사지 마세요'};
   if(f.need < 45)  return {k:'closet', label:'장롱템, 패스하세요'};
   if(f.need >= 60 && secondhand >= Math.max(...Object.values(f.ch))) return {k:'carrot', label:'무조건 당근하세요'};
-  if(f.need >= 75 && used >= 90) return {k:'yes', label:'무조건 사세요'};
-  if(f.need >= 60) return {k:'yes', label:'무조건 사세요'};
+  if(f.need >= 75 && used >= 90) return {k:'yes', label:'무조건 필요해요'};
+  if(f.need >= 60) return {k:'yes', label:'무조건 필요해요'};
   return {k:'try', label:'하나만 사보세요'};
 }
 

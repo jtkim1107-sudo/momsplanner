@@ -340,12 +340,12 @@ function stdListed(it){
   const c = sheetConclusion(it);
   return !(c && (c.k==='no' || c.k==='closet'));
 }
-// 스탠다드 표시용 결론은 딱 두 개 — 무조건 사세요 / 하나만 사보세요
+// 스탠다드 표시용 결론은 딱 두 개 — 무조건 필요해요 / 하나만 사보세요
 // (당근이 이득이란 정보는 '판정 결과' 줄이 당근 시세로 말해준다)
 function displayConclusion(it){
   const c = sheetConclusion(it);
   if(!c) return null;
-  if(c.k==='carrot') return {k:'yes', label:'무조건 사세요'};
+  if(c.k==='carrot') return {k:'yes', label:'무조건 필요해요'};
   return c;
 }
 function sheetVisible(it, id){ return sheetMode==='mine' ? sheetMine(id) : stdListed(it); }
@@ -398,7 +398,7 @@ function reconcileSheetLinks(){
 
 // ---- 결론 5단계 ----
 // 선배맘 의견(추천/쏘쏘/비추)·당근 추천을 집계해 한 줄 결론:
-// 무조건 사세요 / 하나만 사보세요 / 무조건 당근하세요 / 장롱템, 패스하세요 / 절대 사지 마세요
+// 무조건 필요해요 / 하나만 사보세요 / 무조건 당근하세요 / 장롱템, 패스하세요 / 절대 사지 마세요
 function sheetConclusion(it){
   // 본체 앱 판정 데이터가 있으면 그 집계가 결론의 원천
   if(typeof verdictFeedFor==='function'){
@@ -415,7 +415,7 @@ function sheetConclusion(it){
   if(bad>0 && rec>0)               return {k:'try',    label:'하나만 사보세요'};      // 의견 갈림
   if(it.carrot && rec>0)           return {k:'carrot', label:'무조건 당근하세요'};
   if(rec>0 && soso>rec)            return {k:'try',    label:'하나만 사보세요'};
-  if(rec>0)                        return {k:'yes',    label:'무조건 사세요'};
+  if(rec>0)                        return {k:'yes',    label:'무조건 필요해요'};
   if(it.carrot)                    return {k:'carrot', label:'무조건 당근하세요'};
   if(soso>0)                       return {k:'try',    label:'하나만 사보세요'};
   return null; // 아직 의견 없음
@@ -654,10 +654,22 @@ function renderSheet(){
   }else{
     intro.className='region-card';
     intro.style.cursor='default';
+    // ⚖️ 판정 통계 — 내 리스트 전체를 판정 데이터로 요약
+    let stats = '';
+    if(typeof reportData==='function' && typeof manwon==='function'){
+      const dd = reportData();
+      const sv = dd.baseSum - dd.carrotSum;
+      stats = `<div class="mine-stats">
+        <div><b>${manwon(dd.baseSum)}</b><span>새것 시세 합</span></div>
+        <div><b>${manwon(dd.carrotSum)}</b><span>내 플랜 예상</span></div>
+        <div><b>${sv>0?manwon(sv):'0원'}</b><span>판정대로면 절약</span></div>
+      </div>`;
+    }
     intro.innerHTML = `
       <span class="ri">✨</span>
       <div class="rc"><h3>내가 고른 리스트</h3>
-      <p>새제품·중고로 사기로 한 것들이에요. <b>시세 가이드 밑으로 보이면 사세요!</b> 준비되면 체크, 기록까지 남기면 별똥별 — 생각이 바뀐 건 여기서 패스.</p>
+      <p>항목마다 <b>⚖️ 판정 결과(뭘로 · 얼마에)</b>가 붙어요. 준비되면 체크, 기록까지 남기면 별똥별 — 생각이 바뀐 건 여기서 패스.</p>
+      ${stats}
       <button class="rp-open" onclick="openReport()">📄 내 똑똑한 리스트 만들기 — 친구 공유용</button></div>
     `;
   }
@@ -726,7 +738,7 @@ function renderSheetItem(it,ci,ii){
   // 브랜드·핫딜가·당근추천·미니멀 배지는 의견/시세/결론과 중복이라 제거
   let badges='';
   const rawC = sheetConclusion(it);     // 원본 결론 (당근 판별용)
-  const concl = displayConclusion(it);  // 표시용 — 무조건 사세요 / 하나만 사보세요
+  const concl = displayConclusion(it);  // 표시용 — 무조건 필요해요 / 하나만 사보세요
   if(concl) badges += `<span class="badge concl ${concl.k}">${concl.label}</span>`;
   badges += verdictBadge(it, id);
   if(!it.how && it.need) badges += `<span class="badge need">${it.need}</span>`;
@@ -737,9 +749,10 @@ function renderSheetItem(it,ci,ii){
 
   const showChk = sheetMode==='mine'; // 체크(샀어요)는 내 리스트에서
 
-  // ⚖️ 판정 결과 한 줄 — "뭘로 · 대략 얼마에" (판정 1등 브랜드 + 집계 가격이 말한다)
+  // ⚖️ 판정 결과 한 줄 — "뭘로 · 대략 얼마에"는 실제 구매 작업대인 내 리스트에서
+  // (스탠다드는 '필요하냐'는 판정만 — 무조건 필요해요 / 하나만 사보세요)
   let answer = '';
-  if(sheetMode==='std' && rawC){
+  if(sheetMode==='mine' && rawC){
     const pi = priceIntel(it, id);
     const f = (typeof verdictFeedFor==='function') ? verdictFeedFor(it) : null;
     const brand = (f && f.n>=30 && f.brands && f.brands[0]) ? f.brands[0].nm : sheetBrandCandidates(it)[0];

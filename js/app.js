@@ -240,7 +240,7 @@ function renderItem(it){
       // 판정 % → 한 줄 결론 (연동된 준비물이 당근 추천이면 '무조건 당근하세요')
       const linked = sheetInfoFor(it.id);
       const concl = (linked && linked.carrot && it.verdict.yes>=60) ? {k:'carrot', label:'무조건 당근하세요'}
-        : it.verdict.yes>=NATIONAL_MIN ? {k:'yes', label:'무조건 사세요'}
+        : it.verdict.yes>=NATIONAL_MIN ? {k:'yes', label:'무조건 필요해요'}
         : it.verdict.yes>=60 ? {k:'try', label:'하나만 사보세요'}
         : it.verdict.yes>=45 ? {k:'closet', label:'장롱템, 패스하세요'}
         : {k:'no', label:'절대 사지 마세요'};
