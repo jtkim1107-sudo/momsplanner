@@ -791,8 +791,13 @@ function renderSheetItem(it,ci,ii){
       if(open && !moreEl.dataset.filled){
         moreEl.dataset.filled = '1';
         const f = (typeof verdictFeedFor==='function') ? verdictFeedFor(it) : null;
-        if(f) moreEl.insertAdjacentHTML('beforeend', feedDetailHtml(f)); // 본체 판정 결과가 맨 위
-        else moreEl.insertAdjacentHTML('beforeend', brandRankHtml(it, id)); // 관측 브랜드 순위
+        if(f){ moreEl.insertAdjacentHTML('beforeend', feedDetailHtml(f)); } // 본체 판정 결과가 맨 위
+        else{
+          // 판정 파이차트 — 배지의 N명이 실제로 뭘 선택했는지 (숫자 일치)
+          const sv = (typeof simVerdict==='function') ? simVerdict(it, id) : null;
+          if(sv) moreEl.insertAdjacentHTML('beforeend', verdictPieHtml(sv, {src:'베타 · 판정 규모 기반 재현, 실판정 쌓이면 대체'}));
+          moreEl.insertAdjacentHTML('beforeend', brandRankHtml(it, id));
+        }
         moreEl.appendChild(priceRowEl(it, id));
         if(ops.length){
           const od = document.createElement('div');

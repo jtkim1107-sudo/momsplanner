@@ -59,21 +59,58 @@ function feedBadge(f){
   return b;
 }
 
-// 상세(2뎁스): 판정 결과 바 + 어떻게 구했는지 분포
-function feedDetailHtml(f){
-  const chips = Object.entries(f.ch)
-    .filter(([,v])=>v>0)
+// 상세(2뎁스): 판정 파이차트 — "몇 명 중 몇 %가 필요하다고 했나"
+// 겉면 배지(N명 판정)·결론 칩과 수치가 논리적으로 일치해야 신뢰가 생긴다.
+function verdictPieHtml(v, opts){
+  const chips = Object.entries(v.ch||{})
+    .filter(([,x])=>x>0)
     .sort((a,b)=>b[1]-a[1])
-    .map(([k,v])=>`<span>${k} ${v}%</span>`).join('');
+    .map(([k,x])=>`<span>${k} ${x}%</span>`).join('');
   return `
     <div class="vf">
-      <span class="vf-head">📊 선배맘 판정 · ${f.n.toLocaleString()}명 참여${f.hot?' · 박빙 진행 중':''}</span>
-      <div class="vf-bar"><div class="vf-yes" style="width:${f.need}%"></div></div>
-      <div class="vf-lbl"><span>👍 필요했다 ${f.need}%</span><span>필요없었다 ${100-f.need}% 👎</span></div>
-      <div class="vf-ch">${chips}</div>
-      ${feedRankHtml(f)}
-      <span class="vf-src">소행성 앱 판정 데이터 연동</span>
+      <span class="vf-head">📊 선배맘 판정 · ${v.n.toLocaleString()}명 참여${v.hot?' · 박빙 진행 중':''}</span>
+      <div class="vf-flex">
+        <div class="pie" style="background:conic-gradient(#7FA487 0 ${v.need}%, #E4D4C6 ${v.need}% 100%)"><b>${v.need}%</b><span>필요했다</span></div>
+        <div class="vf-side">
+          <div class="vf-leg"><i class="lg-g"></i>필요했다 <b>${v.need}%</b> (${Math.round(v.n*v.need/100).toLocaleString()}명)</div>
+          <div class="vf-leg"><i class="lg-r"></i>필요없었다 <b>${100-v.need}%</b></div>
+          ${chips?`<div class="vf-ch">${chips}</div>`:''}
+        </div>
+      </div>
+      ${opts && opts.extra ? opts.extra : ''}
+      <span class="vf-src">${(opts && opts.src) || '소행성 앱 판정 데이터 연동'}</span>
     </div>`;
+}
+function feedDetailHtml(f){
+  return verdictPieHtml({need:f.need, n:f.n, ch:f.ch, hot:f.hot}, {extra: feedRankHtml(f)});
+}
+
+// 판정 미연동 항목의 분포 재현 — 배지 숫자(verdictCount)·결론과 반드시 일치
+// 실서비스에선 판정 집계 API가 이 자리를 대체한다.
+function simVerdict(it, id){
+  if(verdictFeedFor(it)) return null;                        // 연동 항목은 실데이터
+  if(typeof verdictCount!=='function' || typeof sheetConclusion!=='function') return null;
+  const n = verdictCount(it, id);                            // 겉면 배지와 같은 숫자
+  if(!n) return null;
+  const c = sheetConclusion(it);
+  if(!c) return null;
+  const r = bdRng(bdSeed('sv-'+id));
+  let need;
+  if(c.k==='try')         need = 46 + Math.round(r()*9);     // 하나만 사보세요 = 박빙
+  else if(c.k==='carrot') need = 64 + Math.round(r()*20);    // 필요하되 중고가 이득
+  else if(c.k==='yes')    need = 76 + Math.round(r()*18);    // 무조건 필요해요 = 압도적
+  else return null;
+  // 획득 채널 분포 — 당근 결론이면 중고가 1위 (결론의 근거가 분포에 있어야 한다)
+  const carrotTop = c.k==='carrot' || !!it.carrot;
+  let hi = 30 + Math.round(r()*18), lo = 14 + Math.round(r()*12);
+  const rent = Math.round(r()*7), gift = 6 + Math.round(r()*12);
+  const none = Math.max(1, Math.round((100-need)/4));
+  const newP = carrotTop ? lo : hi, usedP = carrotTop ? hi : lo;
+  const sum = newP+usedP+rent+gift+none;
+  const sc = 100/sum;
+  const ch = {'새제품':Math.round(newP*sc), '중고':Math.round(usedP*sc), '대여':Math.round(rent*sc), '선물받음':Math.round(gift*sc)};
+  ch['구매안함'] = Math.max(0, 100 - ch['새제품'] - ch['중고'] - ch['대여'] - ch['선물받음']);
+  return {need, n, ch};
 }
 
 // 판정 완료 상품의 브랜드 1·2·3등 + 브랜드별 적정가 — 30명 미만이면 비공개

@@ -334,8 +334,12 @@ function renderPostpartumItem(it,ci,ii){
       const open = el.classList.toggle('open');
       if(open && !moreEl.dataset.filled){
         moreEl.dataset.filled = '1';
-        if(ppFeed) moreEl.insertAdjacentHTML('beforeend', feedDetailHtml(ppFeed));
-        else moreEl.insertAdjacentHTML('beforeend', brandRankHtml(it, id));
+        if(ppFeed){ moreEl.insertAdjacentHTML('beforeend', feedDetailHtml(ppFeed)); }
+        else{
+          const sv = (typeof simVerdict==='function') ? simVerdict(it, id) : null;
+          if(sv) moreEl.insertAdjacentHTML('beforeend', verdictPieHtml(sv, {src:'베타 · 판정 규모 기반 재현, 실판정 쌓이면 대체'}));
+          moreEl.insertAdjacentHTML('beforeend', brandRankHtml(it, id));
+        }
         if(ops.length){
           const od = document.createElement('div');
           od.className = 'more-ops';
