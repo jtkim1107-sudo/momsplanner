@@ -309,11 +309,63 @@ function renderPostpartumItem(it,ci,ii){
   if(it.need) badges += `<span class="badge need">${it.need}</span>`;
 
   const showChk = ppMode==='mine';
-
-  // 투뎁스 — 겉면: 대표 의견 1개 / 상세(탭): 판정 결과 + 브랜드 순위 + 의견 전체
   const ops = it.ops||[];
   const ppFeed = (typeof verdictFeedFor==='function') ? verdictFeedFor(it) : null;
-  const hasMore = ops.length>1 || !!ppFeed || !!brandRankFor(it, id);
+
+  // 상세 채우기 (공용)
+  const fillMore = (moreEl, pre)=>{
+    if(moreEl.dataset.filled) return;
+    moreEl.dataset.filled = '1';
+    if(pre) moreEl.insertAdjacentHTML('beforeend', pre);
+    if(ppFeed){ moreEl.insertAdjacentHTML('beforeend', feedDetailHtml(ppFeed)); }
+    else{
+      const sv = (typeof simVerdict==='function') ? simVerdict(it, id) : null;
+      if(sv) moreEl.insertAdjacentHTML('beforeend', verdictPieHtml(sv, {src:'베타 · 판정 규모 기반 재현, 실판정 쌓이면 대체'}));
+      moreEl.insertAdjacentHTML('beforeend', brandRankHtml(it, id));
+    }
+    if(ops.length){
+      const od = document.createElement('div');
+      od.className = 'more-ops';
+      od.innerHTML = opsHtml(it, id, 999);
+      moreEl.appendChild(od);
+    }
+  };
+
+  if(ppMode==='std'){
+    // 스캔되는 한 줄 리스팅: 이름 + 결론 태그 + ＋담기
+    el.innerHTML = `
+      <div class="item-main slim">
+        <div class="item-info">
+          <div class="item-name">${it.nm}${concl?` <span class="badge concl ${concl.k}">${concl.label}</span>`:''}</div>
+        </div>
+        <button class="add-mini ${myPlans[id]?'on':''}" title="내 가방에 담기">${myPlans[id]?'✓':'＋'}</button>
+        <span class="item-caret">﹀</span>
+      </div>
+      <div class="item-more"></div>
+    `;
+    const moreEl = el.querySelector('.item-more');
+    const expandBadges = verdictBadge(it, id) + (it.need?`<span class="badge need">${it.need}</span>`:'');
+    const pre = `<div class="more-top">${expandBadges?`<div class="item-badges">${expandBadges}</div>`:''}${opsHtml(it, id, 1, true)}</div>`;
+    el.querySelector('.item-main').addEventListener('click', ()=>{
+      const open = el.classList.toggle('open');
+      if(open) fillMore(moreEl, pre);
+    });
+    const mini = el.querySelector('.add-mini');
+    mini.addEventListener('click', e=>{
+      e.stopPropagation();
+      if(myPlans[id]) delete myPlans[id];
+      else myPlans[id] = (rawC && rawC.k==='carrot') ? 'carrot' : 'buy';
+      saveStars();
+      mini.classList.toggle('on', !!myPlans[id]);
+      mini.textContent = myPlans[id] ? '✓' : '＋';
+      checkPlanComplete('postpartum');
+      ppRefreshHeads();
+    });
+    return el;
+  }
+
+  // 내 가방 — 체크 + 새것/중고/패스 + 구매 기록
+  const hasMore = ops.length || !!ppFeed || !!brandRankFor(it, id);
   el.innerHTML = `
     <div class="item-main" style="align-items:center;">
       ${showChk?'<div class="chk"></div>':''}
@@ -330,57 +382,22 @@ function renderPostpartumItem(it,ci,ii){
   if(moreEl){
     el.querySelector('.item-main').addEventListener('click', ()=>{
       const open = el.classList.toggle('open');
-      if(open && !moreEl.dataset.filled){
-        moreEl.dataset.filled = '1';
-        if(ppFeed){ moreEl.insertAdjacentHTML('beforeend', feedDetailHtml(ppFeed)); }
-        else{
-          const sv = (typeof simVerdict==='function') ? simVerdict(it, id) : null;
-          if(sv) moreEl.insertAdjacentHTML('beforeend', verdictPieHtml(sv, {src:'베타 · 판정 규모 기반 재현, 실판정 쌓이면 대체'}));
-          moreEl.insertAdjacentHTML('beforeend', brandRankHtml(it, id));
-        }
-        if(ops.length){
-          const od = document.createElement('div');
-          od.className = 'more-ops';
-          od.innerHTML = opsHtml(it, id, 999);
-          moreEl.appendChild(od);
-        }
-      }
+      if(open) fillMore(moreEl);
     });
   }
-
-  if(ppMode==='std'){
-    // 스탠다드: 담기 원버튼 — 판정 추천 방식이 자동 플랜
-    const addBtn = document.createElement('button');
-    const label = ()=> myPlans[id] ? '✓ 가방에 담겼어요' : '🧳 내 가방에 담기';
-    addBtn.className = 'add-mine' + (myPlans[id]?' on':'');
-    addBtn.textContent = label();
-    addBtn.addEventListener('click', e=>{
-      e.stopPropagation();
-      if(myPlans[id]) delete myPlans[id];
-      else myPlans[id] = (rawC && rawC.k==='carrot') ? 'carrot' : 'buy';
-      saveStars();
-      addBtn.classList.toggle('on', !!myPlans[id]);
-      addBtn.textContent = label();
-      checkPlanComplete('postpartum');
-      ppRefreshHeads();
-    });
-    el.appendChild(addBtn);
-  }else{
-    // 내 리스트: 체크 + 새것/중고/패스 + 구매 기록
-    if(myPlans[id]==='pass') el.classList.add('passed');
-    el.appendChild(planRowEl(id, 'postpartum'));
-    el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
-    const chkEl = el.querySelector('.chk');
-    if(chkEl) chkEl.addEventListener('click',e=>{
-      e.stopPropagation();
-      const now = !ppChecked.has(id);
-      now ? ppChecked.add(id) : ppChecked.delete(id);
-      el.classList.toggle('checked');
-      savePostpartum();
-      if(now) earnStars(5, '조리원 준비물 체크', 'chk-'+id);
-      ppRefreshHeads(ci);
-    });
-  }
+  if(myPlans[id]==='pass') el.classList.add('passed');
+  el.appendChild(planRowEl(id, 'postpartum'));
+  el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
+  const chkEl = el.querySelector('.chk');
+  if(chkEl) chkEl.addEventListener('click',e=>{
+    e.stopPropagation();
+    const now = !ppChecked.has(id);
+    now ? ppChecked.add(id) : ppChecked.delete(id);
+    el.classList.toggle('checked');
+    savePostpartum();
+    if(now) earnStars(5, '조리원 준비물 체크', 'chk-'+id);
+    ppRefreshHeads(ci);
+  });
   return el;
 }
 
