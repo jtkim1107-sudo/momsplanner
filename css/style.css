@@ -510,13 +510,15 @@
   }
   .ops-more::after{content:' ﹀';font-size:9px;}
   /* 스탠다드 한 줄 목록 */
-  .item-main.slim{padding:10px 14px;gap:8px;align-items:center;}
-  .item-main.slim .item-name{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:15px;}
-  .item-main.slim .badge{font-size:9.5px;padding:2.5px 8px;}
-  .item-main.slim .badge.concl{font-size:10px;padding:3px 9px;}
+  .item-main.slim{padding:14px 16px;gap:10px;align-items:center;}
+  .item-main.slim .item-name{font-size:17px;letter-spacing:-.02em;}
+  /* 배지는 항상 이름 아래 한 줄 — 이름 길이와 무관하게 균일한 2단 구성 */
+  .item-main.slim .item-tags{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .item-main.slim .badge{font-size:11px;padding:3.5px 10px;}
+  .item-main.slim .badge.concl{font-size:11px;padding:3.5px 10px;}
   .add-mini{
-    flex:0 0 36px;height:36px;border-radius:50%;border:1.5px solid #E2D7C3;background:#fff;
-    color:var(--brown);font-size:19px;font-weight:800;font-family:inherit;cursor:pointer;
+    flex:0 0 42px;height:42px;border-radius:50%;border:1.5px solid #E2D7C3;background:#fff;
+    color:var(--brown);font-size:21px;font-weight:800;font-family:inherit;cursor:pointer;
     display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s,transform .1s;
   }
   .add-mini:active{transform:scale(.9);}
