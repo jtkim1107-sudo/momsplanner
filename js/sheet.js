@@ -666,7 +666,7 @@ function renderSheet(){
     intro.innerHTML = `
       <span class="ri">✨</span>
       <div class="rc"><h3>내가 고른 리스트</h3>
-      <p>항목마다 <b>⚖️ 판정 결과(뭘로 · 얼마에)</b>가 붙어요. 준비되면 체크, 기록까지 남기면 별똥별 — 생각이 바뀐 건 여기서 패스.</p>
+      <p>여긴 <b>내가 채우는 곳</b> — 준비되면 체크, 뭘로 얼마에 샀는지 기록하면 별똥별. 생각이 바뀐 건 여기서 패스.</p>
       ${stats}
       <button class="rp-open" onclick="openReport()">📄 내 똑똑한 리스트 만들기 — 친구 공유용</button></div>
     `;
@@ -753,10 +753,10 @@ function renderSheetItem(it,ci,ii){
 
   const showChk = sheetMode==='mine'; // 체크(샀어요)는 내 리스트에서
 
-  // ⚖️ 판정 결과 한 줄 — "뭘로 · 대략 얼마에"는 실제 구매 작업대인 내 리스트에서
-  // (스탠다드는 '필요하냐'는 판정만 — 무조건 필요해요 / 하나만 사보세요)
+  // ⚖️ 판정 결과 한 줄 — 스탠다드는 답을 주는 곳: 보고 바로 따라하도록
+  // (내 리스트는 내가 입력하는 곳: 체크·기록·통계만)
   let answer = '';
-  if(sheetMode==='mine' && rawC){
+  if(sheetMode==='std' && rawC){
     const pi = priceIntel(it, id);
     const f = (typeof verdictFeedFor==='function') ? verdictFeedFor(it) : null;
     const brand = (f && f.n>=30 && f.brands && f.brands[0]) ? f.brands[0].nm : sheetBrandCandidates(it)[0];
