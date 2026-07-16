@@ -76,13 +76,13 @@ function deadlineChip(g, done, total){
 }
 
 // 준비물 리스트 — 출산부터 오픈, 나머지는 하나씩 열어간다 (리스트 다양화 전략)
+// 시기순 라인업 — 산부인과 → 조리원 → 수유 → 이유식 → 어린이집
 const PREP_LISTS = [
-  {key:'postpartum', ic:'🧳', label:'조리원 가방'},
-  {key:'sheet',      ic:'🤰', label:'출산 준비물'}, // 데이터 정비 후 재오픈
-  {key:'seg4',       ic:'👶', label:'신생아 국민템'},
-  {key:'babyfood',   ic:'🥣', label:'이유식'},
-  {key:'daycare',    ic:'🏫', label:'어린이집'},
-  {key:'seg5',       ic:'📅', label:'월령별 국민템'}, // 오픈 시 월령별로 분화
+  {key:'hospital',   ic:'🏥', label:'산부인과', full:'출산 전 산부인과 준비물'},
+  {key:'postpartum', ic:'🧳', label:'조리원',   full:'조리원 준비물'},
+  {key:'nursing',    ic:'🍼', label:'수유',     full:'수유 준비물'},
+  {key:'babyfood',   ic:'🥣', label:'이유식',   full:'이유식 준비물'},
+  {key:'daycare',    ic:'🏫', label:'어린이집', full:'어린이집 준비물'},
 ];
 const ACTIVE_LISTS = new Set(['postpartum']); // 오픈된 리스트 — 여기 추가하면 열림
 
@@ -98,7 +98,7 @@ function renderPrepTabs(){
     const on = viewMode===L.key;
     return ACTIVE_LISTS.has(L.key)
       ? `<button class="prep-ic-btn${on?' on':''}" onclick="setView('${L.key}')"><span class="pi-circle">${L.ic}</span><span class="pi-label">${L.label}</span></button>`
-      : `<button class="prep-ic-btn soon" onclick="comingSoon('${L.label}')"><span class="pi-circle">${L.ic}<span class="pi-lock">🔒</span></span><span class="pi-label">${L.label}</span></button>`;
+      : `<button class="prep-ic-btn soon" onclick="comingSoon('${L.full||L.label}')"><span class="pi-circle">${L.ic}<span class="pi-lock">🔒</span></span><span class="pi-label">${L.label}</span></button>`;
   }).join('');
 }
 
@@ -118,12 +118,12 @@ function stdCatalogHtml(cur){
       const here = cur===L.key;
       return `<button class="sc-row${here?' cur':''}" ${here?'disabled':`onclick="setView('${L.key}')"`}>
         <span class="sc-ic">${L.ic}</span>
-        <span class="sc-name">${L.label}</span>
+        <span class="sc-name">${L.full||L.label}</span>
         <span class="sc-n">판정템 ${L.n}개</span>
         <span class="sc-go">${here?'보는 중 ✓':'보러가기 ›'}</span>
       </button>`;
     }).join('')}
-    <div class="sc-soon">오픈 예정 · ${soon.map(L=>`${L.ic} ${L.label}`).join(' · ')}</div>`;
+    <div class="sc-soon">오픈 예정 · ${soon.map(L=>`${L.ic} ${L.full||L.label}`).join(' · ')}</div>`;
 }
 
 function render(){
