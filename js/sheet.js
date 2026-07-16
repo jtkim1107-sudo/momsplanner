@@ -510,10 +510,17 @@ function brandRankHtml(it, id){
   const rk = brandRankFor(it, id);
   if(!rk || rk.real) return ''; // 판정 연동 항목은 feedDetailHtml이 그린다
   const medals = ['🥇','🥈','🥉'];
+  // 역대가 그래프 앵커 — 관측 시세를 순위별로 시드 고정 보정 (실서비스: 가격 트래킹 API)
+  const pi = priceIntel(it, id);
+  const bWon = i => {
+    if(!pi) return 0;
+    const r = bdRng(bdSeed('bw-'+id+'-'+i));
+    return Math.round(pi.base * (0.9 + i*0.08 + r()*0.12) / 100) * 100;
+  };
   return `<div class="vf sim">
     <div class="vf-rank">
       <span class="vf-rank-head">🏆 브랜드 순위 · 선배맘 관측</span>
-      ${rk.rows.map((b,i)=>`<div class="vf-rk"><span class="rk-medal">${medals[i]}</span><span class="rk-nm">${b.nm} <b>${b.p}%</b></span>${typeof coupangLink==='function'?coupangLink(b.nm, it.nm):''}</div>`).join('')}
+      ${rk.rows.map((b,i)=>`<div class="vf-rk"><span class="rk-medal">${medals[i]}</span><span class="rk-nm">${b.nm} <b>${b.p}%</b></span>${typeof priceSparkHtml==='function'?priceSparkHtml(b.nm, it.nm, bWon(i)):''}${typeof coupangLink==='function'?coupangLink(b.nm, it.nm):''}</div>`).join('')}
       <span class="rk-note">구매 기록 기반 관측치 · 판정이 쌓이면 정확해져요</span>
     </div>
   </div>`;

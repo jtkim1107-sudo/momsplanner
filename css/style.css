@@ -603,6 +603,10 @@
     border-radius:10px;padding:2.5px 8px;white-space:nowrap;
   }
   .cp-link:active{transform:scale(.95);}
+  /* 📈 역대가 스파크라인 */
+  .spark{flex:0 0 auto;display:inline-flex;flex-direction:column;align-items:center;gap:1px;line-height:1;}
+  .spark svg{display:block;}
+  .spark em{font-style:normal;font-size:8.5px;font-weight:800;color:#9A855F;white-space:nowrap;}
   .rk-medal{font-size:14px;}
   .rk-note{display:block;font-size:9px;color:var(--dim);margin-top:4px;}
   .tip-box .op{color:#7A6142;}

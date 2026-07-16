@@ -36,6 +36,30 @@ function verdictFeedFor(it){
   return f;
 }
 
+// 📈 역대가 스파크라인 — 시드 고정 12주 가격 흐름 재현 + 역대최저
+// 실서비스에선 가격 트래킹 API(다나와·쿠팡 이력)가 이 자리를 대체한다.
+function priceSparkHtml(brand, itemNm, won){
+  if(!won) return '';
+  const r = bdRng(bdSeed('spark-'+brand+'-'+(itemNm||'')));
+  const pts=[]; let v = won * (1.04 + r()*0.14);
+  for(let i=0;i<11;i++){
+    pts.push(v);
+    v = Math.max(won*0.82, Math.min(won*1.25, v * (0.94 + r()*0.1)));
+  }
+  pts.push(won); // 마지막 점 = 현재 적정가
+  const lo = Math.min(...pts), hi = Math.max(...pts);
+  const loR = Math.round(lo/1000)*1000;
+  const W=46, H=15;
+  const xy = pts.map((p,i)=>[ (i/11)*W, (H-2) - ((p-lo)/((hi-lo)||1))*(H-4) ]);
+  const path = xy.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+  const mi = pts.indexOf(lo);
+  const isLow = won <= lo*1.03; // 지금이 역대가 수준
+  return `<span class="spark" title="12주 가격 흐름 · 역대최저 ${vfWon(loR)}">
+    <svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><path d="${path}" fill="none" stroke="${isLow?'#5C7F63':'#BCA483'}" stroke-width="1.4"/><circle cx="${xy[mi][0].toFixed(1)}" cy="${xy[mi][1].toFixed(1)}" r="2" fill="#C4552D"/></svg>
+    <em>${isLow?'지금이 역대가 🔥':'역대가 '+vfWon(loR)}</em>
+  </span>`;
+}
+
 // 🛒 쿠팡 검색 링크 — 브랜드+품목 바로 검색 (추후 파트너스 링크로 교체할 자리)
 function coupangLink(brand, itemNm){
   const item = (itemNm||'').replace(/\(.*?\)/g,'').split('·')[0].trim();
@@ -146,7 +170,7 @@ function feedRankHtml(f){
   const rows = f.brands.slice(0,3).map((b,i)=>{
     const price = b.won ? `<span class="rk-price">${vfWon(b.won)}</span>` : '';
     return `<div class="vf-rk"><span class="rk-medal">${medals[i]}</span>
-      <span class="rk-nm">${b.nm} <b>${b.p}%</b></span>${price}${coupangLink(b.nm, f.nm)}</div>`;
+      <span class="rk-nm">${b.nm} <b>${b.p}%</b></span>${price}${b.won?priceSparkHtml(b.nm, f.nm, b.won):''}${coupangLink(b.nm, f.nm)}</div>`;
   }).join('');
   return `<div class="vf-rank">
     <span class="vf-rank-head">🏆 브랜드 순위 · 적정가</span>
