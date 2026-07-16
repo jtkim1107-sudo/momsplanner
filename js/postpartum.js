@@ -306,7 +306,8 @@ function renderPostpartum(){
 function renderPostpartumItem(it,ci,ii){
   const id = ppItemId(ci,ii);
   const el = document.createElement('div');
-  el.className = 'item' + (ppChecked.has(id)?' checked':'');
+  // 체크(챙겼어요) 표시는 내 가방에서만 — 스탠다드는 답만 보여주는 곳
+  el.className = 'item' + (ppMode==='mine' && ppChecked.has(id)?' checked':'');
 
   // 배지는 결론(2종) + 판정 규모 + 개수만
   let badges='';
@@ -329,6 +330,7 @@ function renderPostpartumItem(it,ci,ii){
     else{
       const sv = (typeof simVerdict==='function') ? simVerdict(it, id) : null;
       if(sv) moreEl.insertAdjacentHTML('beforeend', verdictPieHtml(sv, {src:'베타 · 판정 규모 기반 재현, 실판정 쌓이면 대체'}));
+      else if(typeof unlockHtml==='function') moreEl.insertAdjacentHTML('beforeend', unlockHtml(simCollectN(id)));
       moreEl.insertAdjacentHTML('beforeend', brandRankHtml(it, id));
     }
     if(ops.length){

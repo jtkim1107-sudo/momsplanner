@@ -449,6 +449,7 @@ function faceBadges(it, id){
   }
   const t = verdictCount(it, id);
   if(t) b += `<span class="badge vcount">⚖️ ${t.toLocaleString()}명</span>`;
+  else if(typeof simCollectN==='function') b += `<span class="badge collecting">🔓 ${simCollectN(id)}/30</span>`;
   return b;
 }
 
@@ -459,7 +460,9 @@ function verdictBadge(it, id){
     if(f) return feedBadge(f);
   }
   const t = verdictCount(it, id);
-  return t ? `<span class="badge vcount">⚖️ ${t.toLocaleString()}명 판정템</span>` : '';
+  if(t) return `<span class="badge vcount">⚖️ ${t.toLocaleString()}명 판정템</span>`;
+  return (typeof simCollectN==='function')
+    ? `<span class="badge collecting">🔓 판정 ${simCollectN(id)}/30 모집 중</span>` : '';
 }
 
 // ---- 브랜드 후보 추출 — 항목이 이미 아는 유명 브랜드를 칩으로 ----
@@ -494,6 +497,7 @@ function brandRankFor(it, id){
       return null; // 판정 진행 중 — 순위 비공개
     }
   }
+  if(!sheetConclusion(it)) return null; // 판정 전엔 순위도 잠금 — 30명 게이트와 한 논리
   const cands = sheetBrandCandidates(it);
   if(!cands.length) return null;
   const r = bdRng(bdSeed('brk-'+id));
@@ -660,11 +664,13 @@ function renderSheet(){
 
   const intro = document.createElement('div');
   if(sheetMode==='std'){
-    intro.className='ss-card slim';
+    intro.className='ss-card';
     intro.innerHTML = `
       <span class="ss-star">🌠</span>
       <div class="ss-over">SOHAENGSEONG STANDARD</div>
-      <p>선배맘 판정으로 확정된 <b>판정템 ${cnt.std}개</b> — 펼쳐서 답 보고, <b>＋만 누르면</b> 내 리스트 완성</p>
+      <h3>출산 준비물</h3>
+      <p>선배맘 판정으로 확정된 <b>출산 준비물 판정템 기준표</b>예요.<br>판정 결과 확인하고 <b>담기만 누르면</b> 내 리스트 완성!</p>
+      <div class="ss-chips"><span>판정템 ${cnt.std}</span><span>원자료: 판정 데이터</span><span>+ 체험단 리뷰</span></div>
       <button class="ss-what" onclick="openStdAbout()">스탠다드가 뭐예요? ›</button>
     `;
   }else{
@@ -751,7 +757,8 @@ function renderSheet(){
 function renderSheetItem(it,ci,ii){
   const id = sheetItemId(ci,ii);
   const el = document.createElement('div');
-  el.className = 'item' + (sheetChecked.has(id)?' checked':'');
+  // 체크(샀어요) 표시는 내 리스트에서만 — 스탠다드는 답만 보여주는 곳
+  el.className = 'item' + (sheetMode==='mine' && sheetChecked.has(id)?' checked':'');
 
   // 배지는 핵심만: 결론 + 판정 규모 (+ 개수는 가이드 없을 때만, 월령 점프)
   // 브랜드·핫딜가·당근추천·미니멀 배지는 의견/시세/결론과 중복이라 제거
@@ -796,6 +803,7 @@ function renderSheetItem(it,ci,ii){
     else{
       const sv = (typeof simVerdict==='function') ? simVerdict(it, id) : null;
       if(sv) moreEl.insertAdjacentHTML('beforeend', verdictPieHtml(sv, {src:'베타 · 판정 규모 기반 재현, 실판정 쌓이면 대체'}));
+      else if(typeof unlockHtml==='function') moreEl.insertAdjacentHTML('beforeend', unlockHtml(simCollectN(id)));
       moreEl.insertAdjacentHTML('beforeend', brandRankHtml(it, id));
     }
     moreEl.appendChild(priceRowEl(it, id));

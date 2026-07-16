@@ -94,6 +94,12 @@ function feedDetailHtml(f){
   return verdictPieHtml({need:f.need, n:f.n, ch:f.ch, hot:f.hot}, {extra});
 }
 
+// 결론이 아직 없는 판정템 = 판정 모집 중 — 겉면 🔓 n/30 배지와 상세 진행바가 같은 숫자
+function simCollectN(id){
+  const r = bdRng(bdSeed('cl-'+id));
+  return 6 + Math.round(r()*22); // 6~28명 — 30명 게이트 미달
+}
+
 // 판정 미연동 항목의 분포 재현 — 배지 숫자(verdictCount)·결론과 반드시 일치
 // 실서비스에선 판정 집계 API가 이 자리를 대체한다.
 function simVerdict(it, id){
