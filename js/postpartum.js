@@ -253,6 +253,15 @@ function renderPostpartum(){
   }
   area.appendChild(intro);
 
+  // 🎁 판정 완주 보상 시그널 — 나의 판정에서 항상 보인다
+  if(ppMode==='mine'){
+    const rs = document.createElement('div');
+    rs.className = 'reward-strip';
+    rs.id = 'reward-strip';
+    rs.innerHTML = ppRewardHtml();
+    area.appendChild(rs);
+  }
+
   // 👉 다음 할 일 카드
   const nx = ppNextInfo();
   if(nx){
@@ -408,6 +417,7 @@ function renderPostpartumItem(it,ci,ii){
     savePostpartum();
     if(now){
       earnStars(5, '조리원 준비물 체크', 'chk-'+id);
+      checkPpComplete(); // 완주 보상 — 배너에 약속한 ⭐500 + 아기 선물
       if(!el.querySelector('.buy-row')) el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
     }else if(!myBuys[id]){
       const br = el.querySelector('.buy-row'); if(br) br.remove();
@@ -430,7 +440,7 @@ function ppJourney(){
   const s1 = total>0 && planned===total;
   const s2 = s1 && ids.length>0 && unchecked===0;
   const cur = ppMode==='std' ? 1 : 2; // 탭 개념 — 지금 보고 있는 곳이 하이라이트
-  return {steps:[{n:1,ic:'🌠',t:'소행성 스탠다드'},{n:2,ic:'🧳',t:'나의 리스트'}], done:[s1,s2], cur};
+  return {steps:[{n:1,ic:'🌠',t:'소행성 스탠다드'},{n:2,ic:'⚖️',t:'나의 판정'}], done:[s1,s2], cur};
 }
 
 // 👉 다음 할 일 계산 (조리원)
@@ -461,8 +471,37 @@ function ppNextInfo(){
 }
 
 // 진행률 · 카테고리 카운트 · 다음 할 일 카드 갱신
+// 🎁 완주 보상 배너 내용 — 남은 개수에 따라 문구가 조여든다
+function ppRewardHtml(){
+  const ids=[];
+  POSTPARTUM_CATEGORIES.forEach((c,ci)=> c.items.forEach((it,ii)=>{
+    const id = ppItemId(ci,ii);
+    if(ppMine(id)) ids.push(id);
+  }));
+  if(!ids.length) return `🎁 <b>완주 보상</b> — 스탠다드에서 담고, 다 챙기면 <b>⭐500</b> + 아기의 깜짝 선물`;
+  const un = ids.filter(id=>!ppChecked.has(id)).length;
+  if(un>0) return `🎁 <b>완주 보상</b> — 남은 <b>${un}개</b>만 챙기면 <b>⭐500</b> + 아기의 깜짝 선물이 와요`;
+  return `🎉 <b>완주!</b> ⭐500 + 아기의 깜짝 선물까지 받았어요 — 기록 하나마다 <b>⭐15</b>는 계속`;
+}
+
+// 가방 완주(담은 것 전부 체크) 보상 — 시그널에 약속한 그 보상
+function checkPpComplete(){
+  const ids=[];
+  POSTPARTUM_CATEGORIES.forEach((c,ci)=> c.items.forEach((it,ii)=>{
+    const id = ppItemId(ci,ii);
+    if(ppMine(id)) ids.push(id);
+  }));
+  if(ids.length && ids.every(id=>ppChecked.has(id))){
+    if(earnStars(500, '출산가방 완주', 'pp-alldone')){
+      babySurprise('출산가방 챙기기', 'baby-pp-alldone', 150, 900);
+    }
+  }
+}
+
 function ppRefreshHeads(){
   updatePostpartumProgress();
+  const rs = document.getElementById('reward-strip');
+  if(rs) rs.innerHTML = ppRewardHtml();
   POSTPARTUM_CATEGORIES.forEach((c,ci)=>{
     const gp = document.getElementById('ppp-'+ci);
     if(gp){ const cc = ppCatCount(ci); gp.textContent = cc.done+'/'+cc.total; }
