@@ -433,6 +433,25 @@ function verdictCount(it, id){
   for(const t of VERDICT_TIERS) if(n >= t) return t;
   return null;                                    // 50명 미만 — 표시 안 함 (신뢰 게이트)
 }
+// 리스팅 행 전용 컴팩트 뱃지 — ⚖️판정수 · 🔥논쟁 · 🥇1등 브랜드 · 🔓언락
+function faceBadges(it, id){
+  let b = '';
+  if(typeof verdictFeedFor==='function'){
+    const f = verdictFeedFor(it);
+    if(f){
+      if(f.hot) b += `<span class="badge hot">🔥 논쟁</span>`;
+      b += (f.n >= 30)
+        ? `<span class="badge vcount">⚖️ ${f.n.toLocaleString()}명</span>`
+        : `<span class="badge collecting">🔓 ${f.n}/30</span>`;
+      if(f.n >= 30 && f.brands && f.brands[0]) b += `<span class="badge rank1">🥇 ${f.brands[0].nm}</span>`;
+      return b;
+    }
+  }
+  const t = verdictCount(it, id);
+  if(t) b += `<span class="badge vcount">⚖️ ${t.toLocaleString()}명</span>`;
+  return b;
+}
+
 function verdictBadge(it, id){
   // 본체 앱 판정 연동 항목은 실제 참여 수를 그대로
   if(typeof verdictFeedFor==='function'){
@@ -800,7 +819,7 @@ function renderSheetItem(it,ci,ii){
     el.innerHTML = `
       <div class="item-main slim">
         <div class="item-info">
-          <div class="item-name">${it.nm}${concl?` <span class="badge concl ${concl.k}">${concl.label}</span>`:''}</div>
+          <div class="item-name">${it.nm}${concl?` <span class="badge concl ${concl.k}">${concl.label}</span>`:''}${faceBadges(it, id)}</div>
         </div>
         <button class="add-mini ${myPlans[id]?'on':''}" title="내 리스트에 담기">${myPlans[id]?'✓':'＋'}</button>
         <span class="item-caret">﹀</span>

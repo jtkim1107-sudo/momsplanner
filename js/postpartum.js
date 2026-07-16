@@ -336,7 +336,7 @@ function renderPostpartumItem(it,ci,ii){
     el.innerHTML = `
       <div class="item-main slim">
         <div class="item-info">
-          <div class="item-name">${it.nm}${concl?` <span class="badge concl ${concl.k}">${concl.label}</span>`:''}</div>
+          <div class="item-name">${it.nm}${concl?` <span class="badge concl ${concl.k}">${concl.label}</span>`:''}${faceBadges(it, id)}</div>
         </div>
         <button class="add-mini ${myPlans[id]?'on':''}" title="내 가방에 담기">${myPlans[id]?'✓':'＋'}</button>
         <span class="item-caret">﹀</span>
