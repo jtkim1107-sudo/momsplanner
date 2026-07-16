@@ -1001,12 +1001,9 @@ function sheetNextInfo(){
       if(!stdListed(it)) return;
       if(!myPlans[id]) todos.push(it.nm);
     }));
-    if(todos.length) return {
-      title:`안 담은 것 <b>${todos.length}개</b> — 판정 보고 담기만 하면 끝`,
-      nudge: todos.length>3 ? todos.slice(0,3) : null,
-      btn: sheetFilter ? '전체 보기' : '모아 보기', act:'toggleSheetFilter()',
-    };
+    // '안 담은 것 N개' 안내는 뺐다 — 스탠다드는 조용히 보고 담는 곳 (필터도 없음)
     sheetFilter = false;
+    if(todos.length) return null;
     return {title:'스탠다드 다 담았어요! 이제 사러 갈 시간 🛍️', btn:'내 리스트로', act:"setSheetMode('mine')"};
   }
   // 내 리스트: 체크 → 기록 → 완성 순으로 다음 할 일 안내

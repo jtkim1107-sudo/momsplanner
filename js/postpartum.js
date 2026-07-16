@@ -440,12 +440,9 @@ function ppNextInfo(){
     POSTPARTUM_CATEGORIES.forEach((c,ci)=> c.items.forEach((it,ii)=>{
       if(!myPlans[ppItemId(ci,ii)]) todos.push(it.nm);
     }));
-    if(todos.length) return {
-      title:`안 담은 것 <b>${todos.length}개</b> — 판정 보고 담기만 하면 끝`,
-      nudge: todos.length>3 ? todos.slice(0,3) : null,
-      btn: ppFilter ? '전체 보기' : '모아 보기', act:'togglePpFilter()',
-    };
+    // '안 담은 것 N개' 안내는 뺐다 — 스탠다드는 조용히 보고 담는 곳 (필터도 없음)
     ppFilter = false;
+    if(todos.length) return null;
     return {title:'가방 리스트 완성! 이제 하나씩 챙겨요 🧳', btn:'내 가방으로', act:"setPpMode('mine')"};
   }
   const ids = [];

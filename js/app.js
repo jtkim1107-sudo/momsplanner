@@ -93,11 +93,13 @@ function comingSoon(label){
 function renderPrepTabs(){
   const bar = document.getElementById('prep-tabs');
   bar.style.display = 'flex';
-  bar.innerHTML = PREP_LISTS.map(L=>
-    ACTIVE_LISTS.has(L.key)
-      ? `<button class="prep-chip${viewMode===L.key?' on':''}" onclick="setView('${L.key}')"><span class="pc-ic">${L.ic}</span>${L.label}</button>`
-      : `<button class="prep-chip soon" onclick="comingSoon('${L.label}')"><span class="pc-ic">${L.ic}</span>${L.label}<span class="soon-tag">오픈예정</span></button>`
-  ).join('');
+  // 앱 아이콘 스타일 — 큰 아이콘 + 라벨, 잠긴 리스트는 자물쇠
+  bar.innerHTML = PREP_LISTS.map(L=>{
+    const on = viewMode===L.key;
+    return ACTIVE_LISTS.has(L.key)
+      ? `<button class="prep-ic-btn${on?' on':''}" onclick="setView('${L.key}')"><span class="pi-circle">${L.ic}</span><span class="pi-label">${L.label}</span></button>`
+      : `<button class="prep-ic-btn soon" onclick="comingSoon('${L.label}')"><span class="pi-circle">${L.ic}<span class="pi-lock">🔒</span></span><span class="pi-label">${L.label}</span></button>`;
+  }).join('');
 }
 
 // ── 소행성 스탠다드 — 소개 모달 + 완성된 리스트 카탈로그 ──────────────
