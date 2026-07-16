@@ -680,12 +680,6 @@ function renderSheet(){
     fb.innerHTML = nextCardHtml(nx);
     area.appendChild(fb);
   }
-  // 🚀 판정 부스트 — 판정은 커뮤니티에서, 지금은 별똥별 2배
-  const bs = document.createElement('button');
-  bs.className = 'boost-strip';
-  bs.innerHTML = `🚀 <b>런칭 부스트</b> — 커뮤니티 '살까 말까' 판정 남기면 별똥별 <b>2배</b>`;
-  bs.addEventListener('click', ()=> toast('판정은 소행성 앱 커뮤니티에서 참여할 수 있어요 🌠'));
-  area.appendChild(bs);
 
   let shownCats = 0;
   SHEET_CATEGORIES.forEach((cat,ci)=>{
@@ -728,6 +722,12 @@ function renderSheet(){
     empty.innerHTML='<b>아직 내 리스트가 비어 있어요</b>소행성 스탠다드에서 담기를 누르면 여기 모여요.';
     area.appendChild(empty);
   }
+  // 🚀 판정 부스트 — 목록 아래 (상단은 리스트 우선)
+  const bs = document.createElement('button');
+  bs.className = 'boost-strip';
+  bs.innerHTML = `🚀 <b>런칭 부스트</b> — 커뮤니티 '살까 말까' 판정 남기면 별똥별 <b>2배</b>`;
+  bs.addEventListener('click', ()=> toast('판정은 소행성 앱 커뮤니티에서 참여할 수 있어요 🌠'));
+  area.appendChild(bs);
   updateSheetProgress();
 }
 
