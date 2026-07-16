@@ -312,6 +312,8 @@
   }
   .ss-card.slim .ss-what{margin-top:5px;}
 
+  .rp-item .rp-chk{flex:0 0 auto;font-size:12px;}
+
   /* 🎁 판정 완주 보상 시그널 */
   .reward-strip{
     background:linear-gradient(135deg,#FBF3DC,#F5E7C4);border:1.5px solid #EBDCB2;

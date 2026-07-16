@@ -248,7 +248,8 @@ function renderPostpartum(){
     intro.innerHTML = `
       <span class="ri">🧳</span>
       <div class="rc"><h3>내 출산가방</h3>
-      <p>담은 것들이에요. <b>가방에 넣으면 체크</b>, 산 건 기록까지 — 생각이 바뀐 건 여기서 패스. "제공 확인" 항목은 조리원에 먼저 물어보세요!</p></div>
+      <p>담은 것들이에요. <b>가방에 넣으면 체크</b>, 산 건 기록까지 — 생각이 바뀐 건 여기서 패스. "제공 확인" 항목은 조리원에 먼저 물어보세요!</p>
+      <button class="rp-open" onclick="openPpReport()">📄 내 가방 리포트 — 친구 공유용</button></div>
     `;
   }
   area.appendChild(intro);
