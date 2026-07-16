@@ -2,7 +2,7 @@
 // 소행성 육아플래너 — 앱 로직
 // ============================================================
 
-let viewMode = 'sheet'; // 준비물 리스트 칩: 출산/조리원/신생아/이유식/어린이집/월령별(seg4~8)
+let viewMode = 'postpartum'; // 준비물 리스트 칩 — 조리원 가방부터 시작 (출산 준비물은 정비 후 재오픈)
 const STORE_KEY = 'sohaengseong-planner-checked';
 let checked = new Set(['A1','A2','A3']);
 try{
@@ -77,14 +77,14 @@ function deadlineChip(g, done, total){
 
 // 준비물 리스트 — 출산부터 오픈, 나머지는 하나씩 열어간다 (리스트 다양화 전략)
 const PREP_LISTS = [
-  {key:'sheet',      ic:'🤰', label:'출산 준비물'},
   {key:'postpartum', ic:'🧳', label:'조리원 가방'},
+  {key:'sheet',      ic:'🤰', label:'출산 준비물'}, // 데이터 정비 후 재오픈
   {key:'seg4',       ic:'👶', label:'신생아 국민템'},
   {key:'babyfood',   ic:'🥣', label:'이유식'},
   {key:'daycare',    ic:'🏫', label:'어린이집'},
   {key:'seg5',       ic:'📅', label:'월령별 국민템'}, // 오픈 시 월령별로 분화
 ];
-const ACTIVE_LISTS = new Set(['sheet','postpartum']); // 오픈된 리스트 — 여기 추가하면 열림
+const ACTIVE_LISTS = new Set(['postpartum']); // 오픈된 리스트 — 여기 추가하면 열림
 
 function comingSoon(label){
   toast(`${label} 리스트는 오픈 준비 중이에요 🌠 곧 열려요!`);
@@ -107,10 +107,8 @@ function stdCatalogHtml(cur){
   let nSheet=0, nPp=0;
   try{ nSheet = sheetCountAll().std; }catch(e){}
   try{ nPp = POSTPARTUM_CATEGORIES.reduce((a,c)=>a+c.items.length,0); }catch(e){}
-  const open = [
-    {key:'sheet',      ic:'🤰', label:'출산 준비물', n:nSheet},
-    {key:'postpartum', ic:'🧳', label:'조리원 가방', n:nPp},
-  ];
+  const counts = {sheet:nSheet, postpartum:nPp};
+  const open = PREP_LISTS.filter(L=>ACTIVE_LISTS.has(L.key)).map(L=>({...L, n:counts[L.key]||0}));
   const soon = PREP_LISTS.filter(L=>!ACTIVE_LISTS.has(L.key));
   return `
     <div class="sc-head">📚 완성된 스탠다드 <b>${open.length}개</b><button class="sc-what" onclick="openStdAbout()">스탠다드가 뭐예요?</button></div>
