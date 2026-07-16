@@ -240,6 +240,7 @@ function renderPostpartum(){
       <h3>조리원 · 출산가방</h3>
       <p>선배맘 판정으로 확정된 <b>출산가방 판정템 기준표</b>예요.<br>판정 결과 확인하고 <b>담기만 누르면</b> 내 가방 리스트 완성!</p>
       <div class="ss-chips"><span>판정템 ${totalAll}</span><span>원자료: 판정 데이터</span><span>+ 체험단 리뷰</span></div>
+      <button class="ss-what" onclick="openStdAbout()">스탠다드가 뭐예요? ›</button>
     `;
   }else{
     intro.className='region-card';
@@ -291,6 +292,13 @@ function renderPostpartum(){
     empty.className='collect-box';
     empty.innerHTML='<b>아직 출산가방이 비어 있어요</b>조리원 스탠다드에서 담기를 누르면 여기 모여요.';
     area.appendChild(empty);
+  }
+  // 📚 완성된 스탠다드 카탈로그 — 다음 리스트로 이어가기
+  if(ppMode==='std' && typeof stdCatalogHtml==='function'){
+    const sc = document.createElement('div');
+    sc.className='std-cat';
+    sc.innerHTML = stdCatalogHtml('postpartum');
+    area.appendChild(sc);
   }
   updatePostpartumProgress();
 }
@@ -387,7 +395,7 @@ function renderPostpartumItem(it,ci,ii){
   }
   if(myPlans[id]==='pass') el.classList.add('passed');
   el.appendChild(planRowEl(id, 'postpartum'));
-  el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
+  if(ppChecked.has(id) || myBuys[id]) el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
   const chkEl = el.querySelector('.chk');
   if(chkEl) chkEl.addEventListener('click',e=>{
     e.stopPropagation();
@@ -395,7 +403,12 @@ function renderPostpartumItem(it,ci,ii){
     now ? ppChecked.add(id) : ppChecked.delete(id);
     el.classList.toggle('checked');
     savePostpartum();
-    if(now) earnStars(5, '조리원 준비물 체크', 'chk-'+id);
+    if(now){
+      earnStars(5, '조리원 준비물 체크', 'chk-'+id);
+      if(!el.querySelector('.buy-row')) el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
+    }else if(!myBuys[id]){
+      const br = el.querySelector('.buy-row'); if(br) br.remove();
+    }
     ppRefreshHeads(ci);
   });
   return el;

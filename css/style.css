@@ -302,6 +302,57 @@
     font-size:11px;font-weight:800;color:#8A7357;background:#fff;
     border:1px solid #E8DCC2;border-radius:12px;padding:3px 10px;
   }
+  .ss-what{
+    margin-top:7px;font-family:inherit;font-size:11px;font-weight:800;color:#8A7357;
+    background:#fff;border:1px solid #E8DCC2;border-radius:12px;padding:4px 11px;cursor:pointer;
+  }
+  .ss-card.slim .ss-what{margin-top:5px;}
+
+  /* 📚 완성된 스탠다드 카탈로그 */
+  .std-cat{
+    background:var(--card);border:1.5px solid var(--line);border-radius:16px;
+    padding:13px 14px;margin:14px 0 12px;box-shadow:var(--sh-sm);
+  }
+  .sc-head{
+    display:flex;align-items:center;gap:6px;font-size:13px;font-weight:900;color:var(--ink);
+    margin-bottom:9px;
+  }
+  .sc-head b{color:var(--brown-deep);}
+  .sc-what{
+    margin-left:auto;font-family:inherit;font-size:10.5px;font-weight:800;color:#8A7357;
+    background:#F7F1E4;border:1px solid #E8DCC2;border-radius:11px;padding:3px 9px;cursor:pointer;
+  }
+  .sc-row{
+    display:flex;align-items:center;gap:9px;width:100%;text-align:left;
+    font-family:inherit;background:#FBF7EE;border:1.5px solid #EFE6D2;border-radius:13px;
+    padding:11px 13px;margin-bottom:7px;cursor:pointer;transition:transform .1s;
+  }
+  .sc-row:active{transform:scale(.985);}
+  .sc-row.cur{background:#F1EAD9;border-color:#E2D5B8;cursor:default;}
+  .sc-ic{font-size:20px;}
+  .sc-name{font-size:14px;font-weight:900;color:var(--ink);}
+  .sc-n{font-size:11px;font-weight:800;color:#8A7357;background:#fff;border:1px solid #E8DCC2;border-radius:11px;padding:2px 8px;}
+  .sc-go{margin-left:auto;font-size:12px;font-weight:900;color:var(--brown-deep);white-space:nowrap;}
+  .sc-row.cur .sc-go{color:#9A8668;}
+  .sc-soon{font-size:11px;color:var(--sub);margin-top:4px;line-height:1.6;}
+
+  /* 🌠 스탠다드 소개 모달 */
+  .sa-title{font-size:18px;font-weight:900;color:var(--ink);margin-top:10px;line-height:1.4;}
+  .sa-lead{font-size:13px;color:var(--sub);margin-top:8px;line-height:1.65;}
+  .sa-lead b{color:var(--brown-deep);}
+  .sa-rules{margin-top:13px;display:flex;flex-direction:column;gap:9px;}
+  .sa-rule{
+    display:flex;gap:10px;align-items:flex-start;
+    background:#FBF7EE;border:1px solid #EFE6D2;border-radius:13px;padding:10px 12px;
+  }
+  .sa-rule>span{font-size:18px;}
+  .sa-rule b{font-size:13px;font-weight:900;color:var(--ink);}
+  .sa-rule p{font-size:11.5px;color:var(--sub);margin-top:2px;line-height:1.55;}
+  .sa-cta{
+    margin-top:13px;font-size:13px;font-weight:700;color:var(--brown-deep);
+    background:#F5EDDF;border-radius:12px;padding:10px 13px;text-align:center;
+  }
+
   .badge.minimal{background:#EDF5EF;color:var(--green);border:1px solid #CCE3D3;}
   .star-chip,.icon-chip{
     border:1px solid #EAE0CD;background:#fff;color:#8A7357;

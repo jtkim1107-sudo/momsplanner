@@ -665,6 +665,7 @@ function renderSheet(){
       <span class="ss-star">🌠</span>
       <div class="ss-over">SOHAENGSEONG STANDARD</div>
       <p>선배맘 판정으로 확정된 <b>판정템 ${cnt.std}개</b> — 펼쳐서 답 보고, <b>＋만 누르면</b> 내 리스트 완성</p>
+      <button class="ss-what" onclick="openStdAbout()">스탠다드가 뭐예요? ›</button>
     `;
   }else{
     intro.className='region-card';
@@ -730,6 +731,13 @@ function renderSheet(){
     empty.className='collect-box';
     empty.innerHTML='<b>아직 내 리스트가 비어 있어요</b>소행성 스탠다드에서 담기를 누르면 여기 모여요.';
     area.appendChild(empty);
+  }
+  // 📚 완성된 스탠다드 카탈로그 — 다 훑고 나면 다음 리스트로 이어가기
+  if(sheetMode==='std' && typeof stdCatalogHtml==='function'){
+    const sc = document.createElement('div');
+    sc.className='std-cat';
+    sc.innerHTML = stdCatalogHtml('sheet');
+    area.appendChild(sc);
   }
   // 🚀 판정 부스트 — 목록 아래 (상단은 리스트 우선)
   const bs = document.createElement('button');
@@ -884,12 +892,18 @@ function renderSheetItem(it,ci,ii){
     if(nowChecked){
       earnStars(5, '준비물 체크', 'chk-'+(it.link||id));
       checkSmartListComplete();
+      if(!el.querySelector('.buy-row')){ // 체크하면 바로 기록 폼 등장
+        const pr = purchaseRowEl(id, sheetBrandCandidates(it));
+        const plan = el.querySelector('.plan-row');
+        el.insertBefore(pr, plan);
+      }
+    }else if(!myBuys[id]){
+      const br = el.querySelector('.buy-row'); if(br) br.remove();
     }
     updateFocusBar();
   });
-  // 내 리스트에선 내가 채우는 구매 기록 빈칸 (시세 숫자는 상세에서)
-  // 판정은 커뮤니티 '살까 말까'에서 따로 받는다 — 여긴 기록까지만
-  if(sheetMode==='mine'){
+  // 내 리스트: 기록 폼은 체크(샀어요)한 항목에만 — 안 산 항목은 가볍게
+  if(sheetMode==='mine' && (sheetChecked.has(id) || myBuys[id])){
     el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
   }
 

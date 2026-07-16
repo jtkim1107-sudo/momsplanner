@@ -100,6 +100,32 @@ function renderPrepTabs(){
   ).join('');
 }
 
+// ── 소행성 스탠다드 — 소개 모달 + 완성된 리스트 카탈로그 ──────────────
+function openStdAbout(){ openModal('std-modal'); }
+
+function stdCatalogHtml(cur){
+  let nSheet=0, nPp=0;
+  try{ nSheet = sheetCountAll().std; }catch(e){}
+  try{ nPp = POSTPARTUM_CATEGORIES.reduce((a,c)=>a+c.items.length,0); }catch(e){}
+  const open = [
+    {key:'sheet',      ic:'🤰', label:'출산 준비물', n:nSheet},
+    {key:'postpartum', ic:'🧳', label:'조리원 가방', n:nPp},
+  ];
+  const soon = PREP_LISTS.filter(L=>!ACTIVE_LISTS.has(L.key));
+  return `
+    <div class="sc-head">📚 완성된 스탠다드 <b>${open.length}개</b><button class="sc-what" onclick="openStdAbout()">스탠다드가 뭐예요?</button></div>
+    ${open.map(L=>{
+      const here = cur===L.key;
+      return `<button class="sc-row${here?' cur':''}" ${here?'disabled':`onclick="setView('${L.key}')"`}>
+        <span class="sc-ic">${L.ic}</span>
+        <span class="sc-name">${L.label}</span>
+        <span class="sc-n">판정템 ${L.n}개</span>
+        <span class="sc-go">${here?'보는 중 ✓':'보러가기 ›'}</span>
+      </button>`;
+    }).join('')}
+    <div class="sc-soon">오픈 예정 · ${soon.map(L=>`${L.ic} ${L.label}`).join(' · ')}</div>`;
+}
+
 function render(){
   renderPrepTabs();
   document.getElementById('timeline').style.display = 'none';
