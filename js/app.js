@@ -76,15 +76,19 @@ function deadlineChip(g, done, total){
 }
 
 // 준비물 리스트 — 출산부터 오픈, 나머지는 하나씩 열어간다 (리스트 다양화 전략)
-// 시기순 라인업 — 산부인과 → 조리원 → 수유 → 이유식 → 어린이집
+// 시기순 라인업 — 임신 → 산부인과 → 조리원 → 신생아 → 수유 → 첫 외출 → 이유식 → 발달·놀이 → 어린이집
 const PREP_LISTS = [
-  {key:'hospital',   ic:'🏥', label:'산부인과', full:'출산 전 산부인과 준비물'},
-  {key:'postpartum', ic:'🧳', label:'조리원',   full:'조리원 준비물'},
-  {key:'nursing',    ic:'🍼', label:'수유',     full:'수유 준비물'},
-  {key:'babyfood',   ic:'🥣', label:'이유식',   full:'이유식 준비물'},
-  {key:'daycare',    ic:'🏫', label:'어린이집', full:'어린이집 준비물'},
+  {key:'pregnancy',  ic:'🤰', label:'임신',       full:'임신 준비물'},
+  {key:'hospital',   ic:'🏥', label:'산부인과',   full:'출산 전 산부인과 준비물'},
+  {key:'postpartum', ic:'🧳', label:'조리원',     full:'조리원 준비물'},
+  {key:'newborn',    ic:'🏠', label:'신생아',     full:'신생아 집들이 준비물'},
+  {key:'nursing',    ic:'🍼', label:'수유',       full:'수유 준비물'},
+  {key:'outing',     ic:'🚗', label:'첫 외출',    full:'첫 외출 준비물'},
+  {key:'babyfood',   ic:'🥣', label:'이유식',     full:'이유식 준비물'},
+  {key:'monthly',    ic:'🧸', label:'발달·놀이',  full:'월령별 발달·놀이템'},
+  {key:'daycare',    ic:'🏫', label:'어린이집',   full:'어린이집 준비물'},
 ];
-const ACTIVE_LISTS = new Set(['hospital','postpartum','nursing','babyfood','daycare']); // 오픈된 리스트
+const ACTIVE_LISTS = new Set(PREP_LISTS.map(L=>L.key)); // 전부 오픈
 
 function comingSoon(label){
   toast(`${label} 리스트는 오픈 준비 중이에요 🌠 곧 열려요!`);

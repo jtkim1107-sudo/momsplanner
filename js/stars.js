@@ -321,8 +321,12 @@ const PLAN_SOURCES = [
   {key:'postpartum', label:'조리원',   cats:()=>POSTPARTUM_CATEGORIES, idFn:(ci,ii)=>ppItemId(ci,ii)},
   {key:'daycare',    label:'어린이집', cats:()=>DAYCARE_CATEGORIES,    idFn:(ci,ii)=>dcItemId(ci,ii)},
   {key:'babyfood',   label:'이유식',   cats:()=>BABYFOOD_CATEGORIES,   idFn:(ci,ii)=>bfItemId(ci,ii)},
-  {key:'hospital',   label:'산부인과', cats:()=>PREP_ENGINE.hospital.cats, idFn:(ci,ii)=>plItemId('hospital',ci,ii)},
-  {key:'nursing',    label:'수유',     cats:()=>PREP_ENGINE.nursing.cats,  idFn:(ci,ii)=>plItemId('nursing',ci,ii)},
+  {key:'hospital',   label:'산부인과', cats:()=>PREP_ENGINE.hospital.cats,  idFn:(ci,ii)=>plItemId('hospital',ci,ii)},
+  {key:'nursing',    label:'수유',     cats:()=>PREP_ENGINE.nursing.cats,   idFn:(ci,ii)=>plItemId('nursing',ci,ii)},
+  {key:'pregnancy',  label:'임신',     cats:()=>PREP_ENGINE.pregnancy.cats, idFn:(ci,ii)=>plItemId('pregnancy',ci,ii)},
+  {key:'newborn',    label:'신생아',   cats:()=>PREP_ENGINE.newborn.cats,   idFn:(ci,ii)=>plItemId('newborn',ci,ii)},
+  {key:'outing',     label:'첫 외출',  cats:()=>PREP_ENGINE.outing.cats,    idFn:(ci,ii)=>plItemId('outing',ci,ii)},
+  {key:'monthly',    label:'발달·놀이', cats:()=>PREP_ENGINE.monthly.cats,  idFn:(ci,ii)=>plItemId('monthly',ci,ii)},
 ];
 function planListItems(listKey){
   const src = PLAN_SOURCES.find(x=>x.key===listKey);
