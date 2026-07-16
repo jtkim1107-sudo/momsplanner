@@ -702,15 +702,15 @@ function renderSheet(){
 
   let shownCats = 0;
   SHEET_CATEGORIES.forEach((cat,ci)=>{
-    const main=[], extra=[];
+    // 조리원 가방과 동일 — 스탠다드엔 판정템만 쭉 (선택템 후보 풀은 화면에 안 올림)
+    const main=[];
     cat.items.forEach((it,ii)=>{
       const iid = sheetItemId(ci,ii);
       if(sheetFilter && sheetItemDone(it, iid)) return; // 끝낸 건 치우기
       if(sheetMode==='mine'){ if(sheetMine(iid)) main.push([it,ii]); }
       else if(stdListed(it)){ main.push([it,ii]); }
-      else if(!isStd(it)){ extra.push([it,ii]); } // 판정상 패스템은 아예 안 올림
     });
-    if(!main.length && !extra.length) return;
+    if(!main.length) return;
     const {total, done} = sheetCatCount(ci);
     shownCats++;
     const gEl = document.createElement('div'); gEl.className='group';
@@ -723,16 +723,6 @@ function renderSheet(){
     `;
     const holder = gEl.querySelector('#shi-'+ci);
     main.forEach(([it,ii])=> holder.appendChild(renderSheetItem(it,ci,ii)));
-    if(sheetMode==='std' && extra.length && !sheetFilter){ // 집중 모드에선 선택템 감춤
-      const more = document.createElement('button');
-      more.className='more-row';
-      more.textContent = `＋ 선택템 ${extra.length}개 더 보기`;
-      more.addEventListener('click',()=>{
-        more.remove();
-        extra.forEach(([it,ii])=> holder.appendChild(renderSheetItem(it,ci,ii)));
-      });
-      holder.appendChild(more);
-    }
     area.appendChild(gEl);
   });
   if(!shownCats){
