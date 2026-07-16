@@ -84,7 +84,7 @@ const PREP_LISTS = [
   {key:'babyfood',   ic:'🥣', label:'이유식',   full:'이유식 준비물'},
   {key:'daycare',    ic:'🏫', label:'어린이집', full:'어린이집 준비물'},
 ];
-const ACTIVE_LISTS = new Set(['postpartum']); // 오픈된 리스트 — 여기 추가하면 열림
+const ACTIVE_LISTS = new Set(['hospital','postpartum','nursing','babyfood','daycare']); // 오픈된 리스트
 
 function comingSoon(label){
   toast(`${label} 리스트는 오픈 준비 중이에요 🌠 곧 열려요!`);
@@ -106,10 +106,12 @@ function renderPrepTabs(){
 function openStdAbout(){ openModal('std-modal'); }
 
 function stdCatalogHtml(cur){
-  let nSheet=0, nPp=0;
-  try{ nSheet = sheetCountAll().std; }catch(e){}
-  try{ nPp = POSTPARTUM_CATEGORIES.reduce((a,c)=>a+c.items.length,0); }catch(e){}
-  const counts = {sheet:nSheet, postpartum:nPp};
+  const counts = {};
+  try{ counts.postpartum = POSTPARTUM_CATEGORIES.reduce((a,c)=>a+c.items.length,0); }catch(e){}
+  try{
+    if(typeof PREP_ENGINE!=='undefined')
+      Object.keys(PREP_ENGINE).forEach(k=> counts[k] = PREP_ENGINE[k].cats.reduce((a,c)=>a+c.items.length,0));
+  }catch(e){}
   const open = PREP_LISTS.filter(L=>ACTIVE_LISTS.has(L.key)).map(L=>({...L, n:counts[L.key]||0}));
   const soon = PREP_LISTS.filter(L=>!ACTIVE_LISTS.has(L.key));
   return `
@@ -152,23 +154,14 @@ function render(){
     return;
   }
 
-  // 어린이집 입소 준비물 뷰
-  if(viewMode==='daycare'){
-    document.getElementById('hero-title').textContent = '어린이집 입소 준비물';
-    document.getElementById('hero-dday').textContent = '입소 시즌 준비';
-    document.getElementById('demo-note').textContent = '복직맘·세돌맘이 짚어준 것들 · 어린이집 안내문과 함께 확인!';
+  // 공용 엔진 리스트 (산부인과 · 수유 · 이유식 · 어린이집)
+  if(typeof PREP_ENGINE!=='undefined' && PREP_ENGINE[viewMode]){
+    const L = PREP_ENGINE[viewMode];
+    document.getElementById('hero-title').textContent = L.title;
+    document.getElementById('hero-dday').textContent = `출산예정일 D-${state.dday}`;
+    document.getElementById('demo-note').textContent = L.heroNote;
     document.getElementById('preview-note').style.display='none';
-    renderDaycare();
-    return;
-  }
-
-  // 이유식 준비물 뷰
-  if(viewMode==='babyfood'){
-    document.getElementById('hero-title').textContent = '이유식 준비물';
-    document.getElementById('hero-dday').textContent = '이유식 시작 준비';
-    document.getElementById('demo-note').textContent = '이유식전쟁맘·두돌맘이 겪어본 것들 · 시작 시기는 소아과와 상담!';
-    document.getElementById('preview-note').style.display='none';
-    renderBabyfood();
+    renderPrepList(viewMode);
     return;
   }
 

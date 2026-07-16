@@ -178,43 +178,38 @@ function renderPostpartum(){
   const cnt = ppTotals();
   const totalAll = POSTPARTUM_CATEGORIES.reduce((a,c)=>a+c.items.length,0);
 
-  // 여정 스텝바 — 담기 → 챙기기 (토글 대체)
+  // 카테고리 설명 카드 (컴팩트) — 리스트가 주인공, 카드는 한 줄 설명만
+  const brief = document.createElement('div');
+  brief.className = 'list-brief';
+  brief.innerHTML = `
+    <span class="lb-ic">🧳</span>
+    <div class="lb-tx"><h3>조리원 준비물</h3>
+    <p>출산 입원 + 조리원 2주 짐 — 제공 품목은 조리원에 먼저 확인!</p></div>
+    <span class="lb-n">판정템 ${totalAll}</span>
+  `;
+  area.appendChild(brief);
+
+  // 탭 — 설명 카드 아래
   const mt = document.createElement('div');
   mt.className='journey';
   mt.id='journey';
   mt.innerHTML = journeyHtml(ppJourney());
   area.appendChild(mt);
 
-  const intro = document.createElement('div');
-  if(ppMode==='std'){
-    intro.className='ss-card';
-    intro.innerHTML = `
-      <span class="ss-star">🏨</span>
-      <div class="ss-over">SOHAENGSEONG STANDARD</div>
-      <h3>조리원 · 출산가방</h3>
-      <p>선배맘 판정으로 확정된 <b>출산가방 판정템 기준표</b>예요.<br>판정 결과 확인하고 <b>담기만 누르면</b> 내 가방 리스트 완성!<br>🏨 조리원이 주는 품목과 겹칠 수 있어요 — 먼저 확인!</p>
-      <div class="ss-chips"><span>판정템 ${totalAll}</span><span>원자료: 판정 데이터</span><span>+ 체험단 리뷰</span></div>
-      <button class="ss-what" onclick="openStdAbout()">스탠다드가 뭐예요? ›</button>
-    `;
-  }else{
-    intro.className='region-card';
-    intro.style.cursor='default';
-    intro.innerHTML = `
-      <span class="ri">🧳</span>
-      <div class="rc"><h3>내 출산가방</h3>
-      <p>담은 것들이에요. <b>가방에 넣으면 체크</b>, 산 건 기록까지 — 생각이 바뀐 건 여기서 패스. "제공 확인" 항목은 조리원에 먼저 물어보세요!</p>
-      <button class="rp-open" onclick="openPpReport()">📄 내 가방 리포트 — 친구 공유용</button></div>
-    `;
-  }
-  area.appendChild(intro);
-
-  // 🎁 판정 완주 보상 시그널 — 나의 판정에서 항상 보인다
+  // 🎁 판정 완주 보상 시그널 + 리포트 — 나의 기록에서만
   if(ppMode==='mine'){
     const rs = document.createElement('div');
     rs.className = 'reward-strip';
     rs.id = 'reward-strip';
     rs.innerHTML = ppRewardHtml();
     area.appendChild(rs);
+    const rp = document.createElement('button');
+    rp.className = 'rp-open';
+    rp.style.marginTop = '0';
+    rp.style.marginBottom = '12px';
+    rp.textContent = '📄 내 가방 리포트 — 친구 공유용';
+    rp.addEventListener('click', openPpReport);
+    area.appendChild(rp);
   }
 
   // 👉 다음 할 일 카드

@@ -321,6 +321,8 @@ const PLAN_SOURCES = [
   {key:'postpartum', label:'조리원',   cats:()=>POSTPARTUM_CATEGORIES, idFn:(ci,ii)=>ppItemId(ci,ii)},
   {key:'daycare',    label:'어린이집', cats:()=>DAYCARE_CATEGORIES,    idFn:(ci,ii)=>dcItemId(ci,ii)},
   {key:'babyfood',   label:'이유식',   cats:()=>BABYFOOD_CATEGORIES,   idFn:(ci,ii)=>bfItemId(ci,ii)},
+  {key:'hospital',   label:'산부인과', cats:()=>PREP_ENGINE.hospital.cats, idFn:(ci,ii)=>plItemId('hospital',ci,ii)},
+  {key:'nursing',    label:'수유',     cats:()=>PREP_ENGINE.nursing.cats,  idFn:(ci,ii)=>plItemId('nursing',ci,ii)},
 ];
 function planListItems(listKey){
   const src = PLAN_SOURCES.find(x=>x.key===listKey);

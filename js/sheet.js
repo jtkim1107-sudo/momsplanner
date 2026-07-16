@@ -988,6 +988,10 @@ function journeyGo(n){
     if(n===1) setPpMode('std'); else setPpMode('mine');
     return;
   }
+  if(typeof PREP_ENGINE!=='undefined' && PREP_ENGINE[viewMode]){
+    plSetMode(viewMode, n===1?'std':'mine');
+    return;
+  }
   if(n===1) setSheetMode('std');
   else setSheetMode('mine');
 }
@@ -1044,6 +1048,9 @@ function onPlanSet(id, plan, listKey, itemEl){
     if(sheetChecked.has(id)){ sheetChecked.delete(id); saveSheet(); }
   }else if(listKey==='postpartum' && typeof ppChecked!=='undefined'){
     if(ppChecked.has(id)){ ppChecked.delete(id); savePostpartum(); }
+  }else if(typeof PREP_ENGINE!=='undefined' && PREP_ENGINE[listKey]){
+    const s = plState(listKey);
+    if(s.checked.has(id)){ s.checked.delete(id); plSave(listKey); }
   }else{
     return; // 다른 리스트는 기존 동작 유지
   }
@@ -1061,6 +1068,10 @@ function onPlanChanged(listKey){
   if(typeof viewMode==='undefined') return;
   if(listKey==='postpartum' && viewMode==='postpartum'){ // 조리원도 동일 갱신
     if(typeof ppRefreshHeads==='function') ppRefreshHeads();
+    return;
+  }
+  if(typeof PREP_ENGINE!=='undefined' && PREP_ENGINE[listKey]){
+    if(viewMode===listKey) plRefreshHeads(listKey);
     return;
   }
   if(listKey!=='sheet' || viewMode!=='sheet') return;
