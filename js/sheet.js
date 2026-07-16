@@ -326,7 +326,7 @@ let sheetFilter = false;
 function toggleSheetFilter(){ sheetFilter = !sheetFilter; renderSheet(); }
 // 스탠다드: 아직 플랜 안 정한 것 / 내 리스트: 체크·기록이 안 끝난 것
 function sheetItemDone(it, id){
-  return sheetMode==='std' ? !!myPlans[id] : (sheetChecked.has(id) && !!myBuys[id] && !!myVerdicts[id]);
+  return sheetMode==='std' ? !!myPlans[id] : (sheetChecked.has(id) && !!myBuys[id]);
 }
 // 내 리스트 = 체크했거나 새제품 구매/당근으로/물려받기로 정한 항목 (패스만 뺀 나만의 리스트)
 function sheetMine(id){
@@ -682,6 +682,12 @@ function renderSheet(){
     fb.innerHTML = nextCardHtml(nx);
     area.appendChild(fb);
   }
+  // 🚀 판정 부스트 — 판정은 커뮤니티에서, 지금은 별똥별 2배
+  const bs = document.createElement('button');
+  bs.className = 'boost-strip';
+  bs.innerHTML = `🚀 <b>런칭 부스트</b> — 커뮤니티 '살까 말까' 판정 남기면 별똥별 <b>2배</b>`;
+  bs.addEventListener('click', ()=> toast('판정은 소행성 앱 커뮤니티에서 참여할 수 있어요 🌠'));
+  area.appendChild(bs);
 
   let shownCats = 0;
   SHEET_CATEGORIES.forEach((cat,ci)=>{
@@ -829,10 +835,9 @@ function renderSheetItem(it,ci,ii){
     updateFocusBar();
   });
   // 내 리스트에선 내가 채우는 구매 기록 빈칸 (시세 숫자는 상세에서)
-  // 기록이 있으면 ⚖️ 판정 질문이 이어진다 — 여기가 판정 생산지
+  // 판정은 커뮤니티 '살까 말까'에서 따로 받는다 — 여긴 기록까지만
   if(sheetMode==='mine'){
     el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
-    if(myBuys[id]) el.appendChild(judgeRowEl(id));
   }
 
   // 스탠다드: "어떻게 살까"는 판정이 이미 답했다 — 액션은 담기 하나
@@ -910,10 +915,9 @@ function sheetJourney(){
   }));
   const unchecked = ids.filter(id=>!sheetChecked.has(id)).length;
   const norec = ids.filter(id=>sheetChecked.has(id) && !myBuys[id]).length;
-  const pending = ids.filter(id=>myBuys[id] && !myVerdicts[id]).length; // 판정 대기
   const s1 = items.length>0 && decided===items.length;
-  // '사기' 단계 = 체크·기록·판정까지 (세부 순서는 다음 할 일 카드가 안내)
-  const s2 = s1 && ids.length>0 && unchecked===0 && norec===0 && pending===0;
+  // '사기' 단계 = 체크·기록까지 (판정은 커뮤니티에서)
+  const s2 = s1 && ids.length>0 && unchecked===0 && norec===0;
   const cur = !s1 ? 1 : !s2 ? 2 : 3;
   return {
     steps:[{n:1,ic:'🛒',t:'담기'},{n:2,ic:'🛍️',t:'사기'},{n:3,ic:'📄',t:'자랑'}],
@@ -969,11 +973,6 @@ function sheetNextInfo(){
   };
   if(norec) return {
     title:`구매 기록 <b>${norec}개</b> 남았어요 — 남기면 ⭐15씩`,
-    btn: sheetFilter ? '전체 보기' : '남은 것만', act:'toggleSheetFilter()',
-  };
-  const pending = ids.filter(id=>myBuys[id] && !myVerdicts[id]).length;
-  if(pending) return {
-    title:`⚖️ 판정 <b>${pending}개</b> — "필요했어요?" 한 번만 눌러주세요 (+10⭐)`,
     btn: sheetFilter ? '전체 보기' : '남은 것만', act:'toggleSheetFilter()',
   };
   sheetFilter = false;

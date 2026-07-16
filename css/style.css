@@ -240,7 +240,19 @@
     cursor:pointer;box-shadow:0 3px 10px rgba(172,142,110,.3);transition:transform .1s;white-space:nowrap;
   }
   .nx-btn:active{transform:scale(.95);}
-  /* 🧭 여정 스텝바 — 담기 › 사기 › 기록 › 자랑 */
+  /* 🚀 판정 부스트 배너 + 🔓 언락 진행바 */
+  .boost-strip{
+    display:block;width:100%;margin:-6px 0 16px;border:1.5px dashed #E2CFA9;
+    background:#FDF6E3;color:#8A6D1F;font-family:inherit;font-size:12px;font-weight:700;
+    border-radius:14px;padding:10px 12px;cursor:pointer;text-align:left;
+  }
+  .boost-strip b{font-weight:900;}
+  .vf-unlock{display:flex;flex-direction:column;gap:5px;margin-top:2px;}
+  .vu-bar{height:8px;border-radius:6px;background:#EFE7D8;overflow:hidden;}
+  .vu-fill{height:100%;background:linear-gradient(90deg,#E8CC8A,#D4A94E);border-radius:6px;}
+  .vf-unlock span{font-size:11px;color:#8A6D1F;font-weight:700;line-height:1.5;}
+
+  /* 🧭 여정 스텝바 — 담기 › 사기 › 자랑 */
   .journey{display:flex;align-items:center;gap:4px;margin-bottom:14px;}
   .j-step{
     flex:1;border:none;background:var(--card);color:#8A7B66;box-shadow:var(--sh-sm);

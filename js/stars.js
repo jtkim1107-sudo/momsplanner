@@ -59,6 +59,7 @@ function updateStarChip(){
 const STAR_RULES = [
   ['준비물 · 아이템 체크', 5],
   ['뭘로 샀는지 기록', 15],
+  ['커뮤니티 판정 남기기 (🚀 런칭 부스트 2배)', 20],
   ['리스트 플랜 완성 (리스트당)', 300],
   ['내 똑똑한 리스트 완성 (전부 채우면)', 500],
   ['새 브랜드 · 제품 등록 요청', 10],
@@ -299,9 +300,7 @@ function purchaseRowEl(id, candidates){
     saveStars();
     if(regReq) earnStars(10, '새 브랜드 등록 요청', 'breq-'+b);
     earnStars(15, '구매 기록 (뭘로 · 얼마에)', 'buy-'+id);
-    const done = purchaseRowEl(id, candidates);
-    div.replaceWith(done);
-    if(!myVerdicts[id]) done.after(judgeRowEl(id)); // 기록 직후 판정 질문이 바로 이어진다
+    div.replaceWith(purchaseRowEl(id, candidates));
     if(typeof onBuyRecordSaved==='function') onBuyRecordSaved(id);
   });
   ctrl.append(sel, btn);

@@ -54,7 +54,7 @@ function feedBadge(f){
   if(f.hot) b += `<span class="badge hot">🔥 논쟁템</span>`;
   b += (f.n >= 30)
     ? `<span class="badge vcount">⚖️ ${f.n.toLocaleString()}명 판정</span>`
-    : `<span class="badge collecting">판정 모으는 중 · ${f.n}명</span>`;
+    : `<span class="badge collecting">🔓 판정 ${f.n}/30 · ${30-f.n}명 남음</span>`;
   if(f.n >= 30 && f.brands && f.brands[0]) b += `<span class="badge rank1">🥇 ${f.brands[0].nm}</span>`; // 판정 완료 → 1등 브랜드 노출
   return b;
 }
@@ -81,8 +81,17 @@ function verdictPieHtml(v, opts){
       <span class="vf-src">${(opts && opts.src) || '소행성 앱 판정 데이터 연동'}</span>
     </div>`;
 }
+// 🔓 언락 진행바 — 부족함이 참여 동기가 되도록 (N명 남으면 결론이 열려요)
+function unlockHtml(n){
+  const pct = Math.min(100, Math.round(n/30*100));
+  return `<div class="vf-unlock">
+    <div class="vu-bar"><div class="vu-fill" style="width:${pct}%"></div></div>
+    <span>🔓 <b>${30-n}명</b>만 더 판정하면 결론·브랜드 순위가 열려요 — 커뮤니티 '살까 말까'에서 참여!</span>
+  </div>`;
+}
 function feedDetailHtml(f){
-  return verdictPieHtml({need:f.need, n:f.n, ch:f.ch, hot:f.hot}, {extra: feedRankHtml(f)});
+  const extra = (f.n<30 ? unlockHtml(f.n) : '') + feedRankHtml(f);
+  return verdictPieHtml({need:f.need, n:f.n, ch:f.ch, hot:f.hot}, {extra});
 }
 
 // 판정 미연동 항목의 분포 재현 — 배지 숫자(verdictCount)·결론과 반드시 일치
