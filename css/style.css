@@ -130,10 +130,11 @@
   .prep-tabs{display:flex;gap:7px;padding:14px 14px 2px;background:var(--bg);overflow-x:auto;}
   .prep-tabs::-webkit-scrollbar{display:none;}
   .prep-chip{
-    flex:0 0 auto;border:none;background:var(--card);color:#8A7B66;
-    font-family:inherit;font-size:13px;font-weight:700;border-radius:18px;padding:8px 16px;cursor:pointer;
-    box-shadow:var(--sh-sm);transition:transform .1s;
+    flex:0 0 auto;border:none;background:var(--card);color:#7E6F5A;
+    font-family:inherit;font-size:13px;font-weight:800;border-radius:20px;padding:10px 15px;cursor:pointer;
+    box-shadow:var(--sh-sm);transition:transform .1s;display:inline-flex;align-items:center;gap:6px;
   }
+  .prep-chip .pc-ic{font-size:15px;line-height:1;}
   .prep-chip:active{transform:scale(.96);}
   .prep-chip.on{background:var(--brown);color:#fff;box-shadow:0 3px 10px rgba(172,142,110,.32);}
   .prep-chip.soon{

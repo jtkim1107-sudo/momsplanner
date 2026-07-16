@@ -77,15 +77,12 @@ function deadlineChip(g, done, total){
 
 // 준비물 리스트 — 출산부터 오픈, 나머지는 하나씩 열어간다 (리스트 다양화 전략)
 const PREP_LISTS = [
-  {key:'sheet',      label:'출산 준비물'},
-  {key:'postpartum', label:'조리원 준비물'},
-  {key:'seg4',       label:'신생아 국민템'},
-  {key:'babyfood',   label:'이유식 준비물'},
-  {key:'daycare',    label:'어린이집 준비물'},
-  {key:'seg5',       label:'3~6개월 국민템'},
-  {key:'seg6',       label:'6~12개월 국민템'},
-  {key:'seg7',       label:'12~24개월 국민템'},
-  {key:'seg8',       label:'24~36개월 국민템'},
+  {key:'sheet',      ic:'🤰', label:'출산 준비물'},
+  {key:'postpartum', ic:'🧳', label:'조리원 가방'},
+  {key:'seg4',       ic:'👶', label:'신생아 국민템'},
+  {key:'babyfood',   ic:'🥣', label:'이유식'},
+  {key:'daycare',    ic:'🏫', label:'어린이집'},
+  {key:'seg5',       ic:'📅', label:'월령별 국민템'}, // 오픈 시 월령별로 분화
 ];
 const ACTIVE_LISTS = new Set(['sheet','postpartum']); // 오픈된 리스트 — 여기 추가하면 열림
 
@@ -98,8 +95,8 @@ function renderPrepTabs(){
   bar.style.display = 'flex';
   bar.innerHTML = PREP_LISTS.map(L=>
     ACTIVE_LISTS.has(L.key)
-      ? `<button class="prep-chip${viewMode===L.key?' on':''}" onclick="setView('${L.key}')">${L.label}</button>`
-      : `<button class="prep-chip soon" onclick="comingSoon('${L.label}')">${L.label}<span class="soon-tag">오픈예정</span></button>`
+      ? `<button class="prep-chip${viewMode===L.key?' on':''}" onclick="setView('${L.key}')"><span class="pc-ic">${L.ic}</span>${L.label}</button>`
+      : `<button class="prep-chip soon" onclick="comingSoon('${L.label}')"><span class="pc-ic">${L.ic}</span>${L.label}<span class="soon-tag">오픈예정</span></button>`
   ).join('');
 }
 

@@ -916,12 +916,12 @@ function sheetJourney(){
   const unchecked = ids.filter(id=>!sheetChecked.has(id)).length;
   const norec = ids.filter(id=>sheetChecked.has(id) && !myBuys[id]).length;
   const s1 = items.length>0 && decided===items.length;
-  // '사기' 단계 = 체크·기록까지 (판정은 커뮤니티에서)
+  // '챙기기' = 사고 체크하고 기록까지. (⚖️ 판정 단계는 나중에 3번째로 붙는 자리)
   const s2 = s1 && ids.length>0 && unchecked===0 && norec===0;
-  const cur = !s1 ? 1 : !s2 ? 2 : 3;
+  const cur = !s1 ? 1 : 2;
   return {
-    steps:[{n:1,ic:'🛒',t:'담기'},{n:2,ic:'🛍️',t:'사기'},{n:3,ic:'📄',t:'자랑'}],
-    done:[s1,s2,false], cur,
+    steps:[{n:1,ic:'🛒',t:'담기'},{n:2,ic:'✅',t:'챙기기'}],
+    done:[s1,s2], cur,
   };
 }
 function journeyHtml(j){
@@ -937,7 +937,6 @@ function journeyGo(n){
     return;
   }
   if(n===1) setSheetMode('std');
-  else if(n===3) openReport();
   else setSheetMode('mine');
 }
 
