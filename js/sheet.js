@@ -436,6 +436,15 @@ function verdictCount(it, id){
 // 리스팅 행 전용 컴팩트 뱃지 — ⚖️판정수 · 🔥논쟁 · 🥇1등 브랜드 · 🔓언락
 function faceBadges(it, id){
   let b = '';
+  // 역대가 — '얼마에'도 답의 일부라 스탠다드 겉면에서 바로 보인다
+  const priceBadge = ()=>{
+    if(typeof bestPriceInfo!=='function') return '';
+    const bp = bestPriceInfo(it, id);
+    if(!bp) return '';
+    return bp.isLow
+      ? `<span class="badge lowest">🔥 지금이 역대가</span>`
+      : `<span class="badge hist">역대가 ${vfWon(bp.lo)}</span>`;
+  };
   if(typeof verdictFeedFor==='function'){
     const f = verdictFeedFor(it);
     if(f){
@@ -444,12 +453,14 @@ function faceBadges(it, id){
         ? `<span class="badge vcount">⚖️ ${f.n.toLocaleString()}명</span>`
         : `<span class="badge collecting">🔓 ${f.n}/30</span>`;
       if(f.n >= 30 && f.brands && f.brands[0]) b += `<span class="badge rank1">🥇 ${f.brands[0].nm}</span>`;
+      b += priceBadge();
       return b;
     }
   }
   const t = verdictCount(it, id);
   if(t) b += `<span class="badge vcount">⚖️ ${t.toLocaleString()}명</span>`;
   else if(typeof simCollectN==='function') b += `<span class="badge collecting">🔓 ${simCollectN(id)}/30</span>`;
+  b += priceBadge();
   return b;
 }
 

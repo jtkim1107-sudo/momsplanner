@@ -603,6 +603,8 @@
     border-radius:10px;padding:2.5px 8px;white-space:nowrap;
   }
   .cp-link:active{transform:scale(.95);}
+  .badge.hist{background:#FCF6E8;color:#8A6D2F;border:1px solid #EEDFC0;}
+  .badge.lowest{background:#FDEDE4;color:#C4552D;border:1px solid #F3D0BC;}
   /* 📈 역대가 스파크라인 */
   .spark{flex:0 0 auto;display:inline-flex;flex-direction:column;align-items:center;gap:1px;line-height:1;}
   .spark svg{display:block;}

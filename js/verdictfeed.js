@@ -38,8 +38,7 @@ function verdictFeedFor(it){
 
 // 📈 역대가 스파크라인 — 시드 고정 12주 가격 흐름 재현 + 역대최저
 // 실서비스에선 가격 트래킹 API(다나와·쿠팡 이력)가 이 자리를 대체한다.
-function priceSparkHtml(brand, itemNm, won){
-  if(!won) return '';
+function sparkSeries(brand, itemNm, won){
   const r = bdRng(bdSeed('spark-'+brand+'-'+(itemNm||'')));
   const pts=[]; let v = won * (1.04 + r()*0.14);
   for(let i=0;i<11;i++){
@@ -47,6 +46,32 @@ function priceSparkHtml(brand, itemNm, won){
     v = Math.max(won*0.82, Math.min(won*1.25, v * (0.94 + r()*0.1)));
   }
   pts.push(won); // 마지막 점 = 현재 적정가
+  return pts;
+}
+
+// 1등 브랜드의 역대가 요약 — 스탠다드 겉면 배지와 상세 그래프가 같은 숫자를 말한다
+function bestPriceInfo(it, id){
+  let brand=null, won=0;
+  const f = verdictFeedFor(it);
+  if(f && f.n>=30 && f.brands && f.brands[0] && f.brands[0].won){
+    brand = f.brands[0].nm; won = f.brands[0].won;
+  }else if(typeof brandRankFor==='function' && typeof priceIntel==='function'){
+    const rk = brandRankFor(it, id), pi = priceIntel(it, id);
+    if(rk && !rk.real && rk.rows[0] && pi){
+      brand = rk.rows[0].nm;
+      const r = bdRng(bdSeed('bw-'+id+'-0')); // brandRankHtml의 1등 시세와 동일 시드
+      won = Math.round(pi.base * (0.9 + r()*0.12) / 100) * 100;
+    }
+  }
+  if(!brand || !won) return null;
+  const pts = sparkSeries(brand, it.nm, won);
+  const lo = Math.min(...pts);
+  return {brand, won, lo: Math.round(lo/1000)*1000, isLow: won <= lo*1.03};
+}
+
+function priceSparkHtml(brand, itemNm, won){
+  if(!won) return '';
+  const pts = sparkSeries(brand, itemNm, won);
   const lo = Math.min(...pts), hi = Math.max(...pts);
   const loR = Math.round(lo/1000)*1000;
   const W=46, H=15;
