@@ -641,13 +641,11 @@ function renderSheet(){
 
   const intro = document.createElement('div');
   if(sheetMode==='std'){
-    intro.className='ss-card';
+    intro.className='ss-card slim';
     intro.innerHTML = `
       <span class="ss-star">🌠</span>
       <div class="ss-over">SOHAENGSEONG STANDARD</div>
-      <h3>소행성 스탠다드</h3>
-      <p>선배맘 판정으로 확정된 <b>판정템만 올라오는 기준표</b>예요.<br>판정 결과 확인하고 <b>담기만 누르면</b> 내 리스트 완성!</p>
-      <div class="ss-chips"><span>판정템 ${cnt.std}</span><span>원자료: 판정 데이터</span><span>+ 체험단 리뷰</span></div>
+      <p>선배맘 판정으로 확정된 <b>판정템 ${cnt.std}개</b> — 펼쳐서 답 보고, <b>＋만 누르면</b> 내 리스트 완성</p>
     `;
   }else{
     intro.className='region-card';
@@ -770,9 +768,74 @@ function renderSheetItem(it,ci,ii){
     if(verdictLine) answer = `<span class="ans-k">⚖️ 판정 결과</span>${verdictLine}`;
   }
 
-  // 투뎁스 — 겉면: 이름 · 결론 · 정답 한 줄 · 따라하기 · 대표 의견 1개
-  //          상세(탭): 시세 숫자 전체 · 선배맘 의견 전체
   const ops = it.ops||[];
+  // 상세 채우기 (공용) — 판정 파이 · 브랜드 순위 · 시세 · 의견 전체
+  const fillMore = (moreEl, pre)=>{
+    if(moreEl.dataset.filled) return;
+    moreEl.dataset.filled = '1';
+    if(pre) moreEl.insertAdjacentHTML('beforeend', pre);
+    const f = (typeof verdictFeedFor==='function') ? verdictFeedFor(it) : null;
+    if(f){ moreEl.insertAdjacentHTML('beforeend', feedDetailHtml(f)); }
+    else{
+      const sv = (typeof simVerdict==='function') ? simVerdict(it, id) : null;
+      if(sv) moreEl.insertAdjacentHTML('beforeend', verdictPieHtml(sv, {src:'베타 · 판정 규모 기반 재현, 실판정 쌓이면 대체'}));
+      moreEl.insertAdjacentHTML('beforeend', brandRankHtml(it, id));
+    }
+    moreEl.appendChild(priceRowEl(it, id));
+    if(ops.length){
+      const od = document.createElement('div');
+      od.className = 'more-ops';
+      od.innerHTML = opsHtml(it, id, 999);
+      moreEl.appendChild(od);
+    }
+    moreEl.querySelectorAll('[data-link]').forEach(b=> b.addEventListener('click',e=>{
+      e.stopPropagation();
+      gotoItem(+b.dataset.seg, b.dataset.link);
+    }));
+  };
+
+  if(sheetMode==='std'){
+    // 스탠다드 = 스캔되는 한 줄 목록: 이름 + 결론 태그 + ＋담기 버튼만.
+    // 답의 상세(판정 결과·따라하기·파이·순위·시세·의견)는 펼쳐보기 안에.
+    el.innerHTML = `
+      <div class="item-main slim">
+        <div class="item-info">
+          <div class="item-name">${it.nm}${concl?` <span class="badge concl ${concl.k}">${concl.label}</span>`:''}</div>
+        </div>
+        <button class="add-mini ${myPlans[id]?'on':''}" title="내 리스트에 담기">${myPlans[id]?'✓':'＋'}</button>
+        <span class="item-caret">﹀</span>
+      </div>
+      <div class="item-more"></div>
+    `;
+    const moreEl = el.querySelector('.item-more');
+    const expandBadges = verdictBadge(it, id)
+      + (it.need ? `<span class="badge need">${it.need}</span>` : '')
+      + (it.link && tlSegIdx(it.link)>=4 ? `<span class="badge region" data-link="${it.link}" data-seg="${tlSegIdx(it.link)}">${SEGMENTS[tlSegIdx(it.link)].name} ↗</span>` : '');
+    const pre = `<div class="more-top">
+      ${expandBadges?`<div class="item-badges">${expandBadges}</div>`:''}
+      ${answer?`<div class="ans">${answer}</div>`:''}
+      ${it.how?`<div class="how">👉 ${it.how}</div>`:''}
+    </div>`;
+    el.querySelector('.item-main').addEventListener('click', ()=>{
+      const open = el.classList.toggle('open');
+      if(open) fillMore(moreEl, pre);
+    });
+    // ＋ 담기 — 목록에서 바로, 판정 추천 방식(새것/당근)이 자동 플랜
+    const mini = el.querySelector('.add-mini');
+    mini.addEventListener('click', e=>{
+      e.stopPropagation();
+      if(myPlans[id]) delete myPlans[id];
+      else myPlans[id] = (rawC && rawC.k==='carrot') ? 'carrot' : 'buy';
+      saveStars();
+      mini.classList.toggle('on', !!myPlans[id]);
+      mini.textContent = myPlans[id] ? '✓' : '＋';
+      checkPlanComplete('sheet');
+      if(typeof onPlanChanged==='function') onPlanChanged('sheet');
+    });
+    return el;
+  }
+
+  // 내 리스트 — 내가 채우는 워크시트
   const hasMore = !!(priceIntel(it, id) || ops.length || brandRankFor(it, id));
   el.innerHTML = `
     <div class="item-main" style="align-items:center;">
@@ -780,36 +843,17 @@ function renderSheetItem(it,ci,ii){
       <div class="item-info">
         <div class="item-name">${it.nm}</div>
         ${badges?`<div class="item-badges">${badges}</div>`:''}
-        ${answer?`<div class="ans">${answer}</div>`:''}
         ${it.how?`<div class="how">👉 ${it.how}</div>`:opsHtml(it, id, 1, true)}
       </div>
       ${hasMore?'<span class="item-caret">﹀</span>':''}
     </div>
     ${hasMore?'<div class="item-more"></div>':''}
   `;
-  // 상세는 펼칠 때 채운다
   const moreEl = el.querySelector('.item-more');
   if(moreEl){
     el.querySelector('.item-main').addEventListener('click', ()=>{
       const open = el.classList.toggle('open');
-      if(open && !moreEl.dataset.filled){
-        moreEl.dataset.filled = '1';
-        const f = (typeof verdictFeedFor==='function') ? verdictFeedFor(it) : null;
-        if(f){ moreEl.insertAdjacentHTML('beforeend', feedDetailHtml(f)); } // 본체 판정 결과가 맨 위
-        else{
-          // 판정 파이차트 — 배지의 N명이 실제로 뭘 선택했는지 (숫자 일치)
-          const sv = (typeof simVerdict==='function') ? simVerdict(it, id) : null;
-          if(sv) moreEl.insertAdjacentHTML('beforeend', verdictPieHtml(sv, {src:'베타 · 판정 규모 기반 재현, 실판정 쌓이면 대체'}));
-          moreEl.insertAdjacentHTML('beforeend', brandRankHtml(it, id));
-        }
-        moreEl.appendChild(priceRowEl(it, id));
-        if(ops.length){
-          const od = document.createElement('div');
-          od.className = 'more-ops';
-          od.innerHTML = opsHtml(it, id, 999);
-          moreEl.appendChild(od);
-        }
-      }
+      if(open) fillMore(moreEl);
     });
   }
 
@@ -840,33 +884,9 @@ function renderSheetItem(it,ci,ii){
     el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
   }
 
-  // 스탠다드: "어떻게 살까"는 판정이 이미 답했다 — 액션은 담기 하나
-  // (담으면 판정 추천 방식(새것/당근)이 자동 플랜으로, 내 리스트에서 변경 가능)
-  if(sheetMode==='std'){
-    const addBtn = document.createElement('button');
-    const label = ()=> myPlans[id] ? '✓ 내 리스트에 담겼어요' : '🛒 내 리스트에 담기';
-    addBtn.className = 'add-mine' + (myPlans[id]?' on':'');
-    addBtn.textContent = label();
-    addBtn.addEventListener('click', e=>{
-      e.stopPropagation();
-      if(myPlans[id]) delete myPlans[id];
-      else myPlans[id] = (rawC && rawC.k==='carrot') ? 'carrot' : 'buy';
-      saveStars();
-      addBtn.classList.toggle('on', !!myPlans[id]);
-      addBtn.textContent = label();
-      checkPlanComplete('sheet');
-      if(typeof onPlanChanged==='function') onPlanChanged('sheet');
-    });
-    el.appendChild(addBtn);
-  }else{
-    if(myPlans[id]==='pass') el.classList.add('passed');
-    el.appendChild(planRowEl(id, 'sheet'));
-  }
-
-  el.querySelectorAll('[data-link]').forEach(b=> b.addEventListener('click',e=>{
-    e.stopPropagation();
-    gotoItem(+b.dataset.seg, b.dataset.link);
-  }));
+  // 내 리스트: 패스 표시 + 새것/중고/패스 변경
+  if(myPlans[id]==='pass') el.classList.add('passed');
+  el.appendChild(planRowEl(id, 'sheet'));
   return el;
 }
 
