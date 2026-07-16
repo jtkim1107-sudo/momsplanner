@@ -441,7 +441,7 @@ function ppJourney(){
   const s1 = total>0 && planned===total;
   const s2 = s1 && ids.length>0 && unchecked===0;
   const cur = ppMode==='std' ? 1 : 2; // 탭 개념 — 지금 보고 있는 곳이 하이라이트
-  return {steps:[{n:1,ic:'🌠',t:'소행성 스탠다드'},{n:2,ic:'⚖️',t:'나의 판정'}], done:[s1,s2], cur};
+  return {steps:[{n:1,ic:'🌠',t:'소행성 스탠다드'},{n:2,ic:'📝',t:'나의 기록'}], done:[s1,s2], cur};
 }
 
 // 👉 다음 할 일 계산 (조리원)
