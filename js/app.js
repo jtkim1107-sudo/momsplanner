@@ -142,9 +142,9 @@ function render(){
 
   // 조리원 준비물 뷰
   if(viewMode==='postpartum'){
-    document.getElementById('hero-title').textContent = '조리원 준비물';
+    document.getElementById('hero-title').textContent = '조리원 출산가방';
     document.getElementById('hero-dday').textContent = `출산예정일 D-${state.dday}`;
-    document.getElementById('demo-note').textContent = '선배맘 판정으로 만든 출산가방 판정템 · 제공 품목은 조리원에 먼저 확인!';
+    document.getElementById('demo-note').textContent = '출산 입원부터 조리원 2주까지 쓸 짐가방 — 36주쯤엔 미리 싸둬요. 뭘 넣을진 선배맘 판정 리스트만 따라오면 끝!';
     document.getElementById('preview-note').style.display='none';
     renderPostpartum();
     return;

@@ -970,9 +970,9 @@ function sheetJourney(){
   const s1 = items.length>0 && decided===items.length;
   // '챙기기' = 사고 체크하고 기록까지. (⚖️ 판정 단계는 나중에 3번째로 붙는 자리)
   const s2 = s1 && ids.length>0 && unchecked===0 && norec===0;
-  const cur = !s1 ? 1 : 2;
+  const cur = sheetMode==='std' ? 1 : 2; // 탭 개념 — 지금 보고 있는 곳이 하이라이트
   return {
-    steps:[{n:1,ic:'🛒',t:'담기'},{n:2,ic:'✅',t:'챙기기'}],
+    steps:[{n:1,ic:'🌠',t:'소행성 스탠다드'},{n:2,ic:'🛒',t:'나의 리스트'}],
     done:[s1,s2], cur,
   };
 }

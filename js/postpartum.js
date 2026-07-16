@@ -238,7 +238,7 @@ function renderPostpartum(){
       <span class="ss-star">🏨</span>
       <div class="ss-over">SOHAENGSEONG STANDARD</div>
       <h3>조리원 · 출산가방</h3>
-      <p>선배맘 판정으로 확정된 <b>출산가방 판정템 기준표</b>예요.<br>판정 결과 확인하고 <b>담기만 누르면</b> 내 가방 리스트 완성!</p>
+      <p>선배맘 판정으로 확정된 <b>출산가방 판정템 기준표</b>예요.<br>판정 결과 확인하고 <b>담기만 누르면</b> 내 가방 리스트 완성!<br>🏨 조리원이 주는 품목과 겹칠 수 있어요 — 먼저 확인!</p>
       <div class="ss-chips"><span>판정템 ${totalAll}</span><span>원자료: 판정 데이터</span><span>+ 체험단 리뷰</span></div>
       <button class="ss-what" onclick="openStdAbout()">스탠다드가 뭐예요? ›</button>
     `;
@@ -429,8 +429,8 @@ function ppJourney(){
   const unchecked = ids.filter(id=>!ppChecked.has(id)).length;
   const s1 = total>0 && planned===total;
   const s2 = s1 && ids.length>0 && unchecked===0;
-  const cur = !s1 ? 1 : unchecked>0 ? 2 : 2;
-  return {steps:[{n:1,ic:'🧳',t:'담기'},{n:2,ic:'✅',t:'챙기기'}], done:[s1,s2], cur};
+  const cur = ppMode==='std' ? 1 : 2; // 탭 개념 — 지금 보고 있는 곳이 하이라이트
+  return {steps:[{n:1,ic:'🌠',t:'소행성 스탠다드'},{n:2,ic:'🧳',t:'나의 리스트'}], done:[s1,s2], cur};
 }
 
 // 👉 다음 할 일 계산 (조리원)
