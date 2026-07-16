@@ -597,6 +597,12 @@
   .vf-rk .rk-nm{flex:1;}
   .vf-rk .rk-nm b{color:#8A7357;font-weight:800;font-size:11px;margin-left:3px;}
   .vf-rk .rk-price{font-size:11.5px;color:var(--sub);font-weight:700;}
+  .cp-link{
+    flex:0 0 auto;font-size:10px;font-weight:900;text-decoration:none;
+    color:#C4552D;background:#FCEEE6;border:1px solid #F3D8C8;
+    border-radius:10px;padding:2.5px 8px;white-space:nowrap;
+  }
+  .cp-link:active{transform:scale(.95);}
   .rk-medal{font-size:14px;}
   .rk-note{display:block;font-size:9px;color:var(--dim);margin-top:4px;}
   .tip-box .op{color:#7A6142;}

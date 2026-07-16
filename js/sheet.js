@@ -513,7 +513,7 @@ function brandRankHtml(it, id){
   return `<div class="vf sim">
     <div class="vf-rank">
       <span class="vf-rank-head">🏆 브랜드 순위 · 선배맘 관측</span>
-      ${rk.rows.map((b,i)=>`<div class="vf-rk"><span class="rk-medal">${medals[i]}</span><span class="rk-nm">${b.nm} <b>${b.p}%</b></span></div>`).join('')}
+      ${rk.rows.map((b,i)=>`<div class="vf-rk"><span class="rk-medal">${medals[i]}</span><span class="rk-nm">${b.nm} <b>${b.p}%</b></span>${typeof coupangLink==='function'?coupangLink(b.nm, it.nm):''}</div>`).join('')}
       <span class="rk-note">구매 기록 기반 관측치 · 판정이 쌓이면 정확해져요</span>
     </div>
   </div>`;

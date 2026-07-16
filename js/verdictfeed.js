@@ -31,7 +31,16 @@ const VERDICT_FEED = {
 };
 
 function verdictFeedFor(it){
-  return VERDICT_FEED[it.nm] || null;
+  const f = VERDICT_FEED[it.nm] || null;
+  if(f && !f.nm) f.nm = it.nm; // 쿠팡 검색어 등에 품목명 사용
+  return f;
+}
+
+// 🛒 쿠팡 검색 링크 — 브랜드+품목 바로 검색 (추후 파트너스 링크로 교체할 자리)
+function coupangLink(brand, itemNm){
+  const item = (itemNm||'').replace(/\(.*?\)/g,'').split('·')[0].trim();
+  const q = encodeURIComponent((brand+' '+item).trim());
+  return `<a class="cp-link" href="https://www.coupang.com/np/search?q=${q}" target="_blank" rel="noopener" onclick="event.stopPropagation()">쿠팡 ↗</a>`;
 }
 
 // 판정 집계 → 5단계 결론 (30명 미만이면 결론 유보)
@@ -137,7 +146,7 @@ function feedRankHtml(f){
   const rows = f.brands.slice(0,3).map((b,i)=>{
     const price = b.won ? `<span class="rk-price">${vfWon(b.won)}</span>` : '';
     return `<div class="vf-rk"><span class="rk-medal">${medals[i]}</span>
-      <span class="rk-nm">${b.nm} <b>${b.p}%</b></span>${price}</div>`;
+      <span class="rk-nm">${b.nm} <b>${b.p}%</b></span>${price}${coupangLink(b.nm, f.nm)}</div>`;
   }).join('');
   return `<div class="vf-rank">
     <span class="vf-rank-head">🏆 브랜드 순위 · 적정가</span>
