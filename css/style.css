@@ -19,7 +19,7 @@
   @media(max-width:440px){body{padding:0;} .phone{border-radius:0;max-width:none;height:100vh;height:100dvh;min-height:0;max-height:none;}}
 
   .hero{
-    position:relative;overflow:hidden;color:#4A4036;padding:13px 18px 12px;
+    position:relative;overflow:hidden;color:#4A4036;padding:11px 18px 10px;
     background:linear-gradient(165deg,#F6F0E5,#F0E7D7);
     border-radius:0 0 26px 26px;box-shadow:0 4px 14px rgba(99,73,44,.07);z-index:5;
   }
@@ -44,16 +44,16 @@
     border-radius:14px;padding:5px 11px;transition:background .15s,color .15s;white-space:nowrap;
   }
   .view-switch button.on{background:#fff;color:var(--brown-deep);box-shadow:0 1px 4px rgba(0,0,0,.15);}
-  .hero h1{font-size:17px;font-weight:800;margin-top:8px;line-height:1.3;letter-spacing:-.02em;}
+  .hero h1{font-size:14.5px;font-weight:900;margin-top:6px;line-height:1.3;letter-spacing:-.02em;}
   .hero .dday{
     font-size:11.5px;font-weight:700;color:#8A7357;
     background:#fff;border:1px solid #EAE0CD;border-radius:20px;padding:4px 12px;
   }
-  .demo-note{font-size:10px;color:#A69884;margin-top:3px;font-weight:500;}
-  .progress-wrap{margin-top:9px;}
-  .progress-label{display:flex;justify-content:space-between;font-size:11.5px;font-weight:600;color:#7E6F5C;margin-bottom:6px;}
+  .demo-note{font-size:9.5px;color:#A69884;margin-top:2px;font-weight:500;line-height:1.45;}
+  .progress-wrap{margin-top:7px;}
+  .progress-label{display:flex;justify-content:space-between;font-size:10.5px;font-weight:600;color:#7E6F5C;margin-bottom:4px;}
   .progress-label span:last-child{font-weight:700;}
-  .progress-bar{height:7px;background:#E9DECB;border-radius:8px;overflow:hidden;}
+  .progress-bar{height:5px;background:#E9DECB;border-radius:8px;overflow:hidden;}
   .progress-fill{height:100%;background:linear-gradient(90deg,#C9AF8F,#AC8E6E);border-radius:8px;width:0;transition:width .4s ease;}
 
   .timeline{
@@ -258,15 +258,15 @@
   .vf-unlock span{font-size:11px;color:#8A6D1F;font-weight:700;line-height:1.5;}
 
   /* 🧭 여정 스텝바 — 담기 › 사기 › 자랑 */
-  .journey{display:flex;align-items:center;gap:4px;margin-bottom:10px;}
+  .journey{display:flex;align-items:center;gap:6px;margin-bottom:12px;}
   .j-step{
     flex:1;border:none;background:var(--card);color:#8A7B66;box-shadow:var(--sh-sm);
-    font-family:inherit;border-radius:14px;padding:7px 0;cursor:pointer;
-    display:flex;flex-direction:row;align-items:center;justify-content:center;gap:6px;transition:transform .1s;
+    font-family:inherit;border-radius:16px;padding:14px 0;cursor:pointer;
+    display:flex;flex-direction:row;align-items:center;justify-content:center;gap:7px;transition:transform .1s;
   }
   .j-step:active{transform:scale(.95);}
-  .j-step .ji{font-size:14px;line-height:1;}
-  .j-step .jt{font-size:11px;font-weight:800;}
+  .j-step .ji{font-size:18px;line-height:1;}
+  .j-step .jt{font-size:13.5px;font-weight:900;}
   .j-step.cur{background:var(--brown);color:#fff;box-shadow:0 3px 10px rgba(172,142,110,.32);}
   .j-step.done{background:#EFF5EF;color:#476A4E;box-shadow:none;border:1px solid #DCE8DD;}
   .j-arrow{color:var(--dim);font-weight:900;font-size:13px;flex:0 0 auto;}
