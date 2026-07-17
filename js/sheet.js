@@ -846,7 +846,7 @@ function renderSheetItem(it,ci,ii){
           <div class="item-name">${it.nm}</div>
           <div class="item-tags">${concl?`<span class="badge concl ${concl.k}">${concl.label}</span>`:''}${faceBadges(it, id)}</div>
         </div>
-        <button class="add-mini ${myPlans[id]?'on':''}" title="내 리스트에 담기">${myPlans[id]?'✓':'＋'}</button>
+        <button class="add-mini ${(myPlans[id]==='buy'||myPlans[id]==='carrot')?'on':''}" title="내 리스트에 담기">${(myPlans[id]==='buy'||myPlans[id]==='carrot')?'✓':'＋'}</button>
         <span class="item-caret">﹀</span>
       </div>
       <div class="item-more"></div>
@@ -868,11 +868,13 @@ function renderSheetItem(it,ci,ii){
     const mini = el.querySelector('.add-mini');
     mini.addEventListener('click', e=>{
       e.stopPropagation();
-      if(myPlans[id]) delete myPlans[id];
+      const added = myPlans[id]==='buy'||myPlans[id]==='carrot';
+      if(added) delete myPlans[id];
       else myPlans[id] = (rawC && rawC.k==='carrot') ? 'carrot' : 'buy';
       saveStars();
-      mini.classList.toggle('on', !!myPlans[id]);
-      mini.textContent = myPlans[id] ? '✓' : '＋';
+      const nowAdded = myPlans[id]==='buy'||myPlans[id]==='carrot';
+      mini.classList.toggle('on', nowAdded);
+      mini.textContent = nowAdded ? '✓' : '＋';
       checkPlanComplete('sheet');
       if(typeof onPlanChanged==='function') onPlanChanged('sheet');
     });

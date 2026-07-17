@@ -383,7 +383,7 @@ function plProgress(key){
   if(s.mode==='std'){
     const done = all.filter(id=>myPlans[id]).length;
     document.getElementById('prog-name').textContent = L.title;
-    document.getElementById('prog-text').textContent = done+' / '+all.length+' 담았어요';
+    document.getElementById('prog-text').textContent = done+' / '+all.length+' 결정했어요';
     document.getElementById('prog-fill').style.width = (all.length?done/all.length*100:0)+'%';
   }else{
     const r = plResolve(key);
@@ -523,9 +523,9 @@ function renderPrepListItem(key,it,ci,ii){
       <div class="item-main slim">
         <div class="item-info">
           <div class="item-name">${it.nm}</div>
-          <div class="item-tags">${concl?`<span class="badge concl ${concl.k}">${concl.label}</span>`:''}${faceBadges(it, id)}</div>
+          <div class="item-tags">${concl?`<span class="badge concl ${concl.k}">${concl.label}</span>`:''}${faceBadges(it, id)}${myPlans[id]==='pass'?'<span class="badge passchip">🚫 패스함</span>':''}</div>
         </div>
-        <button class="add-mini ${myPlans[id]?'on':''}" title="담기">${myPlans[id]?'✓':'＋'}</button>
+        <button class="add-mini ${(myPlans[id]==='buy'||myPlans[id]==='carrot')?'on':''}" title="담기">${(myPlans[id]==='buy'||myPlans[id]==='carrot')?'✓':'＋'}</button>
         <span class="item-caret">﹀</span>
       </div>
       <div class="item-more"></div>
@@ -540,12 +540,16 @@ function renderPrepListItem(key,it,ci,ii){
     const mini = el.querySelector('.add-mini');
     mini.addEventListener('click', e=>{
       e.stopPropagation();
-      if(myPlans[id]) delete myPlans[id];
-      else myPlans[id] = (rawC && rawC.k==='carrot') ? 'carrot' : 'buy';
+      const added = myPlans[id]==='buy'||myPlans[id]==='carrot';
+      if(added) delete myPlans[id]; // 담기 취소 → 미결정
+      else myPlans[id] = (rawC && rawC.k==='carrot') ? 'carrot' : 'buy'; // 패스했던 것도 다시 담기
       saveStars();
-      mini.classList.toggle('on', !!myPlans[id]);
-      mini.textContent = myPlans[id] ? '✓' : '＋';
+      const nowAdded = myPlans[id]==='buy'||myPlans[id]==='carrot';
+      mini.classList.toggle('on', nowAdded);
+      mini.textContent = nowAdded ? '✓' : '＋';
+      const pc = el.querySelector('.badge.passchip'); if(pc) pc.remove();
       checkPlanComplete(key);
+      plCheckComplete(key); // 담기가 마지막 결정일 수도 (전부 패스+이번 담기)
       plRefreshHeads(key);
     });
     return el;

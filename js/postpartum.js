@@ -212,16 +212,6 @@ function renderPostpartum(){
     area.appendChild(rp);
   }
 
-  // 👉 다음 할 일 카드
-  const nx = ppNextInfo();
-  if(nx){
-    const fb = document.createElement('div');
-    fb.className = 'next-card';
-    fb.id = 'next-card';
-    fb.innerHTML = nextCardHtml(nx);
-    area.appendChild(fb);
-  }
-
   let shown = 0;
   POSTPARTUM_CATEGORIES.forEach((cat,ci)=>{
     const list = [];
@@ -308,9 +298,9 @@ function renderPostpartumItem(it,ci,ii){
       <div class="item-main slim">
         <div class="item-info">
           <div class="item-name">${it.nm}</div>
-          <div class="item-tags">${concl?`<span class="badge concl ${concl.k}">${concl.label}</span>`:''}${faceBadges(it, id)}</div>
+          <div class="item-tags">${concl?`<span class="badge concl ${concl.k}">${concl.label}</span>`:''}${faceBadges(it, id)}${myPlans[id]==='pass'?'<span class="badge passchip">🚫 패스함</span>':''}</div>
         </div>
-        <button class="add-mini ${myPlans[id]?'on':''}" title="내 가방에 담기">${myPlans[id]?'✓':'＋'}</button>
+        <button class="add-mini ${(myPlans[id]==='buy'||myPlans[id]==='carrot')?'on':''}" title="내 가방에 담기">${(myPlans[id]==='buy'||myPlans[id]==='carrot')?'✓':'＋'}</button>
         <span class="item-caret">﹀</span>
       </div>
       <div class="item-more"></div>
@@ -325,11 +315,14 @@ function renderPostpartumItem(it,ci,ii){
     const mini = el.querySelector('.add-mini');
     mini.addEventListener('click', e=>{
       e.stopPropagation();
-      if(myPlans[id]) delete myPlans[id];
-      else myPlans[id] = (rawC && rawC.k==='carrot') ? 'carrot' : 'buy';
+      const added = myPlans[id]==='buy'||myPlans[id]==='carrot';
+      if(added) delete myPlans[id]; // 담기 취소 → 미결정
+      else myPlans[id] = (rawC && rawC.k==='carrot') ? 'carrot' : 'buy'; // 패스했던 것도 다시 담기
       saveStars();
-      mini.classList.toggle('on', !!myPlans[id]);
-      mini.textContent = myPlans[id] ? '✓' : '＋';
+      const nowAdded = myPlans[id]==='buy'||myPlans[id]==='carrot';
+      mini.classList.toggle('on', nowAdded);
+      mini.textContent = nowAdded ? '✓' : '＋';
+      const pc = el.querySelector('.badge.passchip'); if(pc) pc.remove();
       checkPlanComplete('postpartum');
       ppRefreshHeads();
     });
@@ -466,12 +459,6 @@ function ppRefreshHeads(){
     const gp = document.getElementById('ppp-'+ci);
     if(gp){ const cc = ppCatCount(ci); gp.textContent = cc.done+'/'+cc.total; }
   });
-  const fb = document.getElementById('next-card');
-  if(fb){
-    const nx = ppNextInfo();
-    if(nx) fb.innerHTML = nextCardHtml(nx);
-    else fb.remove();
-  }
   const jn = document.getElementById('journey');
   if(jn) jn.innerHTML = journeyHtml(ppJourney());
 }
@@ -480,7 +467,7 @@ function updatePostpartumProgress(){
   const {total, done} = ppTotals();
   if(ppMode==='std'){
     document.getElementById('prog-name').textContent = '조리원 스탠다드';
-    document.getElementById('prog-text').textContent = done+' / '+total+' 담았어요';
+    document.getElementById('prog-text').textContent = done+' / '+total+' 결정했어요';
   }else{
     const r = ppResolve();
     document.getElementById('prog-name').textContent = '조리원 · 완주까지';
