@@ -603,6 +603,19 @@
     border-radius:10px;padding:2.5px 8px;white-space:nowrap;
   }
   .cp-link:active{transform:scale(.95);}
+  /* ✏️ 한 줄 메모 — 나의 기록 */
+  .note-row{display:flex;align-items:center;gap:6px;padding:0 14px 9px;}
+  .nt-ic{font-size:12px;}
+  .nt-in{
+    flex:1;font-family:inherit;font-size:12px;font-weight:600;color:#7A6236;
+    background:#FDF8E7;border:1px dashed #E8D9B0;border-radius:9px;padding:6px 10px;outline:none;
+  }
+  .nt-in::placeholder{color:#C9B98F;font-weight:500;}
+  .nt-add{
+    background:none;border:none;font-family:inherit;font-size:10.5px;font-weight:800;
+    color:#BCA98A;cursor:pointer;padding:2px 0;
+  }
+
   /* 🚫 사지 마세요 판정존 — 스탠다드 밖, 담기 없음 */
   .avoid-box{
     margin-top:9px;background:#FBF1EC;border:1.5px dashed #E9CBBD;

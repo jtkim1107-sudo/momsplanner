@@ -12,6 +12,7 @@ const STAR_LOG_KEY = 'sohaengseong-star-log';
 const MY_VERDICT_KEY = 'sohaengseong-my-verdicts';
 const MY_BUY_KEY = 'sohaengseong-my-buys';
 const MY_PLAN_KEY = 'sohaengseong-my-plans';
+const MY_NOTE_KEY = 'sohaengseong-my-notes';
 
 let stars = 0;
 let starOnce = new Set();   // 1회성 적립 중복 방지 키
@@ -19,6 +20,7 @@ let starLog = [];           // 최근 적립 내역
 let myVerdicts = {};        // {itemId: '사요'|'마요'} — 내가 남긴 판정
 let myBuys = {};            // {itemId: {b:'브랜드·제품', ch:'구매 경로'}} — 내가 뭘 샀는지
 let myPlans = {};           // {itemId: 'buy'|'carrot'|'pass'} — 살 것/당근/패스 내 결정
+let myNotes = {};           // {itemId: '메모'} — 항목별 한 줄 메모
 try{
   stars = +localStorage.getItem(STAR_KEY) || 0;
   const o = localStorage.getItem(STAR_ONCE_KEY); if(o) starOnce = new Set(JSON.parse(o));
@@ -26,6 +28,7 @@ try{
   const v = localStorage.getItem(MY_VERDICT_KEY); if(v) myVerdicts = JSON.parse(v);
   const b = localStorage.getItem(MY_BUY_KEY); if(b) myBuys = JSON.parse(b);
   const pl = localStorage.getItem(MY_PLAN_KEY); if(pl) myPlans = JSON.parse(pl);
+  const nt = localStorage.getItem(MY_NOTE_KEY); if(nt) myNotes = JSON.parse(nt);
 }catch(e){}
 function saveStars(){
   try{
@@ -35,7 +38,38 @@ function saveStars(){
     localStorage.setItem(MY_VERDICT_KEY, JSON.stringify(myVerdicts));
     localStorage.setItem(MY_BUY_KEY, JSON.stringify(myBuys));
     localStorage.setItem(MY_PLAN_KEY, JSON.stringify(myPlans));
+    localStorage.setItem(MY_NOTE_KEY, JSON.stringify(myNotes));
   }catch(e){}
+}
+
+// ✏️ 한 줄 메모 — 나의 기록 전용. 있으면 노란 메모 줄, 없으면 작은 버튼만.
+function noteRowEl(id){
+  const div = document.createElement('div');
+  div.className = 'note-row';
+  const render = ()=>{
+    const memo = myNotes[id];
+    if(memo !== undefined){
+      div.innerHTML = `<span class="nt-ic">✏️</span><input class="nt-in" maxlength="60" placeholder="예: 언니가 물려주기로 · 사이즈 M">`;
+      const inp = div.querySelector('input');
+      inp.value = memo;
+      inp.addEventListener('click', e=>e.stopPropagation());
+      inp.addEventListener('input', ()=>{
+        if(inp.value.trim()) myNotes[id] = inp.value; else delete myNotes[id];
+        saveStars();
+      });
+      inp.addEventListener('blur', ()=>{ if(!inp.value.trim()){ delete myNotes[id]; saveStars(); render(); } });
+      return;
+    }
+    div.innerHTML = `<button class="nt-add">✏️ 메모</button>`;
+    div.querySelector('button').addEventListener('click', e=>{
+      e.stopPropagation();
+      myNotes[id] = '';
+      render();
+      div.querySelector('input').focus();
+    });
+  };
+  render();
+  return div;
 }
 
 function earnStars(amount, reason, onceKey){

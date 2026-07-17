@@ -359,6 +359,7 @@ function renderPostpartumItem(it,ci,ii){
   }
   if(myPlans[id]==='pass') el.classList.add('passed');
   el.appendChild(planRowEl(id, 'postpartum'));
+  if(typeof noteRowEl==='function') el.appendChild(noteRowEl(id)); // ✏️ 한 줄 메모
   if(ppChecked.has(id) || myBuys[id]) el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
   const chkEl = el.querySelector('.chk');
   if(chkEl) chkEl.addEventListener('click',e=>{

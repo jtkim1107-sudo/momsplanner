@@ -555,6 +555,7 @@ function renderPrepListItem(key,it,ci,ii){
   }
   if(myPlans[id]==='pass') el.classList.add('passed');
   el.appendChild(planRowEl(id, key));
+  if(typeof noteRowEl==='function') el.appendChild(noteRowEl(id)); // ✏️ 한 줄 메모
   if(s.checked.has(id) || myBuys[id]) el.appendChild(purchaseRowEl(id, sheetBrandCandidates(it)));
   el.querySelector('.chk').addEventListener('click', e=>{
     e.stopPropagation();

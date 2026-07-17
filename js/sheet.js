@@ -937,6 +937,7 @@ function renderSheetItem(it,ci,ii){
   // 내 리스트: 패스 표시 + 새것/중고/패스 변경
   if(myPlans[id]==='pass') el.classList.add('passed');
   el.appendChild(planRowEl(id, 'sheet'));
+  if(typeof noteRowEl==='function') el.appendChild(noteRowEl(id)); // ✏️ 한 줄 메모
   return el;
 }
 
