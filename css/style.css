@@ -336,6 +336,7 @@
     font-size:12.5px;font-weight:700;color:#7A6236;line-height:1.55;
   }
   .reward-strip b{color:#8A6D2F;font-weight:900;}
+  .reward-strip .rw-def{display:block;margin-top:4px;font-size:10px;font-weight:600;color:#A98F5C;}
 
   /* 📚 완성된 스탠다드 카탈로그 */
   .std-cat{

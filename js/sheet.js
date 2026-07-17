@@ -1067,9 +1067,11 @@ function onPlanSet(id, plan, listKey, itemEl){
     if(sheetChecked.has(id)){ sheetChecked.delete(id); saveSheet(); }
   }else if(listKey==='postpartum' && typeof ppChecked!=='undefined'){
     if(ppChecked.has(id)){ ppChecked.delete(id); savePostpartum(); }
+    if(typeof checkPpComplete==='function') checkPpComplete(); // 패스가 마지막 결정일 수도
   }else if(typeof PREP_ENGINE!=='undefined' && PREP_ENGINE[listKey]){
     const s = plState(listKey);
     if(s.checked.has(id)){ s.checked.delete(id); plSave(listKey); }
+    if(typeof plCheckComplete==='function') plCheckComplete(listKey); // 패스가 마지막 결정일 수도
   }else{
     return; // 다른 리스트는 기존 동작 유지
   }

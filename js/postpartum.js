@@ -389,9 +389,8 @@ function ppJourney(){
     total++; if(myPlans[id]) planned++;
     if(ppMine(id)) ids.push(id);
   }));
-  const unchecked = ids.filter(id=>!ppChecked.has(id)).length;
   const s1 = total>0 && planned===total;
-  const s2 = s1 && ids.length>0 && unchecked===0;
+  const s2 = ppResolve().done; // 완주 정의 통일
   const cur = ppMode==='std' ? 1 : 2; // 탭 개념 — 지금 보고 있는 곳이 하이라이트
   return {steps:[{n:1,ic:'🌠',t:'소행성 스탠다드'},{n:2,ic:'📝',t:'나의 기록'}], done:[s1,s2], cur};
 }
@@ -424,29 +423,37 @@ function ppNextInfo(){
 }
 
 // 진행률 · 카테고리 카운트 · 다음 할 일 카드 갱신
-// 🎁 완주 보상 배너 내용 — 남은 개수에 따라 문구가 조여든다
-function ppRewardHtml(){
-  const ids=[];
+// 🏁 완주 = 판정템 전부에 '결정'이 끝난 상태 — 챙겼거나(담고 체크), 패스했거나.
+// 방치 항목 0. 보상·여정·진행률·리포트가 전부 이 정의 하나를 쓴다.
+function ppResolve(){
+  let total=0, packed=0, passed=0, unadded=0, unchecked=0;
   POSTPARTUM_CATEGORIES.forEach((c,ci)=> c.items.forEach((it,ii)=>{
     const id = ppItemId(ci,ii);
-    if(ppMine(id)) ids.push(id);
+    total++;
+    if(myPlans[id]==='pass'){ passed++; return; }
+    if(!ppMine(id)){ unadded++; return; }
+    if(ppChecked.has(id)) packed++; else unchecked++;
   }));
-  if(!ids.length) return `🎁 <b>완주 보상</b> — 스탠다드에서 담고, 다 챙기면 <b>⭐500</b> + 아기의 깜짝 선물`;
-  const un = ids.filter(id=>!ppChecked.has(id)).length;
-  if(un>0) return `🎁 <b>완주 보상</b> — 남은 <b>${un}개</b>만 챙기면 <b>⭐500</b> + 아기의 깜짝 선물이 와요`;
-  return `🎉 <b>완주!</b> ⭐500 + 아기의 깜짝 선물까지 받았어요 — 기록 하나마다 <b>⭐15</b>는 계속`;
+  return {total, packed, passed, unadded, unchecked,
+          left: unadded+unchecked,
+          done: total>0 && unadded===0 && unchecked===0};
 }
 
-// 가방 완주(담은 것 전부 체크) 보상 — 시그널에 약속한 그 보상
+// 🎁 완주 보상 배너 — 남은 결정 개수를 그대로 보여준다
+function ppRewardHtml(){
+  const r = ppResolve();
+  if(r.done) return `🎉 <b>완주!</b> 판정템 ${r.total}개 전부 결정 끝 — ⭐500 + 아기의 깜짝 선물까지 받았어요`;
+  const parts = [];
+  if(r.unadded) parts.push(`담거나 패스 ${r.unadded}`);
+  if(r.unchecked) parts.push(`챙기기 ${r.unchecked}`);
+  return `🎁 <b>완주 보상</b> — 판정템 ${r.total}개 중 <b>${r.left}개</b> 남았어요 (${parts.join(' · ')}) · 다 끝내면 <b>⭐500</b> + 아기 선물
+    <span class="rw-def">완주 = 전 항목을 챙기거나, 패스로 결정한 상태</span>`;
+}
+
 function checkPpComplete(){
-  const ids=[];
-  POSTPARTUM_CATEGORIES.forEach((c,ci)=> c.items.forEach((it,ii)=>{
-    const id = ppItemId(ci,ii);
-    if(ppMine(id)) ids.push(id);
-  }));
-  if(ids.length && ids.every(id=>ppChecked.has(id))){
-    if(earnStars(500, '출산가방 완주', 'pp-alldone')){
-      babySurprise('출산가방 챙기기', 'baby-pp-alldone', 150, 900);
+  if(ppResolve().done){
+    if(earnStars(500, '조리원 출산가방 완주', 'pp-alldone')){
+      babySurprise('출산가방 완주', 'baby-pp-alldone', 150, 900);
     }
   }
 }
@@ -475,8 +482,11 @@ function updatePostpartumProgress(){
     document.getElementById('prog-name').textContent = '조리원 스탠다드';
     document.getElementById('prog-text').textContent = done+' / '+total+' 담았어요';
   }else{
-    document.getElementById('prog-name').textContent = '조리원 · 내 가방';
-    document.getElementById('prog-text').textContent = done+' / '+total+' 완료';
+    const r = ppResolve();
+    document.getElementById('prog-name').textContent = '조리원 · 완주까지';
+    document.getElementById('prog-text').textContent = (r.total-r.left)+' / '+r.total+' 결정 완료';
+    document.getElementById('prog-fill').style.width = (r.total?(r.total-r.left)/r.total*100:0)+'%';
+    return;
   }
   document.getElementById('prog-fill').style.width = (total?done/total*100:0)+'%';
 }

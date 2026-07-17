@@ -190,13 +190,15 @@ function listSource(key){
 function listReportData(key){
   const src = listSource(key);
   const chk = src.checked();
-  const cats=[]; let recCount=0, paidSum=0, paidBase=0, checkedCount=0, mineCount=0, topPicks=0, memoCount=0;
+  const cats=[]; let recCount=0, paidSum=0, paidBase=0, checkedCount=0, mineCount=0, topPicks=0, memoCount=0, totalItems=0, passCount=0;
   src.cats.forEach((c,ci)=>{
     const rows=[];
     c.items.forEach((it,ii)=>{
       const id = src.idFn(ci,ii);
+      totalItems++;
+      if(myPlans[id]==='pass'){ passCount++; return; }
       const mine = chk.has(id) || myPlans[id]==='buy' || myPlans[id]==='carrot';
-      if(myPlans[id]==='pass' || !mine) return;
+      if(!mine) return;
       mineCount++;
       const rec = myBuys[id];
       const pi = (typeof priceIntel==='function') ? priceIntel(it, id) : null;
@@ -215,7 +217,9 @@ function listReportData(key){
     });
     if(rows.length) cats.push({nm:c.nm, emoji:c.emoji, rows});
   });
-  return {cats, recCount, paidSum, paidBase, checkedCount, mineCount, topPicks, memoCount, src};
+  // 완주 = 전 판정템 결정 끝 (챙기거나 패스) — 보상·여정과 같은 정의
+  const complete = totalItems>0 && checkedCount===mineCount && (mineCount+passCount)===totalItems;
+  return {cats, recCount, paidSum, paidBase, checkedCount, mineCount, topPicks, memoCount, totalItems, passCount, complete, src};
 }
 
 function openListReport(key){
@@ -229,7 +233,7 @@ function openListReport(key){
   const dday = (typeof state!=='undefined' && state.dday>0) ? state.dday : null;
   const rate = Math.round(d.checkedCount/d.mineCount*100);
   const smartSave = d.paidBase - d.paidSum;
-  const complete = d.checkedCount===d.mineCount;
+  const complete = d.complete;
 
   const li = r => `<div class="rp-item">
       <span class="rp-chk">${r.chk?'✅':'◻️'}</span><span class="rp-nm">${r.nm}</span>
@@ -243,7 +247,7 @@ function openListReport(key){
       <div class="ss-over">SOHAENGSEONG STANDARD</div>
       <h2>${d.src.emoji} ${PROFILE.nick}의<br>${d.src.title}</h2>
       <p>${dateStr}${dday?` · 출산 D-${dday}`:''} · 선배맘 판정 리스트로 골랐어요</p>
-      ${complete?'<div class="rp-medal">🏅 리스트 완주 — 전부 챙겼어요</div>':''}
+      ${complete?'<div class="rp-medal">🏅 리스트 완주 — 전 항목 결정 끝</div>':''}
       <div class="rp-sum">
         <span>✅ 챙김 ${d.checkedCount}/${d.mineCount}</span>
         ${d.recCount?`<span>📝 기록 ${d.recCount}건</span>`:''}
@@ -277,8 +281,8 @@ function shareListReport(key){
   const d = listReportData(key);
   const dday = (typeof state!=='undefined' && state.dday>0) ? ` · D-${state.dday}` : '';
   const smartSave = d.paidBase - d.paidSum;
-  const complete = d.mineCount && d.checkedCount===d.mineCount;
-  const headline = complete       ? `"${d.src.title} ${d.mineCount}개 완주!"`
+  const complete = d.complete;
+  const headline = complete       ? `"${d.src.title} ${d.totalItems}개 전부 결정 완료!"`
                  : smartSave>0    ? `"판정 브랜드로 시세보다 ${manwon(smartSave)} 아꼈어요"`
                  :                  `"선배맘 판정 리스트로 3분 만에 정리 끝"`;
   const recLines = [];

@@ -332,31 +332,46 @@ function plIds(key, mineOnly){
   return out;
 }
 
+// 🏁 완주 = 스탠다드의 모든 판정템에 '결정'이 끝난 상태 — 챙겼거나(담고 체크), 패스했거나.
+// 방치된 항목이 하나도 없어야 완주다. 보상·여정·리포트가 전부 이 정의 하나를 쓴다.
+function plResolve(key){
+  const s = plState(key);
+  let total=0, packed=0, passed=0, unadded=0, unchecked=0;
+  PREP_ENGINE[key].cats.forEach((c,ci)=> c.items.forEach((it,ii)=>{
+    const id = plItemId(key,ci,ii);
+    total++;
+    if(myPlans[id]==='pass'){ passed++; return; }
+    if(!plMine(key,id)){ unadded++; return; }
+    if(s.checked.has(id)) packed++; else unchecked++;
+  }));
+  return {total, packed, passed, unadded, unchecked,
+          left: unadded+unchecked,
+          done: total>0 && unadded===0 && unchecked===0};
+}
+
 function plJourney(key){
   const s = plState(key);
-  const all = plIds(key), mine = plIds(key,true);
+  const all = plIds(key);
   const planned = all.filter(id=>myPlans[id]).length;
   const s1 = all.length>0 && planned===all.length;
-  const unchecked = mine.filter(id=>!s.checked.has(id)).length;
-  const s2 = s1 && mine.length>0 && unchecked===0;
+  const s2 = plResolve(key).done;
   return {steps:[{n:1,ic:'🌠',t:'소행성 스탠다드'},{n:2,ic:'📝',t:'나의 기록'}], done:[s1,s2], cur: s.mode==='std'?1:2};
 }
 
 function plRewardHtml(key){
-  const s = plState(key);
-  const mine = plIds(key,true);
-  if(!mine.length) return `🎁 <b>완주 보상</b> — 스탠다드에서 담고, 다 챙기면 <b>⭐500</b> + 아기의 깜짝 선물`;
-  const un = mine.filter(id=>!s.checked.has(id)).length;
-  if(un>0) return `🎁 <b>완주 보상</b> — 남은 <b>${un}개</b>만 챙기면 <b>⭐500</b> + 아기의 깜짝 선물이 와요`;
-  return `🎉 <b>완주!</b> ⭐500 + 아기의 깜짝 선물까지 받았어요 — 기록 하나마다 <b>⭐15</b>는 계속`;
+  const r = plResolve(key);
+  if(r.done) return `🎉 <b>완주!</b> 판정템 ${r.total}개 전부 결정 끝 — ⭐500 + 아기의 깜짝 선물까지 받았어요`;
+  const parts = [];
+  if(r.unadded) parts.push(`담거나 패스 ${r.unadded}`);
+  if(r.unchecked) parts.push(`챙기기 ${r.unchecked}`);
+  return `🎁 <b>완주 보상</b> — 판정템 ${r.total}개 중 <b>${r.left}개</b> 남았어요 (${parts.join(' · ')}) · 다 끝내면 <b>⭐500</b> + 아기 선물
+    <span class="rw-def">완주 = 전 항목을 챙기거나, 패스로 결정한 상태</span>`;
 }
 
 function plCheckComplete(key){
-  const s = plState(key);
-  const mine = plIds(key,true);
-  if(mine.length && mine.every(id=>s.checked.has(id))){
+  if(plResolve(key).done){
     if(earnStars(500, PREP_ENGINE[key].title+' 완주', 'pl-alldone-'+key)){
-      babySurprise(PREP_ENGINE[key].bagLabel+' 챙기기', 'baby-pl-'+key, 150, 900);
+      babySurprise(PREP_ENGINE[key].bagLabel+' 완주', 'baby-pl-'+key, 150, 900);
     }
   }
 }
@@ -371,10 +386,10 @@ function plProgress(key){
     document.getElementById('prog-text').textContent = done+' / '+all.length+' 담았어요';
     document.getElementById('prog-fill').style.width = (all.length?done/all.length*100:0)+'%';
   }else{
-    const done = mine.filter(id=>s.checked.has(id)).length;
-    document.getElementById('prog-name').textContent = L.title+' · 나의 기록';
-    document.getElementById('prog-text').textContent = done+' / '+mine.length+' 완료';
-    document.getElementById('prog-fill').style.width = (mine.length?done/mine.length*100:0)+'%';
+    const r = plResolve(key);
+    document.getElementById('prog-name').textContent = L.title+' · 완주까지';
+    document.getElementById('prog-text').textContent = (r.total-r.left)+' / '+r.total+' 결정 완료';
+    document.getElementById('prog-fill').style.width = (r.total?(r.total-r.left)/r.total*100:0)+'%';
   }
 }
 
