@@ -143,118 +143,6 @@ function closeReport(){
   document.getElementById('report-veil').classList.remove('on');
 }
 
-// ============================================================
-// 🧳 조리원 출산가방 리포트 — 내 기록을 그대로, 공유하기 좋게
-// ============================================================
-function ppReportData(){
-  const cats=[]; let recCount=0, paidSum=0, paidBase=0, checkedCount=0, mineCount=0, topPicks=0;
-  POSTPARTUM_CATEGORIES.forEach((c,ci)=>{
-    const rows=[];
-    c.items.forEach((it,ii)=>{
-      const id = ppItemId(ci,ii);
-      if(myPlans[id]==='pass' || !ppMine(id)) return;
-      mineCount++;
-      const rec = myBuys[id];
-      const pi = (typeof priceIntel==='function') ? priceIntel(it, id) : null;
-      let top=false;
-      if(rec && rec.b && typeof brandRankFor==='function'){
-        const rk = brandRankFor(it, id);
-        top = !!(rk && rk.rows[0] && rec.b.startsWith(rk.rows[0].nm));
-      }
-      if(top) topPicks++;
-      const chk = ppChecked.has(id);
-      if(chk) checkedCount++;
-      if(rec){ recCount++; if(rec.p || rec.ch==='물려받음' || rec.ch==='선물받음'){ paidSum += rec.p||0; paidBase += pi ? pi.base : (rec.p||0); } }
-      rows.push({nm:it.nm, chk, brand:rec?rec.b:null, paid:rec&&rec.p?rec.p:null, ch:rec?rec.ch:null, top});
-    });
-    if(rows.length) cats.push({nm:c.nm, emoji:c.emoji, rows});
-  });
-  return {cats, recCount, paidSum, paidBase, checkedCount, mineCount, topPicks};
-}
-
-function openPpReport(){
-  const d = ppReportData();
-  if(!d.mineCount){
-    toast('스탠다드에서 담기부터 눌러보세요!');
-    return;
-  }
-  const today = new Date();
-  const dateStr = `${today.getFullYear()}.${today.getMonth()+1}.${today.getDate()}`;
-  const dday = (typeof state!=='undefined' && state.dday>0) ? state.dday : null;
-  const rate = Math.round(d.checkedCount/d.mineCount*100);
-  const smartSave = d.paidBase - d.paidSum;
-  const complete = d.checkedCount===d.mineCount;
-
-  const li = r => `<div class="rp-item">
-      <span class="rp-chk">${r.chk?'✅':'◻️'}</span><span class="rp-nm">${r.nm}</span>
-      ${r.brand?`<b>${r.top?'🥇 ':''}${r.brand}</b>`:''}
-      <span class="rp-price">${r.paid?r.paid.toLocaleString()+'원':(r.ch&&!r.brand?r.ch:'')}</span>
-    </div>`;
-
-  const body = document.getElementById('report-body');
-  body.innerHTML = `
-    <div class="rp-hero">
-      <div class="ss-over">SOHAENGSEONG STANDARD</div>
-      <h2>🧳 ${PROFILE.nick}의<br>조리원 출산가방</h2>
-      <p>${dateStr}${dday?` · 출산 D-${dday}`:''} · 선배맘 판정 리스트로 챙겼어요</p>
-      ${complete?'<div class="rp-medal">🏅 가방 완주 — 전부 챙겼어요</div>':''}
-      <div class="rp-sum">
-        <span>✅ 챙김 ${d.checkedCount}/${d.mineCount}</span>
-        ${d.recCount?`<span>📝 기록 ${d.recCount}건</span>`:''}
-        ${d.topPicks?`<span class="hl">🥇 판정 1등픽 ${d.topPicks}</span>`:''}
-      </div>
-    </div>
-
-    <div class="rp-stats">
-      <div class="rp-stat"><b>${rate}%</b><span>가방 챙김률</span></div>
-      <div class="rp-stat"><b>${d.recCount}건</b><span>구매 기록</span></div>
-      <div class="rp-stat"><b>${(smartSave>0&&d.paidSum)?manwon(smartSave):(d.paidSum?manwon(d.paidSum):'—')}</b><span>${(smartSave>0&&d.paidSum)?'시세보다 아낌':'쓴 돈'}</span></div>
-    </div>
-
-    ${d.cats.map(c=>`<div class="rp-sec"><h3>${c.emoji} ${c.nm}</h3>${c.rows.map(li).join('')}</div>`).join('')}
-
-    <div class="rp-footer">
-      <div class="rp-logo">🌠 소행성 육아플래너</div>
-      <p>수천 명의 판정으로 만든 조리원 가방 리스트<br>나도 만들기 → <b>jtkim1107-sudo.github.io/momsplanner</b></p>
-    </div>
-
-    <div class="rp-actions">
-      <button class="rp-share" onclick="sharePpReport()">공유하기</button>
-      <button class="rp-close" onclick="closeReport()">닫기</button>
-    </div>
-    <p class="rp-hint">📸 길게 스크롤 캡처하면 카페·카톡에 올리기 딱 좋아요</p>
-  `;
-  document.getElementById('report-veil').classList.add('on');
-}
-
-function sharePpReport(){
-  const d = ppReportData();
-  const dday = (typeof state!=='undefined' && state.dday>0) ? ` · D-${state.dday}` : '';
-  const smartSave = d.paidBase - d.paidSum;
-  const complete = d.mineCount && d.checkedCount===d.mineCount;
-  const headline = complete       ? `"출산가방 ${d.mineCount}개 완주 — 몸만 가면 돼요"`
-                 : smartSave>0    ? `"판정 브랜드로 시세보다 ${manwon(smartSave)} 아꼈어요"`
-                 :                  `"선배맘 판정 리스트로 3분 만에 가방 정리"`;
-  // 기록 몇 줄은 그대로 보여준다 — 받는 친구가 바로 따라 사게
-  const recLines = [];
-  d.cats.forEach(c=> c.rows.forEach(r=>{
-    if(r.brand && recLines.length<6) recLines.push(`· ${r.nm} — ${r.top?'🥇':''}${r.brand}${r.paid?` ${r.paid.toLocaleString()}원`:''}`);
-  }));
-  const text = `🧳 ${PROFILE.nick}의 조리원 출산가방${dday}\n`
-    + `${headline}\n`
-    + `━━━━━━━━━━━━━━\n`
-    + `✅ 챙김 ${d.checkedCount}/${d.mineCount}${d.recCount?` · 📝 기록 ${d.recCount}건`:''}${d.topPicks?` · 🥇 1등픽 ${d.topPicks}개`:''}\n`
-    + (recLines.length? recLines.join('\n')+'\n':'')
-    + `👉 나도 만들기 https://jtkim1107-sudo.github.io/momsplanner/`;
-  if(navigator.share){
-    navigator.share({title:'소행성 조리원 출산가방', text}).catch(()=>{});
-  }else if(navigator.clipboard){
-    navigator.clipboard.writeText(text).then(()=>toast('가방 리포트를 복사했어요 — 붙여넣기 하세요!'));
-  }else{
-    toast('스크린샷으로 캡처해서 공유해주세요 📸');
-  }
-}
-
 function shareReport(){
   const d = reportData();
   const save = d.baseSum - d.carrotSum;
@@ -283,3 +171,135 @@ function shareReport(){
     toast('스크린샷으로 캡처해서 공유해주세요 📸');
   }
 }
+
+// ============================================================
+// 📤 리스트 리포트 (전 리스트 공용) — 내 기록·메모를 그대로, 자랑하기 좋게
+// ============================================================
+function listSource(key){
+  if(key==='postpartum') return {
+    title:'조리원 출산가방', emoji:'🧳',
+    cats: POSTPARTUM_CATEGORIES, idFn:(ci,ii)=>ppItemId(ci,ii), checked:()=>ppChecked,
+  };
+  const L = PREP_ENGINE[key];
+  return {
+    title: L.title, emoji: L.emoji,
+    cats: L.cats, idFn:(ci,ii)=>plItemId(key,ci,ii), checked:()=>plState(key).checked,
+  };
+}
+
+function listReportData(key){
+  const src = listSource(key);
+  const chk = src.checked();
+  const cats=[]; let recCount=0, paidSum=0, paidBase=0, checkedCount=0, mineCount=0, topPicks=0, memoCount=0;
+  src.cats.forEach((c,ci)=>{
+    const rows=[];
+    c.items.forEach((it,ii)=>{
+      const id = src.idFn(ci,ii);
+      const mine = chk.has(id) || myPlans[id]==='buy' || myPlans[id]==='carrot';
+      if(myPlans[id]==='pass' || !mine) return;
+      mineCount++;
+      const rec = myBuys[id];
+      const pi = (typeof priceIntel==='function') ? priceIntel(it, id) : null;
+      let top=false;
+      if(rec && rec.b && typeof brandRankFor==='function'){
+        const rk = brandRankFor(it, id);
+        top = !!(rk && rk.rows[0] && rec.b.startsWith(rk.rows[0].nm));
+      }
+      if(top) topPicks++;
+      const done = chk.has(id);
+      if(done) checkedCount++;
+      const memo = (typeof myNotes!=='undefined' && myNotes[id] && myNotes[id].trim()) ? myNotes[id].trim() : null;
+      if(memo) memoCount++;
+      if(rec){ recCount++; if(rec.p || rec.ch==='물려받음' || rec.ch==='선물받음'){ paidSum += rec.p||0; paidBase += pi ? pi.base : (rec.p||0); } }
+      rows.push({nm:it.nm, chk:done, brand:rec?rec.b:null, paid:rec&&rec.p?rec.p:null, ch:rec?rec.ch:null, top, memo});
+    });
+    if(rows.length) cats.push({nm:c.nm, emoji:c.emoji, rows});
+  });
+  return {cats, recCount, paidSum, paidBase, checkedCount, mineCount, topPicks, memoCount, src};
+}
+
+function openListReport(key){
+  const d = listReportData(key);
+  if(!d.mineCount){
+    toast('스탠다드에서 담기부터 눌러보세요!');
+    return;
+  }
+  const today = new Date();
+  const dateStr = `${today.getFullYear()}.${today.getMonth()+1}.${today.getDate()}`;
+  const dday = (typeof state!=='undefined' && state.dday>0) ? state.dday : null;
+  const rate = Math.round(d.checkedCount/d.mineCount*100);
+  const smartSave = d.paidBase - d.paidSum;
+  const complete = d.checkedCount===d.mineCount;
+
+  const li = r => `<div class="rp-item">
+      <span class="rp-chk">${r.chk?'✅':'◻️'}</span><span class="rp-nm">${r.nm}</span>
+      ${r.brand?`<b>${r.top?'🥇 ':''}${r.brand}</b>`:''}
+      <span class="rp-price">${r.paid?r.paid.toLocaleString()+'원':(r.ch&&!r.brand?r.ch:'')}</span>
+    </div>${r.memo?`<div class="rp-memo">✏️ ${r.memo}</div>`:''}`;
+
+  const body = document.getElementById('report-body');
+  body.innerHTML = `
+    <div class="rp-hero">
+      <div class="ss-over">SOHAENGSEONG STANDARD</div>
+      <h2>${d.src.emoji} ${PROFILE.nick}의<br>${d.src.title}</h2>
+      <p>${dateStr}${dday?` · 출산 D-${dday}`:''} · 선배맘 판정 리스트로 골랐어요</p>
+      ${complete?'<div class="rp-medal">🏅 리스트 완주 — 전부 챙겼어요</div>':''}
+      <div class="rp-sum">
+        <span>✅ 챙김 ${d.checkedCount}/${d.mineCount}</span>
+        ${d.recCount?`<span>📝 기록 ${d.recCount}건</span>`:''}
+        ${d.topPicks?`<span class="hl">🥇 판정 1등픽 ${d.topPicks}</span>`:''}
+      </div>
+    </div>
+
+    <div class="rp-stats">
+      <div class="rp-stat"><b>${rate}%</b><span>챙김률</span></div>
+      <div class="rp-stat"><b>${d.recCount}건</b><span>구매 기록</span></div>
+      <div class="rp-stat"><b>${(smartSave>0&&d.paidSum)?manwon(smartSave):(d.paidSum?manwon(d.paidSum):'—')}</b><span>${(smartSave>0&&d.paidSum)?'시세보다 아낌':'쓴 돈'}</span></div>
+    </div>
+
+    ${d.cats.map(c=>`<div class="rp-sec"><h3>${c.emoji} ${c.nm}</h3>${c.rows.map(li).join('')}</div>`).join('')}
+
+    <div class="rp-footer">
+      <div class="rp-logo">🌠 소행성 육아플래너</div>
+      <p>수천 명의 판정으로 만든 준비물 리스트<br>나도 만들기 → <b>jtkim1107-sudo.github.io/momsplanner</b></p>
+    </div>
+
+    <div class="rp-actions">
+      <button class="rp-share" onclick="shareListReport('${key}')">공유하기</button>
+      <button class="rp-close" onclick="closeReport()">닫기</button>
+    </div>
+    <p class="rp-hint">📸 길게 스크롤 캡처하면 카페·카톡에 올리기 딱 좋아요</p>
+  `;
+  document.getElementById('report-veil').classList.add('on');
+}
+
+function shareListReport(key){
+  const d = listReportData(key);
+  const dday = (typeof state!=='undefined' && state.dday>0) ? ` · D-${state.dday}` : '';
+  const smartSave = d.paidBase - d.paidSum;
+  const complete = d.mineCount && d.checkedCount===d.mineCount;
+  const headline = complete       ? `"${d.src.title} ${d.mineCount}개 완주!"`
+                 : smartSave>0    ? `"판정 브랜드로 시세보다 ${manwon(smartSave)} 아꼈어요"`
+                 :                  `"선배맘 판정 리스트로 3분 만에 정리 끝"`;
+  const recLines = [];
+  d.cats.forEach(c=> c.rows.forEach(r=>{
+    if(r.brand && recLines.length<6) recLines.push(`· ${r.nm} — ${r.top?'🥇':''}${r.brand}${r.paid?` ${r.paid.toLocaleString()}원`:''}`);
+  }));
+  const text = `${d.src.emoji} ${PROFILE.nick}의 ${d.src.title}${dday}\n`
+    + `${headline}\n`
+    + `━━━━━━━━━━━━━━\n`
+    + `✅ 챙김 ${d.checkedCount}/${d.mineCount}${d.recCount?` · 📝 기록 ${d.recCount}건`:''}${d.topPicks?` · 🥇 1등픽 ${d.topPicks}개`:''}\n`
+    + (recLines.length? recLines.join('\n')+'\n':'')
+    + `👉 나도 만들기 https://jtkim1107-sudo.github.io/momsplanner/`;
+  if(navigator.share){
+    navigator.share({title:'소행성 육아플래너 — '+d.src.title, text}).catch(()=>{});
+  }else if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(()=>toast('리포트를 복사했어요 — 붙여넣기 하세요!'));
+  }else{
+    toast('스크린샷으로 캡처해서 공유해주세요 📸');
+  }
+}
+
+// 하위 호환 별칭
+function openPpReport(){ openListReport('postpartum'); }
+function sharePpReport(){ shareListReport('postpartum'); }

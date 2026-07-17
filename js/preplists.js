@@ -428,6 +428,13 @@ function renderPrepList(key){
     rs.className='reward-strip'; rs.id='reward-strip';
     rs.innerHTML = plRewardHtml(key);
     area.appendChild(rs);
+    // 📤 바이럴 — 내 리스트를 그대로 친구에게
+    const rp = document.createElement('button');
+    rp.className = 'rp-open';
+    rp.style.marginTop = '0'; rp.style.marginBottom = '12px';
+    rp.textContent = '📤 내 리스트 자랑하기 — 친구 공유';
+    rp.addEventListener('click', ()=> openListReport(key));
+    area.appendChild(rp);
   }
 
   let shown=0;

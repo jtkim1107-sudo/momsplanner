@@ -207,7 +207,7 @@ function renderPostpartum(){
     rp.className = 'rp-open';
     rp.style.marginTop = '0';
     rp.style.marginBottom = '12px';
-    rp.textContent = '📄 내 가방 리포트 — 친구 공유용';
+    rp.textContent = '📤 내 리스트 자랑하기 — 친구 공유';
     rp.addEventListener('click', openPpReport);
     area.appendChild(rp);
   }

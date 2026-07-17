@@ -313,6 +313,7 @@
   .ss-card.slim .ss-what{margin-top:5px;}
 
   .rp-item .rp-chk{flex:0 0 auto;font-size:12px;}
+  .rp-memo{font-size:11px;color:#8A7357;padding:0 0 7px 22px;line-height:1.5;}
 
   /* 🗂 카테고리 설명 카드 — 컴팩트, 리스트가 주인공 */
   .list-brief{
