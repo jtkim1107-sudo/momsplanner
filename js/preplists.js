@@ -18,7 +18,7 @@ const PREP_ENGINE = {
         {nm:'입원 서류 · 진찰권 확인', ops:[
           {who:'산후8주맘', verdict:'추천', txt:'병원마다 준비 서류 달라 — 36주 검진 때 물어보세요'}]},
       ]},
-      { nm:'진통 · 산모', emoji:'👩', items:[
+      { nm:'진통 · 산모', emoji:'👩', avoid:[{nm:'개인 좌욕기', why:'병원·조리원에 다 있어요 — 전화로 확인만 하세요', n:500}], items:[
         {nm:'립밤', ops:[
           {who:'조리원동기맘', verdict:'추천', txt:'호흡하다 보면 입술이 쩍쩍 갈라져 — 진통 필수템 1위'}]},
         {nm:'꿀스틱 · 에너지젤리', ops:[
@@ -53,7 +53,7 @@ const PREP_ENGINE = {
     heroNote:'모유든 분유든 첫 달에 바로 쓰는 것만 — 아기 성향 보고 늘리세요',
     bagLabel:'수유 리스트', brief:'첫 달에 바로 쓰는 것만 — 아기 성향 보고 늘리세요',
     cats:[
-      { nm:'젖병 · 분유', emoji:'🍼', items:[
+      { nm:'젖병 · 분유', emoji:'🍼', avoid:[{nm:'분유제조기', why:'내부 세척이 어려워 위생 논란 — 보온포트면 충분해요', n:800}], items:[
         {nm:'젖병 2~3개', min:true, brands:'헤겐 · 더블하트 · 닥터브라운', ops:[
           {who:'기록왕맘', verdict:'추천', buy:'헤겐', txt:'아기마다 젖꼭지 취향 갈려 — 처음엔 2~3개만'}]},
         {nm:'신생아 분유 (소량)', ops:[
@@ -89,7 +89,7 @@ const PREP_ENGINE = {
     heroNote:'이유식 시작(생후 5~6개월) 전에 — 시작 시기는 소아과와 상담하세요',
     bagLabel:'이유식 리스트', brief:'시작(5~6개월) 전에 준비 — 시기는 소아과와 상담',
     cats:[
-      { nm:'조리 도구', emoji:'🍳', items:[
+      { nm:'조리 도구', emoji:'🍳', avoid:[{nm:'이유식 저울 · 계량 풀세트', why:'눈대중이면 충분 — 계량 스트레스만 늘어요', n:250}], items:[
         {nm:'이유식 마스터기 · 밥솥', brands:'베이비무브', ops:[
           {who:'이유식전쟁맘', verdict:'쏘쏘', txt:'냄비+믹서로 충분하단 파와 갈려 — 하나만 사보세요'}]},
         {nm:'아기 전용 냄비 · 도마', min:true, ops:[
@@ -122,7 +122,7 @@ const PREP_ENGINE = {
         {nm:'네임스티커 · 의류 스티커', min:true, ops:[
           {who:'복직맘', verdict:'추천', txt:'전 소지품에 이름 필수 — 다리미형·방수형 세트로'}]},
       ]},
-      { nm:'등원 기본', emoji:'🎒', items:[
+      { nm:'등원 기본', emoji:'🎒', avoid:[{nm:'고가 브랜드 등원가방', why:'원 지정 가방이 많아요 — 확인 전엔 사지 마세요', n:400}], items:[
         {nm:'낮잠이불 세트', min:true, brands:'마리엘르 · 라졸리메종', ops:[
           {who:'복직맘', verdict:'추천', txt:'원 지정 사이즈 확인 — 세탁 교대용 상태 좋게'}]},
         {nm:'실내화', ops:[
@@ -151,7 +151,7 @@ const PREP_ENGINE = {
     heroNote:'입덧기부터 만삭까지 — 몸이 편해야 열 달이 갑니다',
     bagLabel:'임신 리스트', brief:'입덧기부터 만삭까지 — 몸이 편한 게 최우선',
     cats:[
-      { nm:'임부 의류', emoji:'👗', items:[
+      { nm:'임부 의류', emoji:'👗', avoid:[{nm:'임부 정장 · 원피스 세트', why:'몇 번 못 입고 끝 — 경조사는 대여로 해결하세요', n:600}], items:[
         {nm:'임부 레깅스 · 임부 바지', min:true, ops:[
           {who:'산후8주맘', verdict:'추천', txt:'배 눌리면 하루가 괴로워 — 배바지 스타일로 2~3벌'}]},
         {nm:'편한 브라탑 · 임산부 속옷', min:true, ops:[
@@ -184,7 +184,7 @@ const PREP_ENGINE = {
     heroNote:'조리원 퇴소 전에 집 세팅 끝 — 아기 오면 장 볼 시간이 없어요',
     bagLabel:'집들이 리스트', brief:'조리원 퇴소 전에 집 세팅 끝 — 오면 장 볼 시간 없어요',
     cats:[
-      { nm:'목욕 · 위생', emoji:'🛁', items:[
+      { nm:'목욕 · 위생', emoji:'🛁', avoid:[{nm:'기저귀 휴지통', why:'일반 휴지통+봉투면 충분 — 전용 리필 비용만 계속 나가요', n:1000}], items:[
         {nm:'아기욕조', min:true, brands:'슈너글', ops:[
           {who:'기록왕맘', verdict:'추천', buy:'슈너글', txt:'목 못 가누는 시기엔 등받이형이 편해'}]},
         {nm:'아기 로션 · 워시', min:true, brands:'세타필 · 아토팜', ops:[
@@ -210,7 +210,7 @@ const PREP_ENGINE = {
         {nm:'스와들 · 아기 이불', brands:'스와들업', ops:[
           {who:'조리원동기맘', verdict:'추천', buy:'스와들업', txt:'모로반사 진정엔 이만한 게 없어'}]},
       ]},
-      { nm:'수면 · 쉼', emoji:'😴', items:[
+      { nm:'수면 · 쉼', emoji:'😴', avoid:[{nm:'신생아 베개', why:'질식 위험 때문에 소아과가 말려요 — 평평하게 재우세요', n:1000}], items:[
         {nm:'역류방지쿠션', ops:[
           {who:'산후8주맘', verdict:'추천', txt:'먹고 바로 눕히면 게워 — 낮잠 필수템'}]},
         {nm:'아기 침대 · 좌식 매트', ops:[
@@ -225,7 +225,7 @@ const PREP_ENGINE = {
     heroNote:'예방접종·조리원 퇴소가 첫 외출 — 유모차는 판정 1등 브랜드부터 보세요',
     bagLabel:'외출 리스트', brief:'예방접종이 첫 외출 — 고가템은 판정 보고 결정',
     cats:[
-      { nm:'이동 장비', emoji:'🚼', items:[
+      { nm:'이동 장비', emoji:'🚼', avoid:[{nm:'유모차 액세서리 풀세트', why:'컵홀더 하나면 끝 — 세트는 장롱행이에요', n:300}], items:[
         {nm:'유모차', min:true, brands:'오이스터 · 부가부 · 스토케', ops:[
           {who:'기록왕맘', verdict:'추천', buy:'오이스터3', txt:'디럭스로 시작 — 중고 시세도 좋아'}]},
         {nm:'아기띠', min:true, brands:'에르고 · 베코', ops:[
@@ -268,7 +268,7 @@ const PREP_ENGINE = {
         {nm:'터미타임 쿠션 · 거울', ops:[
           {who:'조리원동기맘', verdict:'쏘쏘', txt:'수건 말아서도 돼 — 하나만 사보고 판단'}]},
       ]},
-      { nm:'6개월~', emoji:'🚀', items:[
+      { nm:'6개월~', emoji:'🚀', avoid:[{nm:'보행기', why:'낙상 사고 1위 — 소아과에서 권하지 않아요', n:1500},{nm:'고가 전집 세트', why:'돌 전엔 못 봐요 — 방문 영업에 넘어가지 마세요', n:700}], items:[
         {nm:'점퍼루', carrot:true, brands:'피셔프라이스', ops:[
           {who:'기록왕맘', verdict:'추천', txt:'쓰는 기간 짧아 — 당근에 상태 좋은 게 쏟아져'}]},
         {nm:'러닝홈 · 쏘서', carrot:true, ops:[
@@ -288,6 +288,18 @@ function dcItemId(ci,ii){ return plItemId('daycare',ci,ii); }
 function renderBabyfood(){ renderPrepList('babyfood'); }
 function renderDaycare(){ renderPrepList('daycare'); }
 
+
+// 🚫 '사지 마세요' 판정존 — 스탠다드가 아니라서 담기 버튼이 없다.
+// 각 카테고리 밑에 모아 "뭘 사지 말지"까지 답을 준다.
+function avoidBoxHtml(rows){
+  return `<div class="avoid-box">
+    <span class="av-head">🚫 사지 마세요 판정</span>
+    ${rows.map(a=>`<div class="avoid-row">
+      <div class="av-tx"><b>${a.nm}</b><p>${a.why}</p></div>
+      <span class="av-n">⚖️ ${a.n.toLocaleString()}명</span>
+    </div>`).join('')}
+  </div>`;
+}
 // ---- 리스트별 상태 (체크 · 모드) ----
 const PL_STATE = {};
 function plState(key){
@@ -435,6 +447,7 @@ function renderPrepList(key){
     `;
     const holder = gEl.querySelector('#pli-'+ci);
     list.forEach(([it,ii])=> holder.appendChild(renderPrepListItem(key,it,ci,ii)));
+    if(s.mode==='std' && cat.avoid && cat.avoid.length) gEl.insertAdjacentHTML('beforeend', avoidBoxHtml(cat.avoid));
     area.appendChild(gEl);
   });
   if(!shown && s.mode==='mine'){

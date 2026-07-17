@@ -12,7 +12,7 @@
 // ============================================================
 
 const POSTPARTUM_CATEGORIES = [
-  { nm:'산후 케어', emoji:'🩸', items:[
+  { nm:'산후 케어', emoji:'🩸', avoid:[{nm:'좌욕기', why:'조리원 비치가 기본 — 전화로 확인만 하세요', n:800}], items:[
     {nm:'오버나이트 생리대 (입오버)', min:true, brands:'소피 · 유한킴벌리', ops:[
       {who:'남편찬스맘', verdict:'추천', txt:'오버나이트로, 대형도 챙기면 좋대요'},
       {who:'기록왕맘', buy:'소피 특대형', txt:'오로 많은 초반엔 입는 오버나이트가 편해'}]},
@@ -74,7 +74,7 @@ const POSTPARTUM_CATEGORIES = [
     {nm:'아기 퇴원복 (계절 확인)', ops:[
       {who:'조리원동기맘', verdict:'추천', txt:'조리원 이동·퇴원 때 — 계절 확인'}]},
   ]},
-  { nm:'엄마 의류 · 세면', emoji:'👚', items:[
+  { nm:'엄마 의류 · 세면', emoji:'👚', avoid:[{nm:'산모 실내복 풀세트', why:'조리원복을 매일 갈아줘요 — 면회·외출용 한 벌이면 끝', n:400}], items:[
     {nm:'수유 잠옷 · 수유복', min:true, ops:[
       {who:'조리원동기맘', verdict:'추천', txt:'앞트임 필수 — 조리원복 주지만 면회·외출용으로 2벌'}]},
     {nm:'실내 슬리퍼 (아치형)', min:true, ops:[
@@ -244,6 +244,8 @@ function renderPostpartum(){
     `;
     const holder = gEl.querySelector('#ppi-'+ci);
     list.forEach(([it,ii])=> holder.appendChild(renderPostpartumItem(it,ci,ii)));
+    if(ppMode==='std' && cat.avoid && cat.avoid.length && typeof avoidBoxHtml==='function')
+      gEl.insertAdjacentHTML('beforeend', avoidBoxHtml(cat.avoid));
     area.appendChild(gEl);
   });
   if(!shown && ppMode==='mine'){

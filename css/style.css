@@ -603,6 +603,24 @@
     border-radius:10px;padding:2.5px 8px;white-space:nowrap;
   }
   .cp-link:active{transform:scale(.95);}
+  /* 🚫 사지 마세요 판정존 — 스탠다드 밖, 담기 없음 */
+  .avoid-box{
+    margin-top:9px;background:#FBF1EC;border:1.5px dashed #E9CBBD;
+    border-radius:13px;padding:10px 13px;
+  }
+  .av-head{display:block;font-size:10.5px;font-weight:900;color:#B04A2F;letter-spacing:.03em;margin-bottom:5px;}
+  .avoid-row{display:flex;align-items:flex-start;gap:9px;padding:5px 0;}
+  .avoid-row .av-tx{flex:1;}
+  .avoid-row b{
+    font-size:13px;font-weight:800;color:#8A5B4A;
+    text-decoration:line-through;text-decoration-color:#D89A85;text-decoration-thickness:1.5px;
+  }
+  .avoid-row p{font-size:11px;color:#A57A68;margin-top:2px;line-height:1.5;}
+  .av-n{
+    flex:0 0 auto;font-size:10px;font-weight:800;color:#B04A2F;
+    background:#fff;border:1px solid #E9CBBD;border-radius:10px;padding:2.5px 8px;white-space:nowrap;
+  }
+
   .badge.hist{background:#FCF6E8;color:#8A6D2F;border:1px solid #EEDFC0;}
   .badge.lowest{background:#FDEDE4;color:#C4552D;border:1px solid #F3D0BC;}
   /* 📈 역대가 스파크라인 */
