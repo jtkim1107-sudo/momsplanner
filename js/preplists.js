@@ -300,6 +300,68 @@ function avoidBoxHtml(rows){
     </div>`).join('')}
   </div>`;
 }
+
+// 🎁 올인원 패키지 — "리스트 완벽해결"형 묶음 커머스 접목
+// 판정으로 검증된 소모품 조합을 한 번에. 실서비스에선 제휴/자체 패키지 상품 자리.
+const LIST_BUNDLES = {
+  postpartum: {
+    nm:'출산가방 올인원 패키지', tag:'요즘 잘 나가요',
+    items:['오버나이트 생리대 (입오버)','산모 안심팬티 · 팬티라이너','수유패드','유두보호크림 (란시놀)','모유저장팩 · 네임펜','마이비데 · 비데티슈'],
+    indiv:43000, pack:28000, q:'출산가방 올인원 패키지',
+  },
+  hospital: {
+    nm:'병원 가방 소모품 패키지', tag:'진통 전 원클릭',
+    items:['립밤','오버나이트 생리대 (소량)','마이비데 · 비데티슈','세면도구 파우치','머리끈 · 헤어밴드'],
+    indiv:24000, pack:16000, q:'출산 병원가방 패키지',
+  },
+  nursing: {
+    nm:'수유 소모품 패키지', tag:'첫 달 필수 세트',
+    items:['젖병솔 · 젖병세제','수유패드','유두보호크림 (란시놀)','모유저장팩'],
+    indiv:38000, pack:27000, q:'수유용품 세트',
+  },
+};
+
+// 패키지 구성품 이름 → 이 리스트의 아이템 id 매핑
+function bundleIds(cats, idFn, names){
+  const out=[];
+  cats.forEach((c,ci)=> c.items.forEach((it,ii)=>{
+    if(names.includes(it.nm)) out.push(idFn(ci,ii));
+  }));
+  return out;
+}
+
+// 패키지 카드 — 스탠다드 전용. 원탭 전체 담기 + 스토어 검색
+function bundleCardEl(cfg, cats, idFn, afterAdd){
+  const ids = bundleIds(cats, idFn, cfg.items);
+  if(!ids.length) return null;
+  const el = document.createElement('div');
+  el.className = 'bundle-card';
+  const remain = ()=> ids.filter(id=> myPlans[id]!=='buy' && myPlans[id]!=='carrot').length;
+  const render = ()=>{
+    const r = remain();
+    el.innerHTML = `
+      <div class="bd-head">🎁 <b>${cfg.nm}</b><span class="bd-tag">${cfg.tag}</span></div>
+      <p class="bd-items">${cfg.items.join(' · ')}</p>
+      <p class="bd-price">개별 시세 합 <s>${manwon(cfg.indiv)}</s> → 패키지 시세 <b>${manwon(cfg.pack)}</b>대</p>
+      <div class="bd-actions">
+        <button class="bd-add">${r>0?`⚡ ${r}종 한 번에 담기`:'✓ 전부 담겼어요'}</button>
+        <a class="bd-link" href="https://msearch.shopping.naver.com/search/all?query=${encodeURIComponent(cfg.q)}" target="_blank" rel="noopener">스토어 검색 ↗</a>
+      </div>`;
+    const btn = el.querySelector('.bd-add');
+    btn.disabled = r===0;
+    btn.addEventListener('click', ()=>{
+      let added=0;
+      ids.forEach(id=>{
+        if(myPlans[id]!=='buy' && myPlans[id]!=='carrot'){ myPlans[id]='buy'; added++; }
+      });
+      if(added){ saveStars(); toast(`패키지 ${added}종을 한 번에 담았어요 ⚡`); }
+      afterAdd();
+    });
+  };
+  render();
+  return el;
+}
+
 // ---- 리스트별 상태 (체크 · 모드) ----
 const PL_STATE = {};
 function plState(key){
@@ -437,6 +499,12 @@ function renderPrepList(key){
   mt.className='journey'; mt.id='journey';
   mt.innerHTML = journeyHtml(plJourney(key));
   area.appendChild(mt);
+
+  if(s.mode==='std' && LIST_BUNDLES[key]){
+    const bc = bundleCardEl(LIST_BUNDLES[key], L.cats, (ci,ii)=>plItemId(key,ci,ii),
+      ()=>renderPrepList(key));
+    if(bc) area.appendChild(bc);
+  }
 
   if(s.mode==='mine'){
     const rs = document.createElement('div');

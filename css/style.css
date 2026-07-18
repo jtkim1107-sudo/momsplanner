@@ -329,6 +329,34 @@
     background:#fff;border:1px solid #E8DCC2;border-radius:11px;padding:3px 9px;white-space:nowrap;
   }
 
+  /* 🎁 올인원 패키지 카드 */
+  .bundle-card{
+    background:linear-gradient(135deg,#FFF9EC,#FBEFD8);border:1.5px solid #EEDCB6;
+    border-radius:15px;padding:13px 15px;margin-bottom:12px;
+  }
+  .bd-head{display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--ink);}
+  .bd-head b{font-weight:900;}
+  .bd-tag{
+    margin-left:auto;font-size:9.5px;font-weight:900;color:#B4552B;
+    background:#FDEDE4;border:1px solid #F3D0BC;border-radius:10px;padding:2.5px 8px;white-space:nowrap;
+  }
+  .bd-items{font-size:11px;color:#8A7357;margin-top:5px;line-height:1.55;}
+  .bd-price{font-size:12px;font-weight:700;color:#7A6236;margin-top:6px;}
+  .bd-price s{color:#B3A184;font-weight:600;}
+  .bd-price b{color:#8A6D2F;font-weight:900;}
+  .bd-actions{display:flex;gap:8px;margin-top:10px;align-items:center;}
+  .bd-add{
+    flex:1;border:none;border-radius:12px;padding:11px 0;cursor:pointer;
+    background:var(--brown);color:#fff;font-family:inherit;font-size:13px;font-weight:900;
+    box-shadow:0 2px 8px rgba(172,142,110,.3);
+  }
+  .bd-add:disabled{background:#D9CDB8;box-shadow:none;cursor:default;}
+  .bd-add:active:not(:disabled){transform:scale(.98);}
+  .bd-link{
+    flex:0 0 auto;font-size:11px;font-weight:800;text-decoration:none;color:#8A7357;
+    background:#fff;border:1px solid #E8DCC2;border-radius:11px;padding:8px 12px;white-space:nowrap;
+  }
+
   /* 🎁 판정 완주 보상 시그널 */
   .reward-strip{
     background:linear-gradient(135deg,#FBF3DC,#F5E7C4);border:1.5px solid #EBDCB2;

@@ -196,6 +196,13 @@ function renderPostpartum(){
   mt.innerHTML = journeyHtml(ppJourney());
   area.appendChild(mt);
 
+  // 🎁 올인원 패키지 — 스탠다드에서 소모품 원탭 담기
+  if(ppMode==='std' && typeof bundleCardEl==='function' && LIST_BUNDLES.postpartum){
+    const bc = bundleCardEl(LIST_BUNDLES.postpartum, POSTPARTUM_CATEGORIES, (ci,ii)=>ppItemId(ci,ii),
+      ()=>renderPostpartum());
+    if(bc) area.appendChild(bc);
+  }
+
   // 🎁 판정 완주 보상 시그널 + 리포트 — 나의 기록에서만
   if(ppMode==='mine'){
     const rs = document.createElement('div');
