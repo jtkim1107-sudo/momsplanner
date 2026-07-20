@@ -7,6 +7,45 @@
 // ============================================================
 
 const PREP_ENGINE = {
+  gov: {
+    emoji:'💰', title:'정부지원 체크리스트', todo:true,
+    heroNote:'신청 안 하면 못 받는 돈이 1,000만원 넘게 있어요 — 금액·조건은 해마다 바뀌니 신청처에서 확인!',
+    bagLabel:'지원금 리스트', brief:'신청해야 받는 돈 — 금액·조건은 신청처에서 최종 확인',
+    cats:[
+      { nm:'임신 중', emoji:'🤰', items:[
+        {nm:'임신·출산 진료비 바우처 (국민행복카드)', min:true, amt:'100만원', when:'임신 확인 직후',
+         how:'카드사 앱·은행·보건소에서 국민행복카드 발급', tip:'다태아는 140만원 — 진료비·약제비에 사용'},
+        {nm:'보건소 임산부 등록', min:true, amt:'엽산·철분제 무료', when:'임신 12주 전후',
+         how:'관할 보건소 방문 (산모수첩·신분증)', tip:'임산부 뱃지·초음파 쿠폰 등 지역별 추가 혜택도 같이'},
+        {nm:'임산부 교통비 지원 (지역별)', amt:'~70만원', when:'임신 중',
+         how:'지자체 홈페이지·정부24 — 서울 70만원 등 지역별 상이', tip:'거주 지역 검색: "OO시 임산부 교통비"'},
+        {nm:'임산부 친환경농산물 꾸러미 (지역별)', amt:'연 48만원 상당', when:'임신 중',
+         how:'지자체 신청 (선착순 많음)', tip:'대상 지역인지 먼저 확인 — 조기 마감 잦아요'},
+        {nm:'KTX·SRT 임산부 할인 등록', amt:'특실 할인', when:'임신 중',
+         how:'코레일·SRT 앱에서 임산부 등록', tip:'명절 이동 전에 미리 등록해두면 편해요'},
+      ]},
+      { nm:'출생신고 때 한 번에', emoji:'👶', items:[
+        {nm:'행복출산 원스톱 신청', min:true, amt:'아래 항목 일괄 신청', when:'출생신고와 동시에',
+         how:'정부24 또는 주민센터 — 출생신고하면서 한 번에', tip:'첫만남·부모급여·아동수당을 따로 신청할 필요 없어요'},
+        {nm:'첫만남이용권', min:true, amt:'200만원', when:'출생 후',
+         how:'행복출산 원스톱에 포함 (국민행복카드 바우처)', tip:'둘째부터 300만원 — 출생 1년 내 사용'},
+        {nm:'부모급여', min:true, amt:'월 100만원', when:'0~1세',
+         how:'행복출산 원스톱에 포함', tip:'0세 월 100만원 · 1세 월 50만원 (어린이집 이용 시 보육료 차감)'},
+        {nm:'아동수당', min:true, amt:'월 10만원', when:'0~8세',
+         how:'행복출산 원스톱에 포함', tip:'만 8세 생일 전달까지 매월'},
+      ]},
+      { nm:'산후 · 생활', emoji:'🏠', items:[
+        {nm:'산모·신생아 건강관리 (산후도우미)', min:true, amt:'바우처 지원', when:'출산 예정 40일 전~출산 30일 후',
+         how:'복지로 또는 보건소 신청', tip:'소득 기준 있지만 지역별 확대 — 일단 신청해보세요'},
+        {nm:'산후조리비 지원 (지역별)', amt:'~100만원', when:'출산 후',
+         how:'지자체 홈페이지 — 지역별 금액·조건 상이', tip:'거주 지역 검색: "OO시 산후조리비"'},
+        {nm:'전기요금 출산가구 할인', amt:'월 30% (최대 1.6만원)', when:'출생 후 3년',
+         how:'한전 123 또는 한전:ON 앱', tip:'신청 안 하면 못 받아요 — 소급 안 되는 지역 있음'},
+        {nm:'아이돌봄서비스 등록', amt:'시간당 지원', when:'복직 전 미리',
+         how:'아이돌봄 홈페이지 정부지원 판정 신청', tip:'대기 길 수 있어 미리 등록 — 소득구간별 차등'},
+      ]},
+    ],
+  },
   hospital: {
     emoji:'🏥', title:'출산 전 산부인과 준비물',
     heroNote:'진통 오면 그대로 들고 갈 병원 가방 — 37주쯤엔 현관 앞에 싸두세요',
@@ -490,7 +529,7 @@ function renderPrepList(key){
     <span class="lb-ic">${L.emoji}</span>
     <div class="lb-tx"><h3>${L.title}</h3>
     <p>${L.brief}</p></div>
-    <span class="lb-n">판정템 ${totalAll}</span>
+    <span class="lb-n">${L.todo?'혜택':'판정템'} ${totalAll}</span>
   `;
   area.appendChild(brief);
 
@@ -499,6 +538,16 @@ function renderPrepList(key){
   mt.className='journey'; mt.id='journey';
   mt.innerHTML = journeyHtml(plJourney(key));
   area.appendChild(mt);
+
+  if(s.mode==='std' && L.todo){
+    const rc = document.createElement('div');
+    rc.className='region-card';
+    rc.onclick = ()=>openModal('region-modal');
+    rc.innerHTML = `<span class="ri">📍</span>
+      <div class="rc"><h3>우리 동네 추가 혜택 찾기</h3><p>지자체별 출산지원금·교통비·조리비 — 지역 선택해서 확인처 보기</p></div>
+      <span class="arrow">›</span>`;
+    area.appendChild(rc);
+  }
 
   if(s.mode==='std' && LIST_BUNDLES[key]){
     const bc = bundleCardEl(LIST_BUNDLES[key], L.cats, (ci,ii)=>plItemId(key,ci,ii),
@@ -556,7 +605,94 @@ function renderPrepList(key){
   plRefreshHeads(key);
 }
 
+
+// 💰 todo형(정부지원) 항목 — 구매·판정 개념 없이 '신청·확인' 중심.
+// 담기=챙길 혜택, 체크=신청 완료. 해당 없으면 '해당 없음'으로 결정.
+function renderTodoItem(key,it,ci,ii){
+  const id = plItemId(key,ci,ii);
+  const s = plState(key);
+  const el = document.createElement('div');
+  el.className = 'item' + (s.mode==='mine' && s.checked.has(id)?' checked':'');
+  const tags = `<span class="badge concl yes">💰 ${it.amt}</span>`
+    + (it.when?`<span class="badge need">${it.when}</span>`:'')
+    + (s.mode==='std' && myPlans[id]==='pass' ? '<span class="badge passchip">해당 없음</span>' : '');
+  const moreHtml = `<div class="more-top">
+      ${it.how?`<div class="how">🏛️ ${it.how}</div>`:''}
+      ${it.tip?`<div class="how">💡 ${it.tip}</div>`:''}
+    </div>`;
+
+  if(s.mode==='std'){
+    el.innerHTML = `
+      <div class="item-main slim">
+        <div class="item-info">
+          <div class="item-name">${it.nm}</div>
+          <div class="item-tags">${tags}</div>
+        </div>
+        <button class="add-mini ${(myPlans[id]==='buy')?'on':''}" title="챙길 혜택에 담기">${(myPlans[id]==='buy')?'✓':'＋'}</button>
+        <span class="item-caret">﹀</span>
+      </div>
+      <div class="item-more"></div>
+    `;
+    const moreEl = el.querySelector('.item-more');
+    el.querySelector('.item-main').addEventListener('click', ()=>{
+      const open = el.classList.toggle('open');
+      if(open && !moreEl.dataset.filled){ moreEl.dataset.filled='1'; moreEl.insertAdjacentHTML('beforeend', moreHtml); }
+    });
+    const mini = el.querySelector('.add-mini');
+    mini.addEventListener('click', e=>{
+      e.stopPropagation();
+      const added = myPlans[id]==='buy';
+      if(added) delete myPlans[id]; else myPlans[id]='buy';
+      saveStars();
+      mini.classList.toggle('on', !added);
+      mini.textContent = !added ? '✓' : '＋';
+      const pc = el.querySelector('.badge.passchip'); if(pc) pc.remove();
+      checkPlanComplete(key);
+      plCheckComplete(key);
+      plRefreshHeads(key);
+    });
+    return el;
+  }
+
+  // 나의 기록 — 신청했으면 체크, 해당 없으면 제외
+  el.innerHTML = `
+    <div class="item-main" style="align-items:center;">
+      <div class="chk"></div>
+      <div class="item-info">
+        <div class="item-name">${it.nm}</div>
+        <div class="item-badges">${tags}</div>
+      </div>
+      <button class="todo-pass">해당 없음</button>
+      <span class="item-caret">﹀</span>
+    </div>
+    <div class="item-more"></div>
+  `;
+  const moreEl = el.querySelector('.item-more');
+  el.querySelector('.item-main').addEventListener('click', ()=>{
+    const open = el.classList.toggle('open');
+    if(open && !moreEl.dataset.filled){ moreEl.dataset.filled='1'; moreEl.insertAdjacentHTML('beforeend', moreHtml); }
+  });
+  el.querySelector('.todo-pass').addEventListener('click', e=>{
+    e.stopPropagation();
+    myPlans[id]='pass'; saveStars();
+    if(typeof onPlanSet==='function') onPlanSet(id, 'pass', key, el);
+    if(typeof onPlanChanged==='function') onPlanChanged(key);
+  });
+  if(typeof noteRowEl==='function') el.appendChild(noteRowEl(id));
+  el.querySelector('.chk').addEventListener('click', e=>{
+    e.stopPropagation();
+    const now = !s.checked.has(id);
+    now ? s.checked.add(id) : s.checked.delete(id);
+    el.classList.toggle('checked');
+    plSave(key);
+    if(now){ earnStars(5, '지원금 신청 체크', 'chk-'+id); plCheckComplete(key); }
+    plRefreshHeads(key);
+  });
+  return el;
+}
+
 function renderPrepListItem(key,it,ci,ii){
+  if(PREP_ENGINE[key].todo) return renderTodoItem(key,it,ci,ii);
   const id = plItemId(key,ci,ii);
   const s = plState(key);
   const el = document.createElement('div');

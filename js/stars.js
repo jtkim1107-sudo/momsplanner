@@ -361,6 +361,7 @@ const PLAN_SOURCES = [
   {key:'newborn',    label:'신생아',   cats:()=>PREP_ENGINE.newborn.cats,   idFn:(ci,ii)=>plItemId('newborn',ci,ii)},
   {key:'outing',     label:'첫 외출',  cats:()=>PREP_ENGINE.outing.cats,    idFn:(ci,ii)=>plItemId('outing',ci,ii)},
   {key:'monthly',    label:'발달·놀이', cats:()=>PREP_ENGINE.monthly.cats,  idFn:(ci,ii)=>plItemId('monthly',ci,ii)},
+  {key:'gov',        label:'정부지원',  cats:()=>PREP_ENGINE.gov.cats,      idFn:(ci,ii)=>plItemId('gov',ci,ii)},
 ];
 function planListItems(listKey){
   const src = PLAN_SOURCES.find(x=>x.key===listKey);

@@ -78,6 +78,7 @@ function deadlineChip(g, done, total){
 // 준비물 리스트 — 출산부터 오픈, 나머지는 하나씩 열어간다 (리스트 다양화 전략)
 // 시기순 라인업 — 임신 → 산부인과 → 조리원 → 신생아 → 수유 → 첫 외출 → 이유식 → 발달·놀이 → 어린이집
 const PREP_LISTS = [
+  {key:'gov',        ic:'💰', label:'정부지원',   full:'정부지원 체크리스트'},
   {key:'pregnancy',  ic:'🤰', label:'임신',       full:'임신 준비물'},
   {key:'hospital',   ic:'🏥', label:'산부인과',   full:'출산 전 산부인과 준비물'},
   {key:'postpartum', ic:'🧳', label:'조리원',     full:'조리원 준비물'},
@@ -125,7 +126,7 @@ function stdCatalogHtml(cur){
       return `<button class="sc-row${here?' cur':''}" ${here?'disabled':`onclick="setView('${L.key}')"`}>
         <span class="sc-ic">${L.ic}</span>
         <span class="sc-name">${L.full||L.label}</span>
-        <span class="sc-n">판정템 ${L.n}개</span>
+        <span class="sc-n">${(typeof PREP_ENGINE!=='undefined'&&PREP_ENGINE[L.key]&&PREP_ENGINE[L.key].todo)?'혜택':'판정템'} ${L.n}개</span>
         <span class="sc-go">${here?'보는 중 ✓':'보러가기 ›'}</span>
       </button>`;
     }).join('')}
